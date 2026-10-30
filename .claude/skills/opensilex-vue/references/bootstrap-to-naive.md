@@ -24,7 +24,7 @@ Reminder: import every component used, `import { NCard, NGrid, NGridItem } from 
 | `table`, `table-striped` | `n-data-table` | server-side paginated: `TableAsyncView`; small static table: `n-data-table` + `DataTableColumns<T>`; layout table: `n-table` |
 | `pagination` | `n-pagination` | not needed with `TableAsyncView`, which includes it |
 | `form-group` + `label` + `form-control` | `n-form-item` + `n-input` | or `InputForm` in an `n-form-item path` without `label` (see `common-components.md`) |
-| `form-select`, `<select>` | `n-select` | `:options="SelectOption[]"`; for a business resource, the selector built on `FormSelector` |
+| `form-select`, `<select>` | `n-select` | `:options="SelectOption[]"`; for a business resource, the selector built on `FormSelector` or `InfiniteScrollDropdown` |
 | `form-check` (checkbox) | `n-checkbox` | `CheckboxForm` in a form |
 | `form-check` (radio) | `n-radio-group` + `n-radio` / `n-radio-button` | |
 | `form-switch` | `n-switch` | several: `SwitchGroup` |

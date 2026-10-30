@@ -103,12 +103,12 @@ nothing stops an `any`: the discipline is manual.
 ### Reuse without modifying
 
 - Search `components/common/` before writing anything: server-side table (`TableAsyncView`), filter panel
-  (`SearchFiltersSidebar`), selectors (`FormSelector` and the business selectors built on it), action buttons
+  (`SearchFiltersSidebar`), selectors (`FormSelector`, `InfiniteScrollDropdown` and the business selectors built on them), action buttons
   (`CreateButton`, `EditButton`, `DeleteButton`, `DetailButton`), `Card`, `Modal` + `useModalFormLogic`, `*Form` fields.
   Catalogue and API: `references/common-components.md`.
 - **Do not modify these building blocks** unless asked: migrated lists and views depend on them. Report a defect found
   there instead of fixing it on the side.
-- **Open a child component's template before wrapping it.** A selector built on `FormSelector` already renders its label
+- **Open a child component's template before wrapping it.** A selector built on `FormSelector` or `InfiniteScrollDropdown` already renders its label
   and its `n-form-item path`, so it is not wrapped. `*Form` fields (`InputForm`…) go in an `n-form-item path` **without**
   `label`: the field carries the label. Full table in `references/common-components.md`.
 - Use only what a building block **exposes** (`defineExpose`) and actually **emits**. Reading non-exposed internal state
@@ -135,7 +135,7 @@ Shortcuts found in migrated lists, not to be reproduced:
 
 - `:filtersCollapsed="…"` instead of `v-model:filtersCollapsed` on `SearchFiltersSidebar`, so the panel never closes
   after a search;
-- `n-form-item` around `TypeForm` or a selector built on `FormSelector`, plus the CSS hack `:deep(.compact-form-item)`
+- `n-form-item` around `TypeForm` or a selector built on `FormSelector` / `InfiniteScrollDropdown`, plus the CSS hack `:deep(.compact-form-item)`
   to hide the empty label;
 - reading non-exposed `TableAsyncView` state (`onlySelected`, `selectAll`, `totalRow`) and listening to `@refreshed` /
   `@selectall`, which are never emitted;

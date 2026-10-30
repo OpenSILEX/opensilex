@@ -255,5 +255,5 @@ the style. Apply the rules of this skill to them:
 - `useTemplateRef<InstanceType<typeof Modal>>('modalRef')` and `useTemplateRef<FormInst>('formRef')`;
 - validation rules built in `setup` (`requiredTrimmed`, `required`, `requiredNotEmpty` from
   `@/models/FormFieldsFormatter`), never in a callback, because they call `useI18n()`;
-- one `n-form-item` per **simple** field, but **never** around a selector built on `FormSelector`: pass it `path` and
+- one `n-form-item` per **simple** field, but **never** around a selector built on `FormSelector` or `InfiniteScrollDropdown`: pass it `path` and
   `label`, it renders the label and wires validation itself (see `common-components.md`).

@@ -33,25 +33,34 @@ This is the most frequent source of mistakes, hence this table.
 |---|---|---|---|
 | `FormField` | yes (div + red `*`, help in a tooltip) | **no**, no validation | the wrapper of the fields below |
 | `InputForm`, `TextAreaForm`, `DateForm`, `DateTimeForm`, `CheckboxForm`, `TagInputForm`, `IconForm`, `GeometryForm`, `FileInputForm`, `UriForm`, `TypeForm` | yes, through the `label` prop | no | `<n-form-item path="field">` **without `label`**; the field carries `label` |
-| `FormSelector` and **every selector built on it** | yes | **yes** (`path`, `:show-label="false"`) | **do not wrap**: pass `path` and `label` to the selector |
+| `FormSelector`, `InfiniteScrollDropdown` and **every selector built on them** | yes | **yes** (`path`, `:show-label="false"`) | **do not wrap**: pass `path` and `label` to the selector |
 | `DateRangePickerForm`, `AddressForm`, `CSVSelectorInputForm` | yes | yes | do not wrap |
 
 The two mistakes to avoid:
 
 - an `n-form-item` with a `label` around a field that also has a `label`, which shows two labels;
-- an `n-form-item` around a selector built on `FormSelector`, which gives two labels and two validation messages.
+- an `n-form-item` around `FormSelector`, `InfiniteScrollDropdown` or a selector built on one of them, which gives two
+  labels and two validation messages.
+
+`InfiniteScrollDropdown` (`forms/InfiniteScrollDropdown.vue`) behaves like `FormSelector` here: it wraps `FormField` for the
+label and renders its own `n-form-item :path`, so the rules of the parent `n-form` apply through `path`. It is the base of the
+selectors that load their options page by page (infinite scroll), whereas `FormSelector` is built on `CustomTreeselect`.
 
 The `rules` and `vid` props passed to some fields are Vue 2 leftovers: `FormField` does not declare them, they have no
 effect. Rules are declared on the `n-form` (`:rules`) and attached through `path`.
 
-**Selectors built on `FormSelector`** (do not wrap): `AgentTypeSelector`, `CharacteristicSelector`,
-`CriteriaOperatorSelector`, `DatafileProvenanceSelector`, `DeviceSelector`, `EntitySelector`, `ExperimentSelector`,
-`FacilityPropertySelector`, `FacilitySelector`, `FactorLevelSelector`, `FundingSelector`, `GermplasmSelector`,
-`GroupSelector`, `GroupVariablesSelector`, `InterestEntitySelector`, `MethodSelector`, `OrganizationSelector`,
-`PersonSelector`, `ProjectSelector`, `ProvenanceSelector`, `ScientificObjectParentPropertySelector`,
-`ScientificObjectTypeSelector`, `SiteSelector`, `SpeciesSelector`, `UnitSelector`, `VariableDataTypeSelector`,
-`VariableSelector`, `VariableTimeIntervalSelector`. For a selector missing from this list, look for `<FormSelector` in
-its template.
+**Selectors built on `FormSelector`** (do not wrap): `AgentTypeSelector`, `CriteriaOperatorSelector`,
+`DatafileProvenanceSelector`, `FacilityPropertySelector`, `FactorLevelSelector`, `FundingSelector`,
+`OrganizationSelector`, `ScientificObjectTypeSelector`, `SpeciesSelector`, `VariableDataTypeSelector`,
+`VariableTimeIntervalSelector`.
+
+**Selectors built on `InfiniteScrollDropdown`** (do not wrap): `CharacteristicSelector`, `DeviceSelector`,
+`EntitySelector`, `ExperimentSelector`, `FacilitySelector`, `GermplasmSelector`, `GroupSelector`,
+`GroupVariablesSelector`, `InterestEntitySelector`, `MethodSelector`, `PersonSelector`, `ProjectSelector`,
+`ProvenanceSelector`, `ScientificObjectParentPropertySelector`, `SiteSelector`, `UnitSelector`, `VariableSelector`.
+
+For a selector missing from these lists, look in its template for `FormSelector` (also written
+`<opensilex-FormSelector`) or `InfiniteScrollDropdown`.
 
 ## Lists and filters
 
@@ -87,7 +96,7 @@ Magnifier button and side filter panel (`n-layout-sider`), to be placed **inside
   `searchButtonLabelTranslationKey` (default `searchfilter.label`).
 - **emits**: `refresh` (Search button or Enter key), `reset` (Clear button).
 - **default slot**: the filter fields. The slot already sits in an `n-form` (`label-placement="top"`, `size="small"`),
-  so it holds `n-form-item`s or selectors built on `FormSelector`, without wrapping them.
+  so it holds `n-form-item`s or selectors built on `FormSelector` / `InfiniteScrollDropdown`, without wrapping them.
 - The Search and Clear buttons are provided: do not add others.
 
 ### `StringFilter` (`filters/StringFilter.vue`)

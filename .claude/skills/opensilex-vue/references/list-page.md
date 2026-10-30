@@ -261,7 +261,7 @@ DTO, convert with `DTOConverter.extractURIFromResourceProperties(project)`.
 - **`@reset`** clears **and** runs the search again. Existing lists disagree on this; this behaviour is the one kept.
 - **Text filters**: `n-input clearable` + `@keydown.enter.prevent.stop`. `StringFilter` is the older form, in
   Bootstrap, with a `<form>` nested in the sidebar's `n-form`.
-- **Selectors in the sidebar** (`TypeForm`, selectors built on `FormSelector`): **without** an `n-form-item` around
+- **Selectors in the sidebar** (`TypeForm`, selectors built on `FormSelector` or `InfiniteScrollDropdown`): **without** an `n-form-item` around
   them. They carry their own label. The CSS hack `:deep(.compact-form-item)` of `DeviceList` / `EventList` only hides the
   empty label of that duplicate.
 - **Use only the exposed API** of `TableAsyncView` (`refresh`, `setPage`, `getSelected`, `resetSelection`,

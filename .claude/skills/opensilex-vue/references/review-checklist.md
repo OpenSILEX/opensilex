@@ -65,11 +65,11 @@
 
 ### Reuse
 
-- [ ] Nothing reinvents what `components/common/` provides: `TableAsyncView`, `SearchFiltersSidebar`, `FormSelector` and
+- [ ] Nothing reinvents what `components/common/` provides: `TableAsyncView`, `SearchFiltersSidebar`, `FormSelector`, `InfiniteScrollDropdown` and
   the business selectors, the `*Button`s, `Card`, `Modal`, the `*Form` fields (catalogue in `common-components.md`).
 - [ ] No shared component modified without an explicit request. A bug found there is **reported**, not fixed on the
   side.
-- [ ] No selector built on `FormSelector` wrapped in an `n-form-item`: it already renders its label (`FormField`) and
+- [ ] No selector built on `FormSelector` or `InfiniteScrollDropdown` wrapped in an `n-form-item`: it already renders its label (`FormField`) and
   its `n-form-item path`. The duplicate gives two labels and two validation messages.
 - [ ] Filters are passed as the slot of `SearchFiltersSidebar`; the component has no second Search or Reset button.
 

@@ -47,6 +47,8 @@
         <npm.version>11.1.0</npm.version>
         <!-- Java supported version -->
         <java.compiler.version>17</java.compiler.version>
+        <!-- Read by IDE Maven importers to set the module language level -->
+        <maven.compiler.release>${java.compiler.version}</maven.compiler.release>
 
         <!-- Minimal maven version -->
         <maven.minimal.version>3.6.0</maven.minimal.version>

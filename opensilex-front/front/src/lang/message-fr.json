@@ -1890,12 +1890,24 @@
         "name": "Nom",
         "eventBegin": "Début",
         "eventEnd": "Fin",
-        "eventOngoing": "en cours"
+        "eventOngoing": "en cours",
+        "imageSeriesName": "Images / {serie}"
     },
     "DataVisualisation": {
         "datatypeMessage": "Le type de donnée de la variable {variable} est {datatype}. Pour le moment, seuls les types decimal ou entier sont acceptés.",
         "dataLimit": "Il y a {total} données pour {serie}. Seules les {limit} premières données sont affichées.",
         "showEvents": "Voir les événements",
         "events": "Événements"
+    },
+    "VisuImageCard": {
+        "menu": "Options de l'image",
+        "details": "Détails",
+        "annotationDetails": "Détails des annotations",
+        "annotate": "Annoter l'image",
+        "hide": "Masquer",
+        "annotated": "Cette image a des annotations"
+    },
+    "VisuImagePanel": {
+        "annotationsTitle": "Annotations de l'image"
     }
 }

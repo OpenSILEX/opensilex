@@ -1832,12 +1832,24 @@
         "name": "Name",
         "eventBegin": "Begin",
         "eventEnd": "End",
-        "eventOngoing": "ongoing"
+        "eventOngoing": "ongoing",
+        "imageSeriesName": "Images / {serie}"
     },
     "DataVisualisation": {
         "datatypeMessage": "The datatype of the variable {variable} is {datatype}. At this time only decimal or integer are accepted.",
         "dataLimit": "There are {total} data for {serie}. Only the {limit} first data are displayed.",
         "showEvents": "Show events",
         "events": "Events"
+    },
+    "VisuImageCard": {
+        "menu": "Image options",
+        "details": "Details",
+        "annotationDetails": "Annotation details",
+        "annotate": "Annotate image",
+        "hide": "Hide",
+        "annotated": "This image has annotations"
+    },
+    "VisuImagePanel": {
+        "annotationsTitle": "Annotations of the image"
     }
 }

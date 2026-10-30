@@ -33,6 +33,18 @@ export interface DataVisuPoint {
   value: number
   /** The Data this point was made from, kept for the interactions on the point (e.g. displaying its provenance) */
   data?: DataGetSearchDTO
+  /** The image the value was measured from (its provenance "prov_used"), if any. Drawn as a pin on the point */
+  image?: DataVisuPointImage
+}
+
+/**
+ * Image a point was measured from
+ */
+export interface DataVisuPointImage {
+  /** URI of the image data file */
+  uri: string
+  /** true if the image has annotations, its pin is then red */
+  annotated: boolean
 }
 
 /**
@@ -72,6 +84,7 @@ import {computed, ComputedRef, h, onBeforeUnmount, onMounted, ref, Ref, useTempl
 import {useI18n} from "vue-i18n";
 import {DropdownOption, NButton, NDropdown, NEmpty} from "naive-ui";
 import * as echarts from "echarts/core";
+import type {ECElementEvent} from "echarts/core";
 import {LineChart, ScatterChart} from "echarts/charts";
 import type {LineSeriesOption, ScatterSeriesOption} from "echarts/charts";
 import {
@@ -133,6 +146,13 @@ interface ZoomRange {
  */
 
 //#region Public
+const emit = defineEmits<{
+  /** An image pin was clicked */
+  imageClick: [point: DataVisuPoint]
+  /** The mouse entered (image URI) or left (undefined) an image pin */
+  imageHover: [imageUri: string | undefined]
+}>();
+
 const props = withDefaults(defineProps<{
   /** The series to draw, see DataVisuSerie */
   series: DataVisuSerie[]
@@ -144,6 +164,8 @@ const props = withDefaults(defineProps<{
   elementUri?: string
   /** Events drawn as pins at the bottom of the graphic, see DataVisuEvent */
   events?: DataVisuEvent[]
+  /** URI of the image whose pins are enlarged, e.g. because its card is hovered in the image panel */
+  highlightedImageUri?: string
 }>(), {
   yAxisNames: () => [],
   events: () => []
@@ -168,12 +190,24 @@ const EXPORT_HEIGHT: number = 800;
 const EVENT_SERIES_ID_PREFIX: string = "event:";
 /** Size of the event pins, in pixels. Pins closer than this on the X axis would overlap, so they are stacked */
 const PIN_SIZE: number = 28;
+/** Prefix of the ECharts ids of the image pins series, to tell them apart from the data series */
+const IMAGE_SERIES_ID_PREFIX: string = "image:";
+/** Size of the image pins, in pixels. Smaller than the event pins, as they are drawn on the data points */
+const IMAGE_PIN_SIZE: number = 20;
+/** Color of the pin of an annotated image */
+const ANNOTATED_IMAGE_COLOR: string = "#FF0000";
 
 /**
  * Events grouped by the ECharts id of the series drawing them, in the order of the series data. Used to find the
  * event of a hovered pin. Rebuilt with the series.
  */
 let eventsBySeriesId: Map<string, DataVisuEvent[]> = new Map<string, DataVisuEvent[]>();
+
+/**
+ * Points having an image, grouped by the ECharts id of the series drawing their pins, in the order of the series
+ * data. Used to find the point of a clicked or hovered pin. Rebuilt with the series.
+ */
+let imagePointsBySeriesId: Map<string, DataVisuPoint[]> = new Map<string, DataVisuPoint[]>();
 
 /**
  * The ECharts instance drawing in chartContainer. Not reactive on purpose: ECharts manages its own state, and
@@ -203,6 +237,9 @@ onMounted(() => {
   chart.on("datazoom", onChartDataZoom);
   // Hidden events series don't take space anymore, the pins of the others can move down
   chart.on("legendselectchanged", () => layoutEventPins(chart));
+  chart.on("click", onChartClick);
+  chart.on("mouseover", onChartMouseOver);
+  chart.on("mouseout", onChartMouseOut);
   render();
   // The container size changes when the filters sidebar is toggled or in fullscreen, not only when the window is resized
   resizeObserver = new ResizeObserver(() => {
@@ -218,12 +255,14 @@ onBeforeUnmount(() => {
   chart = undefined;
 });
 
+watch(() => props.highlightedImageUri, highlightImagePins);
+
 // Redraw the whole chart when the parent passes new series, axes or events
 watch(() => [props.series, props.yAxisNames, props.events], render);
 
 // Only the series change, so the zoom and the hidden series are kept
 watch(lineMode, () => {
-  chart?.setOption({series: [...buildSeries(), ...buildEventSeries()]});
+  chart?.setOption({series: [...buildSeries(), ...buildImageSeries(), ...buildEventSeries()]});
   layoutEventPins(chart);
 });
 //#endregion
@@ -240,6 +279,29 @@ function onMenuSelect(key: MenuKey): void {
     case "download":
       downloadImage();
       break;
+  }
+}
+
+/**
+ * Called by ECharts when any element of the chart is clicked, only the image pins are handled
+ */
+function onChartClick(params: ECElementEvent): void {
+  const point: DataVisuPoint | undefined = getImagePoint(params);
+  if (point) {
+    emit("imageClick", point);
+  }
+}
+
+function onChartMouseOver(params: ECElementEvent): void {
+  const point: DataVisuPoint | undefined = getImagePoint(params);
+  if (point) {
+    emit("imageHover", point.image.uri);
+  }
+}
+
+function onChartMouseOut(params: ECElementEvent): void {
+  if (getImagePoint(params)) {
+    emit("imageHover", undefined);
   }
 }
 
@@ -391,7 +453,7 @@ function buildBaseOption(yAxisNames: string[], zoomRange?: ZoomRange): DataVisuO
       /** Horizontal background lines: only drawn by the first axis, otherwise the two axes' lines overlap */
       splitLine: {show: index === 0}
     })),
-    series: [...buildSeries(), ...buildEventSeries()]
+    series: [...buildSeries(), ...buildImageSeries(), ...buildEventSeries()]
   };
 }
 
@@ -446,6 +508,86 @@ function buildSeries(): Array<ScatterSeriesOption | LineSeriesOption> {
       large: true
     };
   });
+}
+
+/**
+ * One series of image pins per data series having images, so they can be hidden from the legend. Each pin is on
+ * top of the point measured from the image, on the same Y axis as its data series. Always drawn as independent
+ * pins, even in line mode.
+ */
+function buildImageSeries(): ScatterSeriesOption[] {
+  imagePointsBySeriesId = new Map<string, DataVisuPoint[]>();
+  const imageSeries: ScatterSeriesOption[] = [];
+
+  props.series.forEach((serie: DataVisuSerie, index: number) => {
+    const imagePoints: DataVisuPoint[] = serie.points.filter((point: DataVisuPoint) => point.image);
+    if (imagePoints.length === 0) {
+      return;
+    }
+    /** Same index as the data series, see buildSeries() */
+    const seriesId: string = `${IMAGE_SERIES_ID_PREFIX}${index}`;
+    imagePointsBySeriesId.set(seriesId, imagePoints);
+
+    imageSeries.push({
+      type: "scatter",
+      id: seriesId,
+      name: t("DataVisuGraphic.imageSeriesName", {serie: serie.name}),
+      yAxisIndex: serie.yAxisIndex ?? 0,
+      data: imagePoints.map((point: DataVisuPoint) => ({
+        value: [point.timestamp, point.value],
+        itemStyle: {color: point.image.annotated ? ANNOTATED_IMAGE_COLOR : serie.color}
+      })),
+      color: serie.color,
+      symbol: "pin",
+      symbolSize: IMAGE_PIN_SIZE,
+      /** Moves the pin up by half its height, so its tip (and not its center) is on the point */
+      symbolOffset: [0, "-50%"],
+      label: {
+        show: true,
+        position: "inside",
+        formatter: "I",
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 10
+      },
+      /**
+       * Highlighted pin, when hovered or when its card is hovered in the image panel: bigger and outlined. No
+       * emphasis focus, hovering a pin must not fade the data series
+       */
+      emphasis: {
+        scale: 1.5,
+        itemStyle: {borderColor: "#000", borderWidth: 1}
+      }
+    });
+  });
+
+  return imageSeries;
+}
+
+/**
+ * Highlights the pins of the image highlightedImageUri (the same image can be used by several points), and
+ * removes the highlight of the others.
+ */
+function highlightImagePins(): void {
+  if (!chart) {
+    return;
+  }
+  for (const [seriesId, imagePoints] of imagePointsBySeriesId) {
+    chart.dispatchAction({type: "downplay", seriesId});
+    const dataIndex: number[] = imagePoints
+        .map((point: DataVisuPoint, index: number) => point.image.uri === props.highlightedImageUri ? index : -1)
+        .filter((index: number) => index >= 0);
+    if (dataIndex.length > 0) {
+      chart.dispatchAction({type: "highlight", seriesId, dataIndex});
+    }
+  }
+}
+
+/**
+ * @returns the point of the image pin the event is about, or undefined if the event isn't about an image pin
+ */
+function getImagePoint(params: ECElementEvent): DataVisuPoint | undefined {
+  return imagePointsBySeriesId.get(params.seriesId)?.[params.dataIndex];
 }
 
 /**

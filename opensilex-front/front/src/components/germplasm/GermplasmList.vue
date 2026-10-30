@@ -3,24 +3,13 @@
     <PageContent
         class="pagecontent"
     >
-      <!-- Toggle Sidebar -->
-      <div class="searchMenuContainer"
-           v-on:click="searchFiltersToggle = !searchFiltersToggle"
-           :title="searchFiltersPannel()">
-        <div class="searchMenuIcon">
-          <Icon icon="fa#search" />
-        </div>
-      </div>
-      <Transition>
-        <div v-show="searchFiltersToggle">
-          <SearchFilterField
-              @search="refresh()"
-              @clear="reset()"
-              label="component.germplasms.list.filter.description"
-              :showAdvancedSearch="true"
-              class="searchFilterField"
-              advanced-search-label="">
-            <template v-slot:filters>
+      <n-layout has-sider class="germplasm-layout">
+          <SearchFiltersSidebar
+              v-model:filtersCollapsed="filtersCollapsed"
+              :activeFiltersCount="activeFiltersCount"
+              @refresh="refresh()"
+              @reset="reset()"
+          >
               <!-- Type -->
               <div>
                 <FilterField>
@@ -144,9 +133,6 @@
                 </FilterField>
                 <br>
               </div>
-            </template>
-
-            <template v-slot:advancedSearch>
 
               <!-- Germplasm Attributes -->
               <div>
@@ -190,12 +176,9 @@
                 </FilterField>
 
               </div>
+          </SearchFiltersSidebar>
 
-
-            </template>
-          </SearchFilterField>
-        </div>
-      </Transition>
+        <n-layout-content class="germplasm-content">
       <TableAsyncView
           ref="tableRef"
           :searchMethod="searchGermplasm"
@@ -286,6 +269,8 @@
           </n-button-group>
         </template>
       </TableAsyncView>
+        </n-layout-content>
+      </n-layout>
       <DocumentForm
           v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
           ref="documentFormRef"
@@ -307,7 +292,7 @@ import FilterField from "@/components/common/filters/FilterField.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
-import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 import GermplasmSelector from "@/components/germplasm/GermplasmSelector.vue";
 import GermplasmGroupSelector from "@/components/germplasm/GermplasmGroupSelector.vue";
 import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
@@ -323,7 +308,7 @@ import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from 
 import {useRoute, useRouter} from "vue-router";
 import {useI18n} from "vue-i18n";
 import {GermplasmSearchFilter, GermplasmService, SpeciesDTO, SpeciesService} from "opensilex-core/lib";
-import {NButtonGroup} from "naive-ui";
+import {NButtonGroup, NLayout, NLayoutContent} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const {t} = useI18n()
@@ -380,7 +365,7 @@ const speciesByUri = ref<Map<string, SpeciesDTO>>(
     new Map<string, SpeciesDTO>()
 );
 
-const searchFiltersToggle = ref<boolean>(true)
+const filtersCollapsed = ref<boolean>(true)
 const nameFieldLabel = ref<string>("name");
 
 
@@ -400,6 +385,13 @@ const filter = ref({
   metadataKey: undefined,
   metadataValue: undefined
 });
+
+const activeFiltersCount = computed(() => {
+  return Object.values(filter.value).filter(v => {
+    if (Array.isArray(v)) return v.length > 0
+    return v !== undefined && v !== null && String(v).trim() !== ''
+  }).length
+})
 
 function reset()
 {
@@ -658,11 +650,6 @@ function initForm()
   }
 }
 
-function searchFiltersPannel()
-{
-  return t("searchfilter.label")
-}
-
 function onRefreshed()
 {
   setTimeout(() => {
@@ -691,6 +678,14 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+.germplasm-layout {
+  background: transparent;
+}
+
+.germplasm-content {
+  padding-left: 12px;
+}
+
 .clear-btn {
   color: rgb(229, 227, 227) !important;
   border-color: rgb(229, 227, 227) !important;

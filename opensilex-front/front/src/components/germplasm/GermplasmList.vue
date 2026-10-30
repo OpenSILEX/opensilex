@@ -270,7 +270,7 @@
         </template>
 
         <template v-slot:cell(actions)="{data}">
-          <b-button-group size="sm">
+          <n-button-group size="small" class="btn-group btn-group-sm">
             <EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
                 @click="emit('onEdit', data.item.uri)"
@@ -283,7 +283,7 @@
                 label="component.germplasms.list.delete"
                 :small="true"
             ></DeleteButton>
-          </b-button-group>
+          </n-button-group>
         </template>
       </TableAsyncView>
       <ModalForm
@@ -325,6 +325,7 @@ import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from 
 import {useRoute, useRouter} from "vue-router";
 import {useI18n} from "vue-i18n";
 import {GermplasmSearchFilter, GermplasmService, SpeciesDTO, SpeciesService} from "opensilex-core/lib";
+import {NButtonGroup} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const {t} = useI18n()

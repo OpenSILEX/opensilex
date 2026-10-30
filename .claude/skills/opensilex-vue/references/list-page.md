@@ -217,8 +217,7 @@ defineExpose({
 </script>
 ```
 
-There is neither `<style>` nor `<i18n>`: all keys are global. If the list has its own labels, add an `<i18n>` block
-`ProjectList:` in en and fr.
+There is neither `<style>`: all keys are global. 
 
 The `#cell(...)` slot of `TableAsyncView` is not typed (`data.item` is `any` in the template). That is the boundary: the
 called handler (`deleteProject(project: ProjectGetDTO)`) carries the precise type.

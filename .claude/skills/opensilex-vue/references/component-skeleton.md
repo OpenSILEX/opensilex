@@ -165,26 +165,11 @@ defineExpose({
   vertical-align: top;
 }
 </style>
-
-<i18n>
-en:
-  DeviceUsage:
-    device: Device
-    name: Name
-    count: Usages
-    validate: Validate
-fr:
-  DeviceUsage:
-    device: Appareil
-    name: Nom
-    count: Utilisations
-    validate: Valider
-</i18n>
 ```
 
 What this skeleton shows:
 
-- **Block order**: `<template>`, `<script setup lang="ts">`, `<style scoped lang="scss">`, `<i18n>`. The last two are
+- **Block order**: `<template>`, `<script setup lang="ts">`, `<style scoped lang="scss">`. The last two are
   left out when empty: no empty `<style>`.
 - **Imports** first, outside any region. API types use `import type`. Local types (`interface`, `type`) follow the
   imports.
@@ -233,16 +218,6 @@ const tagType = computed(() => (props.status === 'active' ? 'success' : 'default
 //#endregion
 </script>
 
-<i18n>
-en:
-  StatusTag:
-    active: Active
-    archived: Archived
-fr:
-  StatusTag:
-    active: Actif
-    archived: Archivé
-</i18n>
 ```
 
 ## Modal form

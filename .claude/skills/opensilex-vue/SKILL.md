@@ -30,7 +30,7 @@ Everything below needs only git, Python 3 and the Node toolchain of the reposito
 
 ### File layout
 
-- Blocks in this order: `<template>`, `<script setup lang="ts">`, `<style scoped lang="scss">`, `<i18n>`. Leave out a
+- Blocks in this order: `<template>`, `<script setup lang="ts">`, `<style scoped lang="scss">`. Leave out a
   block that would be empty.
 - In `<script setup>`, after the imports and local types, use these regions with these exact names. The repository
   already has dozens of spellings; a single one keeps IDE folding and the checker's order test working.
@@ -66,8 +66,6 @@ Everything below needs only git, Python 3 and the Node toolchain of the reposito
   (the host always provides the plugin). Services: `$opensilex.getService<XService>('opensilex.XService')`, once, at
   `setup` level.
 - A method or variable whose role is not obvious gets a JSDoc comment (`/** … */`).
-- Displayed text goes through i18n, in **en and fr**. The `<i18n>` block is YAML, prefixed with the component name. A
-  key from another component's local `<i18n>` block does not exist in this one.
 - **Key or translated text?** OpenSILEX components that translate by themselves take a **key**: button `label`, `Card`,
   `StringView`, `TableField.label` of `TableAsyncView`, `createTitle` / `editTitle` of `useModalFormLogic`,
   `searchButtonLabelTranslationKey`. `n-*` props, `TableView` and the `placeholder` of `FormSelector` take `t(…)`. Open

@@ -28,7 +28,7 @@
 
 ### Structure
 
-- [ ] Blocks in the order `<template>` → `<script setup lang="ts">` → `<style scoped lang="scss">` → `<i18n>`; no empty
+- [ ] Blocks in the order `<template>` → `<script setup lang="ts">` → `<style scoped lang="scss">` ; no empty
   block.
 - [ ] `Public` region: `defineEmits`, `defineProps`, `defineModel`, in this order.
 - [ ] `Private` region with its sub-regions in order: Plugins & services → Template refs → Data & Computed → Hooks &
@@ -87,8 +87,7 @@
 - [ ] API calls go through `$opensilex.getService<…>` and errors through `$opensilex.errorHandler(error)`. No `catch` is
   left empty.
 - [ ] Rights are checked with `user.hasCredential(credentials.CREDENTIAL_…_ID)` for every update or delete action.
-- [ ] No hard-coded text in the template: every key exists in **en and fr**, in the `<i18n>` block (prefixed with the
-  component name) or in `lang/message-*.json` for shared keys.
+- [ ] No hard-coded text in the template: every key exists in **en and fr**, in `lang/message-*.json` for shared keys.
 - [ ] Watchers and `onMounted` do not run the same search twice on load.
 - [ ] No debug `console.log`.
 

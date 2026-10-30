@@ -50,16 +50,18 @@ The `rules` and `vid` props passed to some fields are Vue 2 leftovers: `FormFiel
 effect. Rules are declared on the `n-form` (`:rules`) and attached through `path`.
 
 **Selectors built on `FormSelector`** (do not wrap): `AgentTypeSelector`, `CriteriaOperatorSelector`,
-`DatafileProvenanceSelector`, `FacilityPropertySelector`, `FactorLevelSelector`, `FundingSelector`,
-`OrganizationSelector`, `ScientificObjectTypeSelector`, `SpeciesSelector`, `VariableDataTypeSelector`,
-`VariableTimeIntervalSelector`.
+`DataProvenanceSelector`, `DatafileProvenanceSelector`, `FacilityPropertySelector`, `FactorLevelSelector`,
+`FundingSelector`, `GermplasmGroupSelector`, `OrganizationSelector`, `ScientificObjectTypeSelector`,
+`SharedResourceInstanceSelector`, `SpeciesSelector`, `VariableDataTypeSelector`, `VariableTimeIntervalSelector`.
 
 **Selectors built on `InfiniteScrollDropdown`** (do not wrap): `CharacteristicSelector`, `DeviceSelector`,
 `EntitySelector`, `ExperimentSelector`, `FacilitySelector`, `GermplasmSelector`, `GroupSelector`,
 `GroupVariablesSelector`, `InterestEntitySelector`, `MethodSelector`, `PersonSelector`, `ProjectSelector`,
 `ProvenanceSelector`, `ScientificObjectParentPropertySelector`, `SiteSelector`, `UnitSelector`, `VariableSelector`.
 
-For a selector missing from these lists, look in its template for `FormSelector` (also written
+A selector that composes another one (`DevicePropertySelector` on `DeviceSelector`, `GermplasmPropertySelector` on
+`GermplasmSelector`, `FactorLevelPropertySelector` on `FactorLevelSelector`, `VariablePropertySelector` on
+`VariableSelector`) follows the rule of the selector it wraps. For any other selector, look in its template for `FormSelector` (also written
 `<opensilex-FormSelector`) or `InfiniteScrollDropdown`.
 
 ## Lists and filters

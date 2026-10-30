@@ -1066,7 +1066,7 @@
             "exactMatch": "Equivalent",
             "closeMatch": "Similaire",
             "broadMatch": "Plus général",
-            "narrowMatch": "Plus spécifique",text-sky-500"
+            "narrowMatch": "Plus spécifique",
             "description": {
                 "exactMatch": "Le terme est équivalent à mon concept (skos:exactMatch)",
                 "closeMatch": "Le terme est similaire à mon concept (skos:closeMatch)",
@@ -1283,8 +1283,63 @@
             "lastMedianData": "Dernière valeur médiane",
             "lastDataStored": "Dernière donnée importée à la date",
             "no-data": "Aucune donnée trouvée pour cette période",
+            "view": {
+                "buttons": {
+                    "create-data": "Ajouter un jeu de données",
+                    "generate-template": "Générer un gabarit",
+                    "delete-by-batch": "Supprimer par lot",
+                    "export": "Exporter"
+                },
+                "description": "Visualiser et exporter des données",
+                "data-imported": "observations ont été importées avec succès",
+                "form": {
+                    "create": "Ajouter des données",
+                    "update": "Modifier"
+                },
+                "list": {
+                    "date": "Date",
+                    "variable": "Variable",
+                    "value": "Valeur",
+                    "object": "Objet cible",
+                    "provenance": "provenance",
+                    "details": "Voir les détails de la donnée"
+                },
+                "filter": {
+                    "label": "Rechercher des données",
+                    "experiments": "Expérimentation(s)",
+                    "variables": "Variable(s)",
+                    "scientificObjects": "Objet(s) scientifique(s)",
+                    "scientificObjects-placeholder": "Sélectionner des objets scientifiques",
+                    "devices": "Dispositifs",
+                    "devices-placeholder": "Sélectionner les dispositifs",
+                    "provenance": "Provenance",
+                    "targets": "Cible(s)",
+                    "targets-help": "Copier les URI des cibles ici",
+                    "operator": "Opérateurs",
+                    "batch-uri": "URI de Batch",
+                    "uri-placeholder": "Entrer une partie d'une uri",
+                    "germplasm-group": "Groupe de ressources génétiques"
+                }
+            },
+            "export": {
+                "title": "Export des données",
+                "export": "Exporter",
+                "select-format": "Format du fichier",
+                "select-format-help": "Format long : une ligne représente une observation (identique au tableau de résultat). Format large : une date, une provenance, un objet scientifique donné d'une observation représente une ligne et chaque valeur de variable est dans une colonne spécifique.",
+                "check-raw-data": "Avec la colonne Raw Data (données brutes)",
+                "raw-data-help": "Si coché, la colonne \"raw_data\" sera ajouté au fichier d'export",
+                "raw-data": "Données brutes",
+                "export-long": "Format long",
+                "export-wide": "Format large"
+            },
             "deleteByBatch": "Suppression par lot",
-            "export": "export",
+            "deleteByBatchModal": {
+                "title": "Suppression par lot",
+                "batch-uri": "URI du lot",
+                "batch-placeholder": "Entrez une URI",
+                "success-message": "données ont été supprimées.",
+                "error-message": "Pas de données trouvées."
+            },
             "dataTable": {
                 "target-object": "Objet cible",
                 "list-data": "Date",
@@ -1315,7 +1370,7 @@
                 "csv-file-drop-placeholder": "Déposez le CSV de données ici ...",
                 "data-duplicated": "Données dupliquées",
                 "data-not-imported": "Données non importées. Une erreur s'est produite durant le processus d'importation",
-                "error": "Error",
+                "error": "Erreur",
                 "errorStandardProvenance": "La provenance selectionnée est",
                 "errorStandardProvenanceTwo": "Pour utiliser la provenance standard, définissez-la au préalable.",
                 "message": "Message",
@@ -1324,7 +1379,9 @@
                 "import": "Importer",
                 "generate-template": "Générer un gabarit",
                 "add-provenance": "Ajouter une provenance",
-                "provenance": "Provenance"
+                "provenance": "Provenance",
+                "update-provenance": "Modifier la provenance",
+                "data-too-much-data": "Trop de données à importer. Réduisez le nombre de lignes du fichier."
             },
             "dataHelp": {
                 "exceptedFormat": "Format attendu",
@@ -1389,6 +1446,7 @@
                 "columnModification": "Vous pouvez changer l'ordre des colonnes et en ajouter tant que vous ne modifiez pas l'identifiant de la première ligne.",
                 "csvErrors": "Erreur(s) détectée(s) lors de la validation du fichier CSV",
                 "missingHeaders": "En-tête de colonne manquant",
+                "emptyHeaders": "En-tête de colonne manquant",
                 "duplicatedDataErrors": "Données dupliquées",
                 "invalidHeaderURIs": "URI d'en-tête invalide, des URIs valides sont requises sur la ligne n°1",
                 "datatypeErrors": "Type de donnée invalide",

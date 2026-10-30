@@ -1225,8 +1225,63 @@
             "lastMedianData": "Last median value",
             "lastDataStored": "Last data imported on the date",
             "no-data": "No data found for this period",
+            "view": {
+                "buttons": {
+                    "create-data": "Add data",
+                    "generate-template": "Generate template",
+                    "delete-by-batch": "Delete by Batch",
+                    "export": "Export"
+                },
+                "description": "View and export data",
+                "data-imported": "Observations have been imported successfully",
+                "form": {
+                    "create": "Add Data",
+                    "update": "Update"
+                },
+                "list": {
+                    "date": "Date",
+                    "variable": "Variable",
+                    "value": "Value",
+                    "object": "Target",
+                    "provenance": "provenance",
+                    "details": "view data details"
+                },
+                "filter": {
+                    "label": "Search data",
+                    "experiments": "Experiment(s)",
+                    "variables": "Variable(s)",
+                    "scientificObjects": "Scientific object(s)",
+                    "scientificObjects-placeholder": "Select scientific objects",
+                    "devices": "Device(s)",
+                    "devices-placeholder": "Select devices",
+                    "provenance": "Provenance",
+                    "targets": "Target(s)",
+                    "targets-help": "Copy target's URI here",
+                    "operator": "Operators",
+                    "batch-uri": "Batch URI",
+                    "uri-placeholder": "Enter a part of an uri",
+                    "germplasm-group": "Germplasm Group"
+                }
+            },
+            "export": {
+                "title": "Data export",
+                "export": "Export",
+                "select-format": "File format",
+                "select-format-help": "Long format: each line represents an observation (same as the result table).   Wide format: a given date, provenance, scientific object of an observation represents a row and each variable value is in a specific column.",
+                "check-raw-data": "With Raw data column",
+                "raw-data-help": "If checked, the column \"raw_data\" will be added to the export file",
+                "raw-data": "Raw data",
+                "export-long": "Long format",
+                "export-wide": "Wide format"
+            },
             "deleteByBatch": "Delete by batch",
-            "export": "export",
+            "deleteByBatchModal": {
+                "title": "Delete by batch",
+                "batch-uri": "Batch URI",
+                "batch-placeholder": "Enter URI",
+                "success-message": "data have been deleted.",
+                "error-message": "No data found."
+            },
             "dataTable": {
                 "target-object": "Object target",
                 "list-data": "Data",
@@ -1257,7 +1312,7 @@
                 "csv-file-drop-placeholder": "Drop CSV Data file here...",
                 "data-duplicated": "Duplicated data",
                 "data-not-imported": "Data has not been imported. An error has occured during the importation process",
-                "error": "Erreur",
+                "error": "Error",
                 "errorStandardProvenance": "The selected provenance is",
                 "errorStandardProvenanceTwo": "To use the standard provenance, define it beforehand.",
                 "message": "Message",
@@ -1266,7 +1321,9 @@
                 "import": "Import",
                 "generate-template": "Generate template",
                 "add-provenance": "Add provenance",
-                "provenance": "Provenance"
+                "provenance": "Provenance",
+                "update-provenance": "Update provenance",
+                "data-too-much-data": "Too much data to import. Reduce the number of lines in the file."
             },
             "dataHelp": {
                 "exceptedFormat": "Expected format",
@@ -1318,14 +1375,14 @@
             },
             "dataValidationReport": {
                 "errorLine": "Line",
-                "errorType": "error Type",
+                "errorType": "Error type",
                 "errorDetail": "Detail",
                 "object-type": "object type",
                 "object-type-placeholder": "Type here to search in object types",
                 "expectedFormat": "Expected CSV format",
                 "objectURI": "Object URI",
                 "objectURIComment": "You can set a custom URI or leave it empty to generate one.",
-                "dataPlaceholder": "Yourcan insert data from this row.",
+                "dataPlaceholder": "You can insert data from this row.",
                 "ignoredFirstRows": "First three rows of CSV content will be ignored.",
                 "columnModification": "You can change columns' order and add new ones as long as you don't change the ID of the first row.",
                 "csvErrors": "Error(s) detected in CSV file",

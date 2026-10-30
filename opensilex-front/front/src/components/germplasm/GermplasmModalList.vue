@@ -9,7 +9,7 @@
   >
     <template #header>
       <div class="modal-title">
-        <i class="ik ik-search mr-1"></i>
+        <Icon icon="fa#magnifying-glass" />
         {{ $t('component.germplasms.list.selectLabel') }}
       </div>
     </template>
@@ -45,6 +45,7 @@
 import { ref, nextTick } from 'vue'
 import { NModal, NButton, NSpace } from 'naive-ui'
 import GermplasmList from "@/components/germplasm/GermplasmList.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 defineProps<{
   /**

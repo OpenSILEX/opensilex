@@ -1,18 +1,5 @@
 # AGENTS.md — OpenSILEX
 
-## Skills
-
-Versionnés dans `.claude/skills/` (exceptions explicites du `.gitignore` ; le reste de `.claude/` reste ignoré).
-
-| Skill | Usage |
-|---|---|
-<!-- | `opensilex-java` | Écrire, corriger, linter du Java (api/bll/dal, DAO SPARQL, JAX-RS, DTO, migrations, JUnit 4) |
-| `opensilex-vue` | Créer, migrer Vue 2 → 3 ou relire un composant `.vue` |
-| `opensilex-vue3` | Plateforme front : modules, routes, `$opensilex`, i18n, build UMD |
-| `opensilex-review` | Revue de code d'une branche, d'une MR ou d'un commit | -->
-| `opensilex-mr` | Rédiger la MR (titre Conventional Commit, front matter changelog, template) |
-<!-- | `graft`, `codebase-memory` | Navigation dans le code via graphe | -->
-
 ## Setup
 
 - JDK 17 (`java.compiler.version`), Maven 3.9.9, Docker + compose.
@@ -31,7 +18,7 @@ opensilex dev install [-r]                          # init des données (-r = re
 opensilex dev start [--no-front-dev]                # serveur (+ hot reload front par défaut)
 cd opensilex-front/front && npm run serve           # front seul ; npm run build pour le bundle
 python3 ~/.claude/skills/opensilex-java/scripts/lint.py [--fix]        # lint Java
-.claude/skills/opensilex-vue/scripts/check-vue-conventions.sh          # lint Vue
+python3 .claude/skills/opensilex-vue/scripts/check_vue_conventions.py  # lint Vue
 ```
 
 Il n'y a ni typecheck ni lint front fiable : `npm run lint` appelle `vite lint`, qui n'est pas un linter.

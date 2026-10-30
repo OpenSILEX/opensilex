@@ -8,7 +8,7 @@
            v-on:click="searchFiltersToggle = !searchFiltersToggle"
            :title="searchFiltersPannel()">
         <div class="searchMenuIcon">
-          <i class="ik ik-search"></i>
+          <Icon icon="fa#search" />
         </div>
       </div>
       <Transition>
@@ -286,15 +286,13 @@
           </n-button-group>
         </template>
       </TableAsyncView>
-      <ModalForm
-          v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
-          ref="documentForm"
-          component="DocumentForm"
-          createTitle="component.common.addDocument"
-          modalSize="lg"
-          :initForm="initForm"
-          icon="ik#ik-file-text"
-      ></ModalForm>
+      <DocumentForm
+          v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+          ref="documentFormRef"
+          :createTitle="t('component.common.addDocument')"
+          :editTitle="t('component.common.editDocument')"
+          @onSuccess="refresh"
+      />
     </PageContent>
   </div>
 </template>
@@ -318,7 +316,7 @@ import UriLink from "@/components/common/views/UriLink.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
+import DocumentForm from "@/components/documents/DocumentForm.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
@@ -336,7 +334,7 @@ const service = opensilex.getService<GermplasmService>('opensilex.GermplasmServi
 const resetExperimentSelectorKey = ref<number>(0)
 
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>("tableRef")
-const documentForm = useTemplateRef<InstanceType<typeof ModalForm>>('documentForm')
+const documentFormRef = useTemplateRef<InstanceType<typeof DocumentForm>>('documentFormRef')
 const attributesValueSelector = useTemplateRef<InstanceType<typeof GermplasmAttributesValueSelector>>('attributesValueSelector')
 
 const props = withDefaults(defineProps<{
@@ -632,7 +630,7 @@ function addMetadataFilter()
 
 function createDocument()
 {
-  documentForm.value.showCreateForm();
+  documentFormRef.value?.showCreateForm(initForm());
 }
 
 function initForm()

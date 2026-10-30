@@ -153,37 +153,31 @@
           >
             <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
 
-              <b-dropdown
-                  dropright
-                  class="mb-2 mr-2"
-                  :small="true"
-                  :text="$t('component.germplasms.list.display')">
+              <n-dropdown
+                  :options="selectionOptions"
+                  trigger="hover"
+                  @select="handleSelectionAction"
+              >
+                <n-button size="small" class="greenThemeColor mb-2 mr-2">
+                  {{ t('component.germplasms.list.display') }}
+                </n-button>
+              </n-dropdown>
 
-                <b-dropdown-item-button @click="clickOnlySelected()">
-                  {{
-                    onlySelected ? $t('component.germplasms.list.selected-all') : $t("component.common.selected-only")
-                  }}
-                </b-dropdown-item-button>
-                <b-dropdown-item-button @click="resetSelected()">{{ $t("component.common.resetSelected") }}
-                </b-dropdown-item-button>
-              </b-dropdown>
-
-              <b-dropdown
-                  dropright
-                  class="mb-2 mr-2"
-                  :small="true"
+              <n-dropdown
+                  :options="actionOptions"
+                  trigger="hover"
                   :disabled="numberOfSelectedRows == 0"
-                  :text="$t('component.common.actions')">
-                <b-dropdown-item-button
-                    v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-                    @click="createDocument()"
-                >{{ $t('component.common.addDocument') }}
-                </b-dropdown-item-button>
-                <b-dropdown-item-button
-                    @click="exportCSV(false)"
-                >{{ $t('component.germplasms.list.export') }}
-                </b-dropdown-item-button>
-              </b-dropdown>
+                  @select="handleActionSelect"
+              >
+                <n-button
+                    size="small"
+                    class="mb-2 mr-2"
+                    :disabled="numberOfSelectedRows == 0"
+                    :class="numberOfSelectedRows == 0 ? 'btn-disabled' : 'greenThemeColor'"
+                >
+                  {{ t('component.common.actions') }}
+                </n-button>
+              </n-dropdown>
 
               <CreateButton
                   v-if="!noActions"
@@ -267,7 +261,7 @@ import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from 
 import {useRoute, useRouter} from "vue-router";
 import {useI18n} from "vue-i18n";
 import {GermplasmSearchFilter, GermplasmService, SpeciesDTO, SpeciesService} from "opensilex-core/lib";
-import {NButtonGroup, NFormItem, NLayout, NLayoutContent} from "naive-ui";
+import {type DropdownOption, NButton, NButtonGroup, NDropdown, NFormItem, NLayout, NLayoutContent} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const {t} = useI18n()
@@ -388,6 +382,47 @@ function clickOnlySelected() {
 
 function resetSelected() {
   tableRef.value.resetSelection();
+}
+
+const selectionOptions = computed<DropdownOption[]>(() => [
+  {
+    label: onlySelected.value
+        ? t('component.germplasms.list.selected-all')
+        : t('component.common.selected-only'),
+    key: 'toggleOnlySelected'
+  },
+  {label: t('component.common.resetSelected'), key: 'resetSelected'}
+])
+
+const actionOptions = computed<DropdownOption[]>(() => {
+  const options: DropdownOption[] = []
+  if (user.value.hasCredential(credentials.value.CREDENTIAL_DOCUMENT_MODIFICATION_ID)) {
+    options.push({label: t('component.common.addDocument'), key: 'createDocument'})
+  }
+  options.push({label: t('component.germplasms.list.export'), key: 'exportCSVSelected'})
+  return options
+})
+
+function handleSelectionAction(key: string) {
+  switch (key) {
+    case 'toggleOnlySelected':
+      clickOnlySelected();
+      break;
+    case 'resetSelected':
+      resetSelected();
+      break;
+  }
+}
+
+function handleActionSelect(key: string) {
+  switch (key) {
+    case 'createDocument':
+      createDocument();
+      break;
+    case 'exportCSVSelected':
+      exportCSV(false);
+      break;
+  }
 }
 
 function setInitiallySelectedItems(initiallySelectedItems: any) {

@@ -173,7 +173,7 @@ What this skeleton shows:
   left out when empty: no empty `<style>`.
 - **Imports** first, outside any region. API types use `import type`. Local types (`interface`, `type`) follow the
   imports.
-- **Public region**: `defineEmits` (named tuples, `[]` for an event without payload), `defineProps` (+ `withDefaults`),
+- **Public region**: `defineEmits` (named tuples, `[]` for an event without payload) or defineEmits<{...}> (object syntax for events with payload), `defineProps` (+ `withDefaults`),
   `defineModel`.
 - **Private region**, sub-regions always in this order: *Plugins & services* → *Template refs* → *Data & Computed* →
   *Hooks & watchers* → *Event handlers* → *Methods*.

@@ -446,10 +446,6 @@ function clear() {
   filterProvenanceLabel.value = null;
 }
 
-function successMessage(form) {
-  return t("component.data.view.data-imported");
-}
-
 function refreshDataAfterImportation() {
   refresh();
 }

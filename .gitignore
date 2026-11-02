@@ -8,6 +8,7 @@
 !/.claude/skills/
 /.claude/skills/*
 !/.claude/skills/opensilex-mr/
+!/.claude/skills/opensilex-vue/
 target/
 node_modules/
 **/nb-configuration.xml

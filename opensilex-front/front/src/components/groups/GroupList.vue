@@ -38,9 +38,9 @@
       <template v-slot:cell(actions)="{data}">
         <n-button-group size="small" class="btn-group btn-group-sm">
           <DetailButton
-              @click="data.toggleDetails()"
+              @click="onShowDetailClick(data)"
               label="component.group.details"
-              :detailVisible="data.detailsShowing"
+              :detailVisible="!!data.item._showDetails"
               :small="true"
           ></DetailButton>
           <EditButton
@@ -64,7 +64,8 @@
 <script setup lang="ts">
 
 import StringFilter from "@/components/common/filters/StringFilter.vue";
-import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
+import type {GroupDTO} from "opensilex-security/index";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
@@ -131,7 +132,12 @@ const emit = defineEmits(["onEdit", "onDelete"]);
 
 function refresh() {
   opensilex.updateURLParameters(filter.value);
-  tableRef.value.changeCurrentPage(1);
+  tableRef.value?.setPage(1);
+  tableRef.value?.refresh();
+}
+
+function onShowDetailClick(data: RowWithData<GroupDTO>) {
+  data.item._showDetails = !data.item._showDetails;
 }
 
 function updateSelectedGroup() {

@@ -16,17 +16,14 @@
       </template>
     </PageContent>
 
-    <ModalForm
+    <GroupForm
       v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
       ref="groupForm"
-      component="opensilex-GroupForm"
       createTitle="component.group.add"
       editTitle="component.group.update"
-      modalSize="lg"
-      icon="ik#ik-users"
       @onCreate="groupList.refresh()"
       @onUpdate="groupList.updateSelectedGroup()"
-    ></ModalForm>
+    ></GroupForm>
   </div>
 </template>
 
@@ -39,6 +36,7 @@ import {computed, inject, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import GroupList from "@/components/groups/GroupList.vue";
+import GroupForm from "@/components/groups/GroupForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
@@ -52,7 +50,7 @@ const credentials = computed(() => {
   return store.state.credentials;
 })
 
-const groupForm = useTemplateRef<InstanceType<typeof ModalForm>>('groupForm')
+const groupForm = useTemplateRef<InstanceType<typeof GroupForm>>('groupForm')
 const groupList = useTemplateRef<InstanceType<typeof GroupList>>('groupList')
 
 function showEditForm(dto){

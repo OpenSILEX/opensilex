@@ -159,7 +159,7 @@
                   @select="handleSelectionAction"
               >
                 <n-button size="small" class="greenThemeColor mb-2 mr-2">
-                  {{ t('component.germplasms.list.display') }}
+                  {{ t('component.common.display') }}
                 </n-button>
               </n-dropdown>
 

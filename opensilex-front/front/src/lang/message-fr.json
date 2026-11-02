@@ -133,6 +133,7 @@
             "no-results": "Aucun résultat",
             "show-details": "Afficher les détails",
             "hide-details": "Masquer les détails",
+            "display": "Affichage",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -964,7 +965,6 @@
                 "selected": "Ressource(s) Génétique(s) Sélectionnée(s)",
                 "export": "Exporter la liste",
                 "export-all": "Tout exporter",
-                "display": "Affichage",
                 "selected-all": "Toutes les ressources génétiques",
                 "is_public": "Visibilité",
                 "filter": {
@@ -1159,7 +1159,6 @@
             "nopreview": "Pas de prévisualisation possible",
             "selected": "Document(s) sélectionné(s)",
             "selected-all": "Tous les documents",
-            "display": "Affichage",
             "label-filter": "Rechercher des documents",
             "filter-title-placeholder": "Filtrer par titre",
             "filter-date-placeholder": "Filtrer par date",
@@ -1543,7 +1542,6 @@
                 "datafile-not-found": "Fichiers de données non trouvés",
                 "date": "Date",
                 "details": "Voir les métadonnées du fichier",
-                "display": "Affichage",
                 "displayImage": "Afficher l'image",
                 "export": "Exporter des fichiers de données",
                 "filename": "Nom du fichier",

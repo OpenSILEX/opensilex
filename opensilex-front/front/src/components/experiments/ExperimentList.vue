@@ -121,7 +121,7 @@
             dropright
             class="mb-2 mr-2"
             :small="true"
-            :text="$t('component.document.display')"
+            :text="$t('component.common.display')"
           >
             <b-dropdown-item-button @click="clickOnlySelected()">{{
               onlySelected

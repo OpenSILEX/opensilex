@@ -199,7 +199,7 @@
             <template v-slot:cell(germplasm_is_public)="{ data }">
               <Icon
                   v-if="data.item.is_public === false"
-                  icon="ik#ik-lock"
+                  icon="bi#bi-lock"
                   class="text-secondary"
                   style="font-size: 1.2em"
                   :title="$t('component.germplasms.list.filter.is_public_false')"
@@ -258,7 +258,7 @@ import DocumentForm from "@/components/documents/DocumentForm.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
-import {useRoute, useRouter} from "vue-router";
+import {useRoute} from "vue-router";
 import {useI18n} from "vue-i18n";
 import {GermplasmSearchFilter, GermplasmService, SpeciesDTO, SpeciesService} from "opensilex-core/lib";
 import {type DropdownOption, NButton, NButtonGroup, NDropdown, NFormItem, NLayout, NLayoutContent} from "naive-ui";
@@ -267,7 +267,6 @@ const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const {t} = useI18n()
 const store = useStore()
 const route = useRoute()
-const router = useRouter()
 const service = opensilex.getService<GermplasmService>('opensilex.GermplasmService')
 const resetExperimentSelectorKey = ref<number>(0)
 
@@ -305,7 +304,7 @@ const credentials = computed(() => {
 
 
 const onlySelected = computed(() => {
-      return store.state.onlySelected;
+      return store.value.onlySelected;
     }
 )
 

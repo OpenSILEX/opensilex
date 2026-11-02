@@ -199,20 +199,6 @@ function getBatch(uri: string): Promise<BatchHistoryGetDTO> {
   }
 }
 
-function showProvenanceDetails() {
-        if (selectedProvenance.value != null) {
-            visibleDetails.value = !visibleDetails.value;
-        }
-    }
-
-function loadProvenance(selectedValue) {
-        if (selectedValue != undefined) {
-            getProvenance(selectedValue.id).then((prov) => {
-                selectedProvenance.value = prov;
-            });
-        }
-    }
-
     async function showDataDetailsModal(item: DataGetSearchDTO) {
         opensilex.enableLoader();
         try {

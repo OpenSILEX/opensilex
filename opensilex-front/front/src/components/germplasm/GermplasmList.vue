@@ -268,12 +268,8 @@ const {t} = useI18n()
 const store = useStore()
 const route = useRoute()
 const service = opensilex.getService<GermplasmService>('opensilex.GermplasmService')
-const resetExperimentSelectorKey = ref<number>(0)
 
-const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>("tableRef")
-const documentFormRef = useTemplateRef<InstanceType<typeof DocumentForm>>('documentFormRef')
-const attributesValueSelector = useTemplateRef<InstanceType<typeof GermplasmAttributesValueSelector>>('attributesValueSelector')
-
+//#region Props
 const props = withDefaults(defineProps<{
   isSelectable?: boolean
   noActions?: boolean
@@ -285,14 +281,17 @@ const props = withDefaults(defineProps<{
   isSelectable: false,
   noActions: false
 });
+//#endregion
 
-const emit = defineEmits<{
-  (e: 'onEdit', uri: string): void
-  (e: 'onDelete', uri: string): void
-  (e: 'select', item: any): void
-  (e: 'unselect', item: any): void
-  (e: 'selectall', items: any[]): void
-}>()
+//#region Refs
+const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>("tableRef")
+const documentFormRef = useTemplateRef<InstanceType<typeof DocumentForm>>('documentFormRef')
+const attributesValueSelector = useTemplateRef<InstanceType<typeof GermplasmAttributesValueSelector>>('attributesValueSelector')
+const speciesSelector = ref<any>()
+//#endregion
+
+//#region Data and computed
+const resetExperimentSelectorKey = ref<number>(0)
 
 const user = computed(() => {
   return store.state.user;
@@ -301,7 +300,6 @@ const user = computed(() => {
 const credentials = computed(() => {
   return store.state.credentials;
 })
-
 
 const onlySelected = computed(() => {
       return store.value.onlySelected;
@@ -319,7 +317,6 @@ const speciesByUri = ref<Map<string, SpeciesDTO>>(
 
 const filtersCollapsed = ref<boolean>(true)
 const nameFieldLabel = ref<string>("name");
-
 
 const filter = ref({
   rdf_type: undefined,
@@ -344,6 +341,86 @@ const activeFiltersCount = computed(() => {
     return v !== undefined && v !== null && String(v).trim() !== ''
   }).length
 })
+
+const selectionOptions = computed<DropdownOption[]>(() => [
+  {
+    label: onlySelected.value
+        ? t('component.germplasms.list.selected-all')
+        : t('component.common.selected-only'),
+    key: 'toggleOnlySelected'
+  },
+  {label: t('component.common.resetSelected'), key: 'resetSelected'}
+])
+
+const actionOptions = computed<DropdownOption[]>(() => {
+  const options: DropdownOption[] = []
+  if (user.value.hasCredential(credentials.value.CREDENTIAL_DOCUMENT_MODIFICATION_ID)) {
+    options.push({label: t('component.common.addDocument'), key: 'createDocument'})
+  }
+  options.push({label: t('component.germplasms.list.export'), key: 'exportCSVSelected'})
+  return options
+})
+
+const fields = computed(() => {
+  let tableFields = [
+    {
+      key: nameFieldLabel.value,
+      label: "component.germplasms.list.name",
+      sortable: true
+    },
+    {
+      key: "rdf_type_name",
+      label: "component.germplasms.list.rdfType",
+      sortable: true
+    },
+    {
+      key: "species_name",
+      label: "component.germplasms.list.speciesLabel"
+    },
+    {
+      key: "germplasm_is_public",
+      label: "component.germplasms.list.is_public"
+    }
+
+  ];
+  if (!props.noActions) {
+    tableFields.push({
+      key: "actions",
+      label: "component.common.actions"
+    });
+  }
+  return tableFields;
+})
+//#endregion
+
+//#region Emits
+const emit = defineEmits<{
+  (e: 'onEdit', uri: string): void
+  (e: 'onDelete', uri: string): void
+  (e: 'select', item: any): void
+  (e: 'unselect', item: any): void
+  (e: 'selectall', items: any[]): void
+}>()
+//#endregion
+
+//#region Event handlers and watchers
+let langUnwatcher: (() => void) | undefined;
+
+onMounted(() => {
+  langUnwatcher = store.watch(
+      () => store.getters.language,
+      (_lang) => {
+        updateLang();
+      }
+  );
+});
+
+onBeforeUnmount(() => {
+  langUnwatcher?.();
+});
+
+loadSpecies();
+opensilex.updateFiltersFromURL(route.query, filter.value);
 
 function reset() {
   filter.value = {
@@ -383,25 +460,6 @@ function resetSelected() {
   tableRef.value.resetSelection();
 }
 
-const selectionOptions = computed<DropdownOption[]>(() => [
-  {
-    label: onlySelected.value
-        ? t('component.germplasms.list.selected-all')
-        : t('component.common.selected-only'),
-    key: 'toggleOnlySelected'
-  },
-  {label: t('component.common.resetSelected'), key: 'resetSelected'}
-])
-
-const actionOptions = computed<DropdownOption[]>(() => {
-  const options: DropdownOption[] = []
-  if (user.value.hasCredential(credentials.value.CREDENTIAL_DOCUMENT_MODIFICATION_ID)) {
-    options.push({label: t('component.common.addDocument'), key: 'createDocument'})
-  }
-  options.push({label: t('component.germplasms.list.export'), key: 'exportCSVSelected'})
-  return options
-})
-
 function handleSelectionAction(key: string) {
   switch (key) {
     case 'toggleOnlySelected':
@@ -431,58 +489,6 @@ function setInitiallySelectedItems(initiallySelectedItems: any) {
 function getSelected() {
   return tableRef.value.getSelected();
 }
-
-let langUnwatcher: (() => void) | undefined;
-
-onMounted(() => {
-  langUnwatcher = store.watch(
-      () => store.getters.language,
-      (_lang) => {
-        updateLang();
-      }
-  );
-});
-
-onBeforeUnmount(() => {
-  langUnwatcher?.();
-});
-
-loadSpecies();
-opensilex.updateFiltersFromURL(route.query, filter.value);
-
-
-const fields = computed(() => {
-  let tableFields = [
-    {
-      key: nameFieldLabel.value,
-      label: "component.germplasms.list.name",
-      sortable: true
-    },
-    {
-      key: "rdf_type_name",
-      label: "component.germplasms.list.rdfType",
-      sortable: true
-    },
-    {
-      key: "species_name",
-      label: "component.germplasms.list.speciesLabel"
-    },
-    {
-      key: "germplasm_is_public",
-      label: "component.germplasms.list.is_public"
-    }
-
-  ];
-  if (!props.noActions) {
-    tableFields.push({
-      key: "actions",
-      label: "component.common.actions"
-    });
-  }
-  return tableFields;
-})
-
-const speciesSelector = ref<any>()
 
 function refresh() {
   updateSelectedGermplasm()
@@ -639,7 +645,9 @@ function deleteGermplasm(uri) {
   tableRef.value.checkSelectedItems(uri);
   emit('onDelete', uri);
 }
+//#endregion
 
+//#region Exposed methods
 defineExpose({
   refresh,
   reset,
@@ -650,6 +658,7 @@ defineExpose({
   clickOnlySelected,
   resetSelected
 })
+//#endregion
 </script>
 
 <style scoped lang="scss">

@@ -332,14 +332,10 @@ const soFilter = ref({
 //#region Template refs
 const dataList = ref<InstanceType<typeof DataList> | null>(null);
 const modalDataForm = ref<InstanceType<typeof DataImportForm> | null>(null);
-const provSelector = ref<InstanceType<typeof DataProvenanceSelector> | null>(null);
 const resultModal = ref<InstanceType<typeof ResultModalView> | null>(null);
 const soSelector = ref<InstanceType<typeof ModalFormSelector> | null>(null);
 const exportModal = ref<InstanceType<typeof DataExportModal> | null>(null);
-const deviceSelector = ref<InstanceType<typeof DeviceSelector> | null>(null);
-const facilitySelector = ref<InstanceType<typeof FacilitySelector> | null>(null);
 const deleteByBatchModal = ref<InstanceType<typeof DeleteByBatchModal> | null>(null);
-const dataProvenanceModalView = ref<InstanceType<typeof DataProvenanceModalView> | null>(null);
 //#endregion
 //#region Computed
 const user = computed(() => $store.state.user);

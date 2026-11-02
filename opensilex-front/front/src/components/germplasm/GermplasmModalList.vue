@@ -2,8 +2,8 @@
   <n-modal
     v-model:show="visible"
     :mask-closable="false"
-    :preset="'dialog'"
-    :show-icon="false"
+    preset="card"
+    closable
     :style="{ width: '1400px', maxWidth: '95vw' }"
     @after-leave="$emit('hide')"
   >
@@ -28,12 +28,12 @@
       ></GermplasmList>
     </div>
 
-    <template #action>
+    <template #footer>
       <n-space justify="end">
-        <n-button tertiary @click="hide(false)">
+        <n-button secondary @click="hide(false)">
           {{ $t('component.common.close') }}
         </n-button>
-        <n-button type="primary" class="greenThemeColor" @click="hide(true)">
+        <n-button class="greenThemeColor" @click="hide(true)">
           {{ $t('component.common.validateSelection') }}
         </n-button>
       </n-space>

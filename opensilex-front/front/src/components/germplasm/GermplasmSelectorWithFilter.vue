@@ -27,8 +27,8 @@ const germplasmSelector = useTemplateRef<InstanceType<typeof ModalFormSelector>>
 const props = withDefaults(defineProps<{
   editMode: boolean
   experimentUri: string
-  placeholder: string
-  label: string
+  placeholder?: string
+  label?: string
 
 }>(), {
   placeholder: "component.germplasms.selector-with-filter.placeholder-multiple",

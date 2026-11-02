@@ -418,40 +418,26 @@ function loadProvenance(selectedValue) {
 
 function afterCreateData(results) {
   if (results instanceof Promise) {
-    results.then((res) => {
-      resultModal.value.setNbLinesImported(
-          res.validation.dataErrors.nbLinesImported
-      );
-      let annotationsOnObjects: Array<any> = res.validation.dataErrors.annotationsOnObjects;
-      if (annotationsOnObjects) {
-        resultModal.value.setNbAnnotationsImported(
-            annotationsOnObjects.length
-        );
-      }
-      resultModal.value.setProvenance(res.form.provenance);
-      resultModal.value.setBatch(res.validation.dataErrors.batchHistoryUri);
-      resultModal.value.show();
-      refreshKey.value += 1;
-      clear();
-      filter.value.provenance = res.form.provenance.uri;
-    });
+    results.then(showImportResult);
   } else {
-    resultModal.value.setNbLinesImported(
-        results.validation.dataErrors.nbLinesImported
-    );
-    let annotationsOnObjects: Array<any> = results.validation.dataErrors.annotationsOnObjects;
-    if (annotationsOnObjects) {
-      resultModal.value.setNbAnnotationsImported(
-          annotationsOnObjects.length
-      );
-    }
-    resultModal.value.setBatch(results.validation.dataErrors.batchHistoryUri);
-    resultModal.value.setProvenance(results.form.provenance);
-    resultModal.value.show();
-    refreshKey.value += 1;
-    clear();
-    filter.value.provenance = results.form.provenance.uri;
+    showImportResult(results);
   }
+}
+
+function showImportResult(res) {
+  const dataErrors = res.validation.dataErrors;
+  resultModal.value.setNbLinesImported(dataErrors.nbLinesImported);
+  if (dataErrors.annotationsOnObjects) {
+    resultModal.value.setNbAnnotationsImported(
+        dataErrors.annotationsOnObjects.length
+    );
+  }
+  resultModal.value.setProvenance(res.form.provenance);
+  resultModal.value.setBatch(dataErrors.batchHistoryUri);
+  resultModal.value.show();
+  refreshKey.value += 1;
+  clear();
+  filter.value.provenance = res.form.provenance.uri;
 }
 
 function clear() {

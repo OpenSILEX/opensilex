@@ -161,15 +161,21 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
 
         //Custom props
         if(!selectProps.isEmpty()){
-            selectProps.forEach( prop ->{
-                // Column labels formatting: max 10 charact
-                String propString = propFormatting(prop);
-
-                typeBuilder.add(propString, String.class);
-            });
+            selectProps.forEach(prop -> addShpCustomAttributes(prop, typeBuilder));
         }
 
         return typeBuilder.buildFeatureType();
+    }
+
+    /**
+     * Declare the shapefile column(s) matching a selected property. By default one column is created, with a label
+     * formatted to 10 characters max. Override to declare other columns.
+     * @param prop short URI property
+     * @param typeBuilder builder for the feature type
+     */
+    protected void addShpCustomAttributes(URI prop, SimpleFeatureTypeBuilder typeBuilder) {
+        // Column labels formatting: max 10 charact
+        typeBuilder.add(propFormatting(prop), String.class);
     }
     protected String propFormatting(URI prop){
         int min = prop.toString().contains(":has") ? prop.toString().lastIndexOf(":") +4 : prop.toString().lastIndexOf(":") +1 ;

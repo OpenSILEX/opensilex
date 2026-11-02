@@ -496,7 +496,6 @@ function updateSelectedGermplasm() {
 }
 
 function searchGermplasm(options) {
-  // this.updateExportFilters();
   return service.searchGermplasm(
       filter.value.uri,
       filter.value.rdf_type,

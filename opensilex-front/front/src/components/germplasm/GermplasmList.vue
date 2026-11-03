@@ -91,6 +91,7 @@
           ></GermplasmGroupSelector>
 
           <!-- URI -->
+          <n-form-item class="compact-form-item">
           <StringFilter
               v-model:filter="filter.uri"
               label="component.germplasms.list.filter.uri"
@@ -98,6 +99,7 @@
               class="searchFilter"
               @handlingEnterKey="refresh()"
           ></StringFilter>
+          </n-form-item>
 
           <!-- Germplasm Attributes -->
           <n-form-item class="compact-form-item">

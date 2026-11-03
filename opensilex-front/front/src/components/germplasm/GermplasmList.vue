@@ -92,13 +92,13 @@
 
           <!-- URI -->
           <n-form-item class="compact-form-item">
-          <StringFilter
-              v-model:filter="filter.uri"
-              label="component.germplasms.list.filter.uri"
-              placeholder="component.germplasms.list.filter.uri-placeholder"
-              class="searchFilter"
-              @handlingEnterKey="refresh()"
-          ></StringFilter>
+            <StringFilter
+                v-model:filter="filter.uri"
+                label="component.germplasms.list.filter.uri"
+                placeholder="component.germplasms.list.filter.uri-placeholder"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></StringFilter>
           </n-form-item>
 
           <!-- Germplasm Attributes -->
@@ -111,6 +111,7 @@
             ></GermplasmAttributesSelector>
           </n-form-item>
 
+          <!--          TODO -->
           <!--              <div>-->
           <!--                <FilterField>-->
           <!--                  <GermplasmAttributesValueSelector-->
@@ -647,6 +648,7 @@ function deleteGermplasm(uri) {
   tableRef.value.checkSelectedItems(uri);
   emit('onDelete', uri);
 }
+
 //#endregion
 
 //#region Exposed methods

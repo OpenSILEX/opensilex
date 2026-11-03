@@ -104,20 +104,14 @@
             ></MetadataView>
           </template>
 
-          <template v-slot:footer v-if="experiment.funding">
-            <div
-                :label="t('component.experiment.funding')"
-                :value="experiment.funding"
-                class="text-right"
+          <template #footer v-if="displayedFundingUris.length > 0">
+            <img
+                v-for="fundingUri in displayedFundingUris"
+                :key="fundingUri"
+                :src="opensilex.getResourceURI('images/' + opensilex.getShortUri(fundingUri), ['png', 'svg', 'jpg'])"
+                class="funding-tag"
+                :title="fundingUri"
             >
-              <img
-                  v-for="fundingUri in [...experiment.funding].sort().slice(0, 3)"
-                  :key="fundingUri"
-                  v-bind:src="opensilex.getResourceURI('images/'+fundingUri, ['png', 'svg', 'jpg'])"
-                  class="funding-tag"
-                  :title="fundingUri"
-              >
-            </div>
           </template>
 
         </Card>
@@ -248,6 +242,10 @@ onMounted(() => {
 //#region Data and computed
 const isGermplasmMenuExcluded = computed(() => {
   return opensilex.getConfig().menuExclusions.includes("germplasm");
+})
+
+const displayedFundingUris = computed<string[]>(() => {
+  return [...(experiment.value?.funding ?? [])].sort().slice(0, 3);
 })
 
 const organizationsListURIs = computed(() => {

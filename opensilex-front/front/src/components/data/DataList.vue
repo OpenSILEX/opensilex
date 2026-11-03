@@ -101,7 +101,7 @@ const dataService = opensilex.getService<DataService>("opensilex.DataService");
 const ontologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");
 const variablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
 
-const tableRef = ref<any>(null)
+const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
 const dataProvenanceModalView = useTemplateRef<InstanceType<typeof DataProvenanceModalView>>('dataProvenanceModalView')
 
 const objects = ref<Record<string, string>>({});
@@ -155,7 +155,7 @@ function getVariableName(variableUri: string): string {
 
 function refresh() {
   opensilex.updateURLParameters(filter.value);
-  tableRef.value.changeCurrentPage(1);
+  tableRef.value.setPage(1);
 }
 
 async function showDataDetailsModal(item: DataGetSearchDTO) {

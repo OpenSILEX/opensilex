@@ -53,7 +53,7 @@ const credentials = computed(() => {
 const groupForm = useTemplateRef<InstanceType<typeof GroupForm>>('groupForm')
 const groupList = useTemplateRef<InstanceType<typeof GroupList>>('groupList')
 
-function showEditForm(dto){
+function showEditForm(dto: any){
     let copydto = JSON.parse(JSON.stringify(dto));
     groupForm.value.showEditForm(copydto);
   }

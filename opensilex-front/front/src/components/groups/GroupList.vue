@@ -92,11 +92,11 @@ const credentials = computed(() => {
   return store.state.credentials;
 })
 
-const filter = ref<any>('')
+const filter = ref<string>('')
 
 function created() {
-  let query: any = route.query;
-  if (query.filter) {
+  let query = route.query;
+  if (typeof query.filter === "string") {
     filter.value = decodeURIComponent(query.filter);
   }
 }

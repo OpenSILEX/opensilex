@@ -128,7 +128,10 @@ const fields = ref([
   }
 ]);
 
-const emit = defineEmits(["onEdit", "onDelete"]);
+const emit = defineEmits<{
+  (e: "onEdit"),
+  (e: "onDelete")
+}>();
 
 function refresh() {
   opensilex.updateURLParameters(filter.value);
@@ -171,7 +174,7 @@ defineExpose({
   refresh,
   updateSelectedGroup,
   created
-    })
+})
 
 </script>
 

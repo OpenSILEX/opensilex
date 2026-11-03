@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, inject, onMounted, reactive, ref } from 'vue'
+import { computed, h, inject, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NDataTable, NSelect } from 'naive-ui'
 import type { DataTableColumns, PaginationProps, SelectOption } from 'naive-ui'
@@ -49,11 +49,11 @@ const searchedUser = ref<string | null>()
 
 const profilesList = ref<ProfileGetDTO[]>([])
 
-const pagination = reactive<PaginationProps>({
+const pagination = ref<PaginationProps>({
   page: 1,
   pageSize: 5,
   onUpdatePage: (page: number) => {
-    pagination.page = page
+    pagination.value.page = page
   }
 })
 
@@ -136,7 +136,8 @@ function onAccountSelectorSelectionChange(option: SelectOption | SelectOption[] 
 
 //#region Methods
 function clearForm() {
-  pagination.page = 1
+  pagination.value.page = 1
+  pagination.value.pageSize = 5
   searchedUser.value = null
 }
 

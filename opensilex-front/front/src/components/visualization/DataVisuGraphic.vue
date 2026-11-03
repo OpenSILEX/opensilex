@@ -616,8 +616,11 @@ function buildEventSeries(pinLevels: Map<DataVisuEvent, number> = new Map<DataVi
        * Moves the pin up by half its height, so its tip (and not its center) is on the bottom of the chart, plus one
        * pin height per stacking level
        */
-      symbolOffset: [0, -(PIN_SIZE / 2 + (pinLevels.get(event) ?? 0) * PIN_SIZE)]
+      symbolOffset: [0, -(PIN_SIZE / 2 + (pinLevels.get(event) ?? 0) * PIN_SIZE)],
+      /** Each event can have its own color, e.g. one per event type */
+      itemStyle: {color: event.color}
     })),
+    /** Color of the legend entry */
     color: events[0].color,
     /** Map pin shape, its tip is on the event date */
     symbol: "pin",

@@ -119,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, nextTick, onBeforeUnmount, onMounted, ref, Ref, useTemplateRef, watch} from "vue";
+import {computed, ComputedRef, inject, onMounted, ref, Ref, useTemplateRef, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import {useRoute} from "vue-router";
 import {NBadge, NCollapse, NCollapseItem, NForm, NFormItem, NLayout, NLayoutContent, NSpin, NSwitch} from "naive-ui";
@@ -131,10 +131,15 @@ import ModalFormSelector from "@/components/variables/form/ModalFormSelector.vue
 import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
-import DataVisuGraphic, {DataVisuEvent, DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuGraphic.vue";
-import VisuImagePanel, {VisuImage} from "@/components/visualization/VisuImagePanel.vue";
+import DataVisuGraphic, {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuGraphic.vue";
+import VisuImagePanel from "@/components/visualization/VisuImagePanel.vue";
 import {ScientificObjectFilter} from "@/components/scientificObjects/ScientificObjectList.vue";
-import useDataVisualisation, {DataSeriesRequest, EventsRequest} from "@/composables/useDataVisualisation";
+import useDataVisualisation, {
+  DataSeriesRequest,
+  EventsRequest,
+  GRAPHIC_COLOR_PALETTE
+} from "@/composables/useDataVisualisation";
+import useVisuImagePanel from "@/composables/useVisuImagePanel";
 
 interface VisualisationFilter {
   scientificObjects: string[]
@@ -164,7 +169,7 @@ const props = defineProps<{
 const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
 const {t} = useI18n();
 const route = useRoute();
-const {getNumericVariables, loadDataSeries, loadEvents, countEvents, loadImage} = useDataVisualisation();
+const {getNumericVariables, loadDataSeries, loadEvents, countEvents} = useDataVisualisation();
 
 const experimentsService: ExperimentsService = opensilex.getService<ExperimentsService>("opensilex.ExperimentsService");
 //#endregion
@@ -174,14 +179,18 @@ const imagePanel = useTemplateRef<InstanceType<typeof VisuImagePanel>>("imagePan
 //#endregion
 
 //#region Data & Computed
+/** State and handlers of the image panel, see useVisuImagePanel */
+const {
+  panelImages,
+  highlightedImageUri,
+  onGraphicImageClick,
+  onImagePanelAnnotationCreated,
+  onImagePanelHide,
+  clearImagePanel
+} = useVisuImagePanel(imagePanel);
+
 const SCIENTIFIC_OBJECTS_LIMIT: number = 15;
 const VARIABLES_LIMIT: number = 2;
-/** One color per scientific object */
-const COLOR_PALETTE: string[] = [
-  "#ca6434", "#427775", "#f2dc7c", "#0f839c", "#a45354",
-  "#d3b0ae", "#774e42", "#776942", "#5c4277", "#34a0ca",
-  "#9334ca", "#caaf34", "#4F72D6", "#DB78E1", "#97CA68",
-];
 /** One symbol per variable */
 const VARIABLE_SYMBOLS: string[] = ["circle", "rect"];
 
@@ -197,10 +206,6 @@ const loading: Ref<boolean> = ref<boolean>(false);
 const series: Ref<DataVisuSerie[]> = ref<DataVisuSerie[]>([]);
 const yAxisNames: Ref<string[]> = ref<string[]>([]);
 const events: Ref<DataVisuEvent[]> = ref<DataVisuEvent[]>([]);
-/** Images added to the image panel by clicking their pin on the graphic */
-const panelImages: Ref<VisuImage[]> = ref<VisuImage[]>([]);
-/** Image hovered in the panel or on the graphic, highlighted in both */
-const highlightedImageUri: Ref<string | undefined> = ref<string | undefined>(undefined);
 /** Number of events of the selected scientific objects between the selected dates, displayed next to the switch */
 const eventsCount: Ref<number> = ref<number>(0);
 const eventsCountLoading: Ref<boolean> = ref<boolean>(false);
@@ -216,10 +221,6 @@ const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
 //#region Hooks and watcher
 onMounted(() => {
   initDefaultDates();
-});
-
-onBeforeUnmount(() => {
-  clearImagePanel();
 });
 
 watch(
@@ -259,43 +260,6 @@ async function onSearch(): Promise<void> {
     loading.value = false;
   }
 }
-
-/**
- * Adds the image of the clicked pin to the image panel, if it isn't there yet, and scrolls the panel to it.
- */
-async function onGraphicImageClick(point: DataVisuPoint): Promise<void> {
-  const imageUri: string = point.image.uri;
-  try {
-    if (!panelImages.value.some((image: VisuImage) => image.uri === imageUri)) {
-      panelImages.value.push(await loadImage(point.image));
-    }
-    highlightedImageUri.value = imageUri;
-    // The panel (or the card) may have just been created, the scroll waits for its render
-    await nextTick();
-    imagePanel.value?.scrollToImage(imageUri);
-  } catch (error) {
-    opensilex.errorHandler(error);
-  }
-}
-
-/**
- * Displays the red dot of the card. The pins of the graphic are updated by the next search.
- */
-function onImagePanelAnnotationCreated(imageUri: string): void {
-  const image: VisuImage | undefined = panelImages.value.find((i: VisuImage) => i.uri === imageUri);
-  if (image) {
-    image.annotated = true;
-  }
-}
-
-function onImagePanelHide(imageUri: string): void {
-  const image: VisuImage | undefined = panelImages.value.find((i: VisuImage) => i.uri === imageUri);
-  if (image) {
-    URL.revokeObjectURL(image.src);
-    panelImages.value = panelImages.value.filter((i: VisuImage) => i !== image);
-  }
-  highlightedImageUri.value = undefined;
-}
 //#endregion
 
 //#region Methods
@@ -330,15 +294,6 @@ function initDefaultDates(): void {
       .catch(error => opensilex.errorHandler(error));
 }
 
-/**
- * Removes every image of the panel, releasing their thumbnails
- */
-function clearImagePanel(): void {
-  panelImages.value.forEach((image: VisuImage) => URL.revokeObjectURL(image.src));
-  panelImages.value = [];
-  highlightedImageUri.value = undefined;
-}
-
 function resetFilters(): void {
   filter.value = defaultFilter();
   selectedScientificObjectsWithLabels.value = null;
@@ -351,8 +306,9 @@ function getScientificObjectLabel(soUri: string): string {
   return selectedScientificObjectsWithLabels.value?.find((so: NamedScientificObject) => so.uri === soUri)?.name ?? soUri;
 }
 
+/** One color per scientific object */
 function getScientificObjectColor(soIndex: number): string {
-  return COLOR_PALETTE[soIndex % COLOR_PALETTE.length];
+  return GRAPHIC_COLOR_PALETTE[soIndex % GRAPHIC_COLOR_PALETTE.length];
 }
 
 /**

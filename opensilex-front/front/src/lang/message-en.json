@@ -1851,5 +1851,9 @@
     },
     "VisuImagePanel": {
         "annotationsTitle": "Annotations of the image"
+    },
+    "ScientificObjectVisualizationTab": {
+        "variablePlaceholder": "Select a variable",
+        "missingVariable": "Select a variable."
     }
 }

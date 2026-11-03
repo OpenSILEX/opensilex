@@ -59,6 +59,16 @@ export interface EventsRequest {
     color?: string
 }
 
+/**
+ * Colors of the graphics, given in this order to the elements that need their own color (e.g. one per scientific
+ * object in an experiment)
+ */
+export const GRAPHIC_COLOR_PALETTE: string[] = [
+    "#ca6434", "#427775", "#f2dc7c", "#0f839c", "#a45354",
+    "#d3b0ae", "#774e42", "#776942", "#5c4277", "#34a0ca",
+    "#9334ca", "#caaf34", "#4F72D6", "#DB78E1", "#97CA68",
+];
+
 /** Size of the image thumbnails displayed in the image panel, in pixels */
 const THUMBNAIL_WIDTH: number = 640;
 const THUMBNAIL_HEIGHT: number = 320;

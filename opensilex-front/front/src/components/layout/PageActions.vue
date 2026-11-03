@@ -34,7 +34,7 @@
         >
           <Icon
             class="icon-title back-button-icon"
-            icon="bi#bi-arrow-90deg-left"
+            icon="fa#fa-solid fa-list-check"
           />
         </button>
 

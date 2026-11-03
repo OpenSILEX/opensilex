@@ -160,7 +160,7 @@
             </div>
             <div class="uri-badges">
               <img
-                v-for="fundingUri in data.item.funding.slice(0, 3)"
+                v-for="fundingUri in [...data.item.funding].sort().slice(0, 3)"
                 :key="fundingUri"
                 :src="
                   opensilex.getResourceURI('images/' + opensilex.getShortUri(fundingUri), [
@@ -638,8 +638,10 @@ defineExpose({
 }
 
 .funding-badge {
-  width: 24px;
-  height: auto;
+  height: 24px;
+  width: auto;
+  max-width: 52px;
+  object-fit: contain;
   margin-right: 4px;
 }
 

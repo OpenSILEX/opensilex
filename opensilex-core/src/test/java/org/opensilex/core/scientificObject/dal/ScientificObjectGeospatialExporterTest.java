@@ -18,7 +18,6 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.junit.Test;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 
@@ -39,7 +38,8 @@ import static org.junit.Assert.*;
 
 public class ScientificObjectGeospatialExporterTest {
 
-    private static final URI PARTICIPATES_IN = URI.create(SPARQLDeserializers.getShortURI(Oeso.participatesIn.getURI()));
+    /** use the constant because we need short uri and short uri depend on opensilex instance*/
+    private static final URI PARTICIPATES_IN = ScientificObjectGeospatialExporter.PARTICIPATES_IN;
 
     private static final URI OS_URI = URI.create("test:os-1");
     private static final URI XP_URI = URI.create("test:xp-1");

@@ -30,7 +30,7 @@
           ref="provenanceSelector"
           v-model:provenances="form.provenance.uri"
           label="component.data.dataImportForm.provenance"
-          @select="loadProvenanceAndCheckUploadedData"
+          @selectionChange="onProvenanceSelectionChange"
           @clear="reset()"
           :multiple="false"
           :actionHandler="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)
@@ -139,7 +139,7 @@ import Modal from "@/components/common/views/Modal.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import FormField from "@/components/common/forms/FormField.vue";
 import {NSwitch, NUpload, NUploadDragger} from "naive-ui";
-import type {UploadFileInfo} from "naive-ui";
+import type {SelectOption, UploadFileInfo} from "naive-ui";
 import ProvenanceSelector from "@/components/data/ProvenanceSelector.vue";
 import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
 import ProvenanceForm from "@/components/data/form/ProvenanceForm.vue";
@@ -282,6 +282,12 @@ function getProvenance(uri) {
     .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
       return http.response.result;
     });
+}
+
+function onProvenanceSelectionChange(option: SelectOption | SelectOption[] | undefined) {
+  if (option && !Array.isArray(option)) {
+    loadProvenanceAndCheckUploadedData({id: option.value});
+  }
 }
 
 function loadProvenanceAndCheckUploadedData(selectedValue) {

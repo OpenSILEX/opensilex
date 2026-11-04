@@ -31,6 +31,7 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse, ProvenanceGetDTO } from 'opensilex-core/index'
+import FormSelector from '@/components/common/forms/FormSelector.vue'
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()

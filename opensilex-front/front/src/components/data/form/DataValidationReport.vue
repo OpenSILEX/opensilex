@@ -41,9 +41,7 @@
           <tbody>
             <template v-for="(row, index) in validationErrors" :key="index">
               <tr>
-                <th :rowspan="row.listSize">{{
-                  typeof row.index == "number" ? row.index + 4 : row.index
-                }}</th>
+                <th :rowspan="row.listSize">{{ getErrorLine(row.index) }}</th>
                 <td>{{
                   t("component.data.dataValidationReport." + row.firstErrorType.type)
                 }}</td>
@@ -291,6 +289,14 @@ function loadErrorType(errorType, errors, globalErrors) {
   }
 }
 
+/**
+ * Converts the backend row index (0-based on data rows) into the CSV file line number
+ * (3 header rows + 1). General errors keep their label.
+ */
+function getErrorLine(index: number | string): number | string {
+  return typeof index === "number" ? index + 4 : index;
+}
+
 function getErrKey(validationError, errorType) {
   return (
     "validationError-" +
@@ -328,7 +334,7 @@ function csvExportInvalidData() {
     let line = [];
     for (let validationErr in row.firstErrorType.validationErrors) {
       line.push(
-        row.index,
+        getErrorLine(row.index),
         t("component.data.dataValidationReport." + row.firstErrorType.type),
         getValidationErrorDetail(
           row.firstErrorType.validationErrors[validationErr],

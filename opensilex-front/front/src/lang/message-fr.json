@@ -1399,8 +1399,8 @@
                 "raw-data": "Données brutes",
                 "type-list": "Liste de ",
                 "raw-data-example": "Données brutes (ex : 20.3,20.4,20.5)",
-                "select-columns": "Sélectionnez les colonnes optionnelles dont vous avez besoin",
-                "select-variables": "Sélectionnez les variables dont vous avez besoin",
+                "select-columns": "Sélectionner les colonnes optionnelles dont vous avez besoin",
+                "select-variables": "Sélectionner les variables dont vous avez besoin",
                 "target-device-required": "La provenance sélectionnée ne contient pas de device, vous devez donc ajouter la colonne \"target\" ou \"device\"",
                 "example": {
                     "column-data-type": "Type de données colonne : "

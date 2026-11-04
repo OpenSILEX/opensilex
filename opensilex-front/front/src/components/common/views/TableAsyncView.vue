@@ -3,41 +3,41 @@
     <div class="card">
       <!-- Header si table sélectionnable -->
       <div
-        v-if="isSelectable && showHeaderCount && tableRef"
-        class="card-header d-flex justify-content-between align-items-center"
+          v-if="isSelectable && showHeaderCount && tableRef"
+          class="card-header d-flex justify-content-between align-items-center"
       >
         <div>
           <h3 class="d-inline me-2">
             <Icon
-              :icon="iconNumberOfSelectedRow"
-              class="title-icon"
+                :icon="iconNumberOfSelectedRow"
+                class="title-icon"
             />
             {{ t(labelNumberOfSelectedRow) }}
           </h3>
           <span
-            v-if="!maximumSelectedRows && selectMode !== 'single'"
-            class="badge rounded-pill greenThemeColor"
+              v-if="!maximumSelectedRows && selectMode !== 'single'"
+              class="badge rounded-pill greenThemeColor"
           >
             {{ numberOfSelectedRows }}
           </span>
           <span
-            v-else-if="selectMode !== 'single'"
-            class="badge rounded-pill greenThemeColor"
-            :title="t(badgeHelpMessage)"
+              v-else-if="selectMode !== 'single'"
+              class="badge rounded-pill greenThemeColor"
+              :title="t(badgeHelpMessage)"
           >
             {{ numberOfSelectedRows }}/{{ maximumSelectedRows }}
           </span>
           <slot
-            name="selectableTableButtons"
-            :numberOfSelectedRows="numberOfSelectedRows"
+              name="selectableTableButtons"
+              :numberOfSelectedRows="numberOfSelectedRows"
           ></slot>
         </div>
       </div>
 
       <!-- Header si non sélectionnable -->
       <div
-        v-if="!isSelectable && tableRef"
-        class="d-flex justify-content-end"
+          v-if="!isSelectable && tableRef"
+          class="d-flex justify-content-end"
       >
         <!-- <opensilex-NbElementPerPageSelector @change="onNbElementPerPageChange" /> -->
       </div>
@@ -75,26 +75,27 @@
       <!-- Table with Naive UI -->
       <n-config-provider :theme-overrides="nThemeOverrides">
         <n-data-table
-          ref="tableRef"
-          :columns="naiveColumns"
-          :data="tableData"
-          :loading="isSearching"
-          :pagination="pagination"
-          :remote="true"
-          :striped="true"
-          :row-key="(row) => row.uri"
-          @row-click="onRowClickedSafe"
-          :row-props="
+            class="colTab"
+            ref="tableRef"
+            :columns="naiveColumns"
+            :data="tableData"
+            :loading="isSearching"
+            :pagination="pagination"
+            :remote="true"
+            :striped="true"
+            :row-key="(row) => row.uri"
+            @row-click="onRowClickedSafe"
+            :row-props="
             (row) => ({
               style: row.__isDetailsRow ? '' : 'cursor: pointer',
             })
           "
-          :checked-row-keys="checkedRowKeys"
-          @update:checked-row-keys="onCheckedRowKeysChange"
-          @update:page="onPageChange"
-          @update:page-size="onPageSizeChange"
-          :sorter="defaultSorter"
-          @update:sorter="onSortChange"
+            :checked-row-keys="checkedRowKeys"
+            @update:checked-row-keys="onCheckedRowKeysChange"
+            @update:page="onPageChange"
+            @update:page-size="onPageSizeChange"
+            :sorter="defaultSorter"
+            @update:sorter="onSortChange"
         />
       </n-config-provider>
     </div>
@@ -102,17 +103,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref, useSlots } from 'vue';
-import { useRoute } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import type { NamedResourceDTO } from 'opensilex-core/model/namedResourceDTO';
+import {computed, inject, nextTick, onMounted, ref, useSlots} from 'vue';
+import {useRoute} from 'vue-router';
+import {useI18n} from 'vue-i18n';
+import type {NamedResourceDTO} from 'opensilex-core/model/namedResourceDTO';
 import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin';
 import type HttpResponse from '../../../lib/HttpResponse';
-import { OpenSilexResponse } from 'opensilex-core/HttpResponse';
-import { DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider } from 'naive-ui';
+import {OpenSilexResponse} from 'opensilex-core/HttpResponse';
+import {DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider} from 'naive-ui';
 import LoadingOverlay from '@/components/layout/LoadingOverlay.vue';
 import Icon from '@/components/common/views/Icon.vue';
-import { TableField } from '@/components/common/views/TableField';
+import {TableField} from '@/components/common/views/TableField';
 
 export type RowWithData<T> = {
   item: T & {
@@ -150,7 +151,7 @@ const props = withDefaults(defineProps<{
 
 //  Injections
 const route = useRoute();
-const { t, n } = useI18n();
+const {t, n} = useI18n();
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const tableRef = ref(); // lié avec ref="tableRef" dans le template
 
@@ -198,7 +199,7 @@ const routeArr = computed(() => route.path.split('/'));
 
 onMounted(() => {
   if (props.isSelectable && props.selectMode !== 'single') {
-    props.fields.unshift({ key: 'select', isSelect: true });
+    props.fields.unshift({key: 'select', isSelect: true});
   }
 
   // attendre que la table soit générée pour appeler et remplir de données
@@ -222,8 +223,8 @@ function onCheckedRowKeysChange(newKeys: DataTableRowKey[]) {
       selectedUriSet.value.delete(uri);
       selectedCache.value.delete(uri);
       emit(
-        'unselect',
-        dataList.value.find((x: any) => x.uri === uri)
+          'unselect',
+          dataList.value.find((x: any) => x.uri === uri)
       );
     }
   }
@@ -307,6 +308,7 @@ const paginationInfo = computed(() => {
 const start = computed(() => paginationInfo.value.start);
 const end = computed(() => paginationInfo.value.end);
 const total = computed(() => paginationInfo.value.total);
+
 // const hasResults = computed(() => paginationInfo.value.hasResults);
 
 async function refresh() {
@@ -360,8 +362,8 @@ function getOrderBy(): string[] {
   if (sortBy.value) {
     let orderByText = sortBy.value + '=';
     if (
-      props.fieldKeyToSortableModelLabelMap &&
-      props.fieldKeyToSortableModelLabelMap[sortBy.value]
+        props.fieldKeyToSortableModelLabelMap &&
+        props.fieldKeyToSortableModelLabelMap[sortBy.value]
     ) {
       orderByText = props.fieldKeyToSortableModelLabelMap[sortBy.value] + '=';
     }
@@ -412,23 +414,23 @@ function loadData() {
     return Promise.resolve(all.slice(startIdx, endIdx));
   } else {
     return props
-      .searchMethod({
-        orderBy,
-        currentPage: currentPage.value - 1,
-        pageSize: pagination.value.pageSize,
-      })
-      .then((http: HttpResponse<OpenSilexResponse<any[]>>) => {
-        totalRow.value = http.response.metadata.pagination.totalCount;
-        pageSize.value = pagination.value.pageSize;
-        pagination.value.itemCount = totalRow.value;
-        isSearching.value = false;
-        $opensilex.enableLoader();
-        return http.response.result;
-      })
-      .catch((error) => {
-        isSearching.value = false;
-        $opensilex.errorHandler(error);
-      });
+        .searchMethod({
+          orderBy,
+          currentPage: currentPage.value - 1,
+          pageSize: pagination.value.pageSize,
+        })
+        .then((http: HttpResponse<OpenSilexResponse<any[]>>) => {
+          totalRow.value = http.response.metadata.pagination.totalCount;
+          pageSize.value = pagination.value.pageSize;
+          pagination.value.itemCount = totalRow.value;
+          isSearching.value = false;
+          $opensilex.enableLoader();
+          return http.response.result;
+        })
+        .catch((error) => {
+          isSearching.value = false;
+          $opensilex.errorHandler(error);
+        });
   }
 }
 
@@ -449,15 +451,17 @@ function getPaginationInfo() {
   const start = total === 0 ? 0 : (page - 1) * size + 1;
   const end = Math.min(page * size, total);
 
-  return { start, end, total, hasResults: total > 0 };
+  return {start, end, total, hasResults: total > 0};
 }
 
 function getCurrentPage() {
   return pagination.value.page;
 }
+
 function getPageSize() {
   return pagination.value.pageSize;
 }
+
 function getTotalRow() {
   return totalRow.value;
 }
@@ -528,7 +532,7 @@ const naiveColumns = computed(() => {
     key: field.key,
     resizable: field.resizable ?? true,
     sorter: field.sortable
-      ? (a, b) => {
+        ? (a, b) => {
           if (a.__isDetailsRow || b.__isDetailsRow) return 0;
 
           const valA = a[field.key];
@@ -540,7 +544,7 @@ const naiveColumns = computed(() => {
 
           return (valA ?? 0) - (valB ?? 0);
         }
-      : undefined,
+        : undefined,
     render: (row: any, index: number) => {
       if (row.__isDetailsRow) {
         if (colIndex !== 0) {
@@ -548,23 +552,23 @@ const naiveColumns = computed(() => {
         }
 
         return slots['row-details']
-          ? slots['row-details']!({
+            ? slots['row-details']!({
               data: {
                 item: row.__parent,
                 index,
               },
             })
-          : null;
+            : null;
       }
 
       return slots[`cell(${field.key})`]
-        ? slots[`cell(${field.key})`]!({
+          ? slots[`cell(${field.key})`]!({
             data: {
               item: row,
               index,
             },
           })
-        : row[field.key];
+          : row[field.key];
     },
     colSpan: (row: any) => {
       if (row.__isDetailsRow) {
@@ -575,7 +579,7 @@ const naiveColumns = computed(() => {
   }));
 
   if (props.isSelectable) {
-    return [{ type: 'selection' }, ...dynamicCols];
+    return [{type: 'selection'}, ...dynamicCols];
   }
 
   return dynamicCols;
@@ -638,15 +642,19 @@ defineExpose({
 .title-icon {
   position: relative;
 }
+
+.colTab :deep(table) {
+  word-break: revert;
+}
 </style>
 
 <i18n>
 
 en:
-    TableAsyncView:
-        selected: Selected Elements
+  TableAsyncView:
+    selected: Selected Elements
 fr:
-    TableAsyncView:
-        selected: Élements Sélectionnés
+  TableAsyncView:
+    selected: Élements Sélectionnés
 
 </i18n>

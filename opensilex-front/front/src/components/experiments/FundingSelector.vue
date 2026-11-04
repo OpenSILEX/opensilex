@@ -3,6 +3,7 @@
     v-model:selected="fundinguri"
     :options="options"
     :multiple="multiple"
+    filterable
     :label="label"
     :placeholder="t('component.experiment.funding-placeholder')"
     @clear="$emit('clear')"

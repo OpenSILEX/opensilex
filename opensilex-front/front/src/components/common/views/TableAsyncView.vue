@@ -630,7 +630,8 @@ defineExpose({
   resetSelection,
   setPage,
   checkSelectedItems,
-  setOnlySelected
+  setOnlySelected,
+  onlySelected
 });
 </script>
 

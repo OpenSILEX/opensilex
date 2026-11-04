@@ -305,7 +305,7 @@ const credentials = computed(() => {
 })
 
 const onlySelected = computed(() => {
-      return store.value.onlySelected;
+      return tableRef.value.onlySelected;
     }
 )
 

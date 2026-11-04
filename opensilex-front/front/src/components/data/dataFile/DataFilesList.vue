@@ -8,7 +8,7 @@
         @select="onDisplayDropdownSelect"
       >
         <n-button size="small" class="greenThemeColor">
-          {{ t('component.datafile.list.display') }}
+          {{ t('component.common.display') }}
         </n-button>
       </n-dropdown>
 

@@ -117,36 +117,27 @@
         iconNumberOfSelectedRow="ik#ik-layers"
       >
         <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-          <b-dropdown
-            dropright
-            class="mb-2 mr-2"
-            :small="true"
-            :text="$t('component.document.display')"
+          <n-dropdown
+            trigger="click"
+            placement="bottom-start"
+            :options="displayDropdownOptions"
+            @select="onDisplayDropdownSelect"
           >
-            <b-dropdown-item-button @click="clickOnlySelected()">{{
-              onlySelected
-                ? $t('component.experiment.all')
-                : $t('component.common.selected-only')
-            }}</b-dropdown-item-button>
-            <b-dropdown-item-button @click="resetSelected()">{{
-              $t('component.common.resetSelected')
-            }}</b-dropdown-item-button>
-          </b-dropdown>
+            <n-button size="small" class="mb-2 mr-2">{{ t('component.common.display') }}</n-button>
+          </n-dropdown>
 
-          <b-dropdown
-            dropright
-            class="mb-2 mr-2"
-            :small="true"
-            :disabled="numberOfSelectedRows == 0"
-            text="actions"
+          <n-dropdown
             v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+            trigger="click"
+            placement="bottom-start"
+            :options="actionsDropdownOptions"
+            :disabled="numberOfSelectedRows == 0"
+            @select="onActionsDropdownSelect"
           >
-            <b-dropdown-item-button
-              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-              @click="createDocument()"
-              >{{ $t('component.common.addDocument') }}</b-dropdown-item-button
-            >
-          </b-dropdown>
+            <n-button size="small" class="mb-2 mr-2" :disabled="numberOfSelectedRows == 0">
+              {{ t('component.common.actions') }}
+            </n-button>
+          </n-dropdown>
         </template>
         <template v-slot:cell(name)="{ data }">
           <div class="uri-alt-container">
@@ -277,7 +268,7 @@ import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
-import {NButtonGroup, NCollapse, NCollapseItem, NFormItem, NLayout, NLayoutContent} from "naive-ui";
+import {NButton, NButtonGroup, NCollapse, NCollapseItem, NDropdown, NFormItem, NLayout, NLayoutContent, type DropdownOption} from "naive-ui";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 //#region Public
@@ -301,7 +292,6 @@ const store = useStore();
 const route = useRoute();
 
 const user = computed<User>(() => store.state.user);
-const onlySelected = computed(() => store.state.onlySelected);
 const credentials = computed(() => store.state.credentials);
 
 const facilities = ref([]);
@@ -363,7 +353,38 @@ const experimentStates = computed(() => [
   },
 ]);
 
+type DisplayAction = 'onlySelected' | 'resetSelected';
+type ExperimentAction = 'addDocument';
+
+const displayDropdownOptions = computed<DropdownOption[]>(() => [
+  {
+    key: 'onlySelected' satisfies DisplayAction,
+    label: tableRef.value?.onlySelected
+      ? t('component.experiment.all')
+      : t('component.common.selected-only'),
+  },
+  { key: 'resetSelected' satisfies DisplayAction, label: t('component.common.resetSelected') },
+]);
+
+const actionsDropdownOptions = computed<DropdownOption[]>(() => [
+  { key: 'addDocument' satisfies ExperimentAction, label: t('component.common.addDocument') },
+]);
+
 //#region Event handlers
+function onDisplayDropdownSelect(key: DisplayAction) {
+  if (key === 'onlySelected') {
+    clickOnlySelected();
+  } else {
+    resetSelected();
+  }
+}
+
+function onActionsDropdownSelect(key: ExperimentAction) {
+  if (key === 'addDocument') {
+    createDocument();
+  }
+}
+
 function reset() {
   filter.value = {
     name: '',

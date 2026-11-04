@@ -28,6 +28,10 @@
         ></UriLink>
       </template>
 
+      <template v-slot:cell(value)="{ data }">
+        {{ data.item.value?.toString() }}
+      </template>
+
       <template v-slot:cell(provenance)="{ data }">
         <UriLink
             :uri="data.item.provenance.uri"

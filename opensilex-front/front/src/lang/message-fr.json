@@ -1267,8 +1267,8 @@
                 "choosen-provenance": "Provenance choisie",
                 "selected-file": "Fichier sélectionné",
                 "no-selected-file": "Aucun fichier sélectionné",
-                "csv-file-placeholder": "Déposez le CSV de données ici ou sélectionner un fichier..",
-                "csv-file-drop-placeholder": "Déposez le CSV de données ici ...",
+                "csv-file-placeholder": "Déposer le CSV de données ici ou sélectionner un fichier..",
+                "csv-file-drop-placeholder": "Déposer le CSV de données ici ...",
                 "data-duplicated": "Données dupliquées",
                 "data-not-imported": "Données non importées. Une erreur s'est produite durant le processus d'importation",
                 "error": "Error",
@@ -1301,7 +1301,7 @@
                 "columns": "Colonnes du fichier CSV",
                 "file-rules": "Règles d'édition du CSV",
                 "objectId-help": "Nom ou l'URI de l'objet scientifique",
-                "targetId-help": "Nom ou l'URI du target (ex: object scientifique)",
+                "targetId-help": "Nom ou l'URI du target (ex: objet scientifique)",
                 "experiment-help": "Nom ou l'URI de l'expérimentation",
                 "device-help": "Nom ou l'URI du device",
                 "variable-help": "Nom de la variable 1",
@@ -1329,7 +1329,7 @@
                 }
             },
             "dataTemplate": {
-                "annotationHelp": "Annotation (Sur l'object cible)"
+                "annotationHelp": "Annotation (Sur l'objet cible)"
             },
             "dataValidationReport": {
                 "errorLine": "Ligne",
@@ -1555,9 +1555,9 @@
                     "objectProperty": "Relation vers un objet",
                     "inheritedType": "Type hérité du parent",
                     "data-type": "Type de donnée",
-                    "dataProperty-help": "Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, object scientifique, évenement) ",
+                    "dataProperty-help": "Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, objet scientifique, évenement) ",
                     "object-type": "Classe d'objet",
-                    "objectProperty-help": "Propriété liant une ressource(ex: équipement, object scientifique, évenement) à une autre ressource",
+                    "objectProperty-help": "Propriété liant une ressource(ex: équipement, objet scientifique, évenement) à une autre ressource",
                     "range": "Portée",
                     "parent-help": "Parent",
                     "label": {

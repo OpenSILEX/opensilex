@@ -214,6 +214,7 @@ onMounted(() => {
 watch(selectDefaultProvenance, (value) => {
   if (value) {
     hasDeviceAgent.value = false;
+    visibleDetails.value = false;
   }
 });
 

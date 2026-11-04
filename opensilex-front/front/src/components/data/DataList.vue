@@ -159,7 +159,8 @@ function getVariableName(variableUri: string): string {
 
 function refresh() {
   opensilex.updateURLParameters(filter.value);
-  tableRef.value.changeCurrentPage(1);
+  tableRef.value.setPage(1);
+  tableRef.value.refresh();
 }
 
 async function showDataDetailsModal(item: DataGetSearchDTO) {

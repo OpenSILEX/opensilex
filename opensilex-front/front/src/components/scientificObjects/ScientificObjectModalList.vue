@@ -142,6 +142,9 @@
             :pageSize="10"
             :searchFilter="filter"
             :noUpdateURL="true"
+            :maximumSelectedRows="maximumSelectedRows"
+            :variables="variables"
+            :devices="devices"
             @select="onSelect"
             @unselect="onUnselect"
             @selectall="onSelectAll"
@@ -210,6 +213,11 @@ type SelectableItem = {
 const props = defineProps<{
   searchFilter?: ScientificObjectFilter
   selected?: any[]
+  /** Maximum number of scientific objects that can be selected, no limit if undefined */
+  maximumSelectedRows?: number
+  /** Only list the scientific objects having data on these variables / measured by these devices */
+  variables?: string[]
+  devices?: string[]
 }>()
 
 const emit = defineEmits<{

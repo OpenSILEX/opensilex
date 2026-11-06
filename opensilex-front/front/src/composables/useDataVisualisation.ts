@@ -8,6 +8,8 @@ import {
     DataService,
     EventGetDTO,
     EventsService,
+    NamedResourceDTO,
+    OntologyService,
     ProvEntityModel,
     VariableDetailsDTO,
     VariablesService
@@ -47,6 +49,19 @@ export interface DataSeriesRequest {
 }
 
 /**
+ * Points of a series having the same target, see splitSeriesByTarget()
+ */
+export interface TargetSerie {
+    /** Index, in the split series, of the series these points come from */
+    sourceIndex: number
+    /** URI of the target of the points, undefined for the data without target */
+    target?: string
+    /** Name of the target, its URI if its name isn't known */
+    targetName?: string
+    points: DataVisuPoint[]
+}
+
+/**
  * Describes the events to load for one target, and how to display them.
  */
 export interface EventsRequest {
@@ -68,6 +83,47 @@ export const GRAPHIC_COLOR_PALETTE: string[] = [
     "#d3b0ae", "#774e42", "#776942", "#5c4277", "#34a0ca",
     "#9334ca", "#caaf34", "#4F72D6", "#DB78E1", "#97CA68",
 ];
+
+/**
+ * @returns the color of the palette at this index, starting again from the first color after the last one
+ */
+export function getGraphicColor(index: number): string {
+    return GRAPHIC_COLOR_PALETTE[index % GRAPHIC_COLOR_PALETTE.length];
+}
+
+/**
+ * Symbols of the graphics, given in this order to the elements that need their own symbol (e.g. one per variable in
+ * an experiment). The "pin" symbol isn't in the list, as it is used by the event and image pins.
+ */
+export const GRAPHIC_SYMBOLS: string[] = ["circle", "rect", "triangle", "diamond", "roundRect", "arrow"];
+
+/**
+ * @returns the symbol at this index, starting again from the first symbol after the last one
+ */
+export function getGraphicSymbol(index: number): string {
+    return GRAPHIC_SYMBOLS[index % GRAPHIC_SYMBOLS.length];
+}
+
+/**
+ * @returns the default start date of the graphics filters: 15 days ago, at midnight, as an ISO string
+ */
+export function getLastFifteenDaysStartDate(): string {
+    const lastFifteenDays: Date = new Date();
+    lastFifteenDays.setDate(lastFifteenDays.getDate() - 15);
+    lastFifteenDays.setHours(0, 0, 0, 0);
+    return lastFifteenDays.toISOString();
+}
+
+/**
+ * @returns the events with one color per event type, e.g. when all the events are about the same element
+ */
+export function colorEventsByType(events: DataVisuEvent[]): DataVisuEvent[] {
+    const eventTypes: string[] = [...new Set(events.map((event: DataVisuEvent) => event.event.rdf_type))];
+    return events.map((event: DataVisuEvent): DataVisuEvent => ({
+        ...event,
+        color: getGraphicColor(eventTypes.indexOf(event.event.rdf_type))
+    }));
+}
 
 /** Size of the image thumbnails displayed in the image panel, in pixels */
 const THUMBNAIL_WIDTH: number = 640;
@@ -93,6 +149,7 @@ export default function useDataVisualisation() {
     const variablesService: VariablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
     const eventsService: EventsService = opensilex.getService<EventsService>("opensilex.EventsService");
     const annotationsService: AnnotationsService = opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
+    const ontologyService: OntologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");
     //#endregion
 
     //#region Methods
@@ -290,11 +347,53 @@ export default function useDataVisualisation() {
     }
     //#endregion
 
+    /**
+     * Splits each series by the target of its points (e.g. the scientific object the data was measured on), when a
+     * series mixes the data of several targets (e.g. all the data of a device). The names of the targets are loaded in
+     * a single request. The points of each target stay sorted by date.
+     *
+     * @returns the points of each (series, target) pair, in the order of the series then of the first point of each
+     * target. The views give them their names and styles.
+     */
+    async function splitSeriesByTarget(series: DataVisuSerie[]): Promise<TargetSerie[]> {
+        const targets: string[] = [...new Set(series
+            .flatMap((serie: DataVisuSerie) => serie.points)
+            .map((point: DataVisuPoint) => point.data?.target)
+            .filter((target: string | undefined) => target))];
+        const targetNames: Map<string, string> = await getTargetNames(targets);
+
+        return series.flatMap((serie: DataVisuSerie, sourceIndex: number) => {
+            const pointsByTarget: Map<string | undefined, DataVisuPoint[]> = new Map<string | undefined, DataVisuPoint[]>();
+            for (const point of serie.points) {
+                const target: string | undefined = point.data?.target || undefined;
+                pointsByTarget.set(target, [...(pointsByTarget.get(target) ?? []), point]);
+            }
+            return Array.from(pointsByTarget, ([target, points]: [string | undefined, DataVisuPoint[]]): TargetSerie => ({
+                sourceIndex,
+                target,
+                targetName: target ? targetNames.get(target) ?? target : undefined,
+                points
+            }));
+        });
+    }
+
+    /**
+     * @returns the name of each target by URI, whatever its type (scientific object, facility...)
+     */
+    async function getTargetNames(targets: string[]): Promise<Map<string, string>> {
+        if (targets.length === 0) {
+            return new Map<string, string>();
+        }
+        const resources: NamedResourceDTO[] = (await ontologyService.getURILabelsList(targets)).response.result;
+        return new Map(resources.map((resource: NamedResourceDTO) => [resource.uri, resource.name]));
+    }
+
     return {
         getNumericVariables,
         loadDataSeries,
         loadEvents,
         countEvents,
-        loadImage
+        loadImage,
+        splitSeriesByTarget
     };
 }

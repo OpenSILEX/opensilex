@@ -137,7 +137,9 @@ import {ScientificObjectFilter} from "@/components/scientificObjects/ScientificO
 import useDataVisualisation, {
   DataSeriesRequest,
   EventsRequest,
-  GRAPHIC_COLOR_PALETTE
+  getGraphicColor,
+  getGraphicSymbol,
+  getLastFifteenDaysStartDate
 } from "@/composables/useDataVisualisation";
 import useVisuImagePanel from "@/composables/useVisuImagePanel";
 
@@ -191,8 +193,6 @@ const {
 
 const SCIENTIFIC_OBJECTS_LIMIT: number = 15;
 const VARIABLES_LIMIT: number = 2;
-/** One symbol per variable */
-const VARIABLE_SYMBOLS: string[] = ["circle", "rect"];
 
 const uri: string = decodeURIComponent(route.params.uri as string);
 
@@ -285,10 +285,7 @@ function initDefaultDates(): void {
           filter.value.start_date = experiment.start_date;
           filter.value.end_date = experiment.end_date;
         } else {
-          const lastFifteenDays: Date = new Date();
-          lastFifteenDays.setDate(lastFifteenDays.getDate() - 15);
-          lastFifteenDays.setHours(0, 0, 0, 0);
-          filter.value.start_date = lastFifteenDays.toISOString();
+          filter.value.start_date = getLastFifteenDaysStartDate();
         }
       })
       .catch(error => opensilex.errorHandler(error));
@@ -308,7 +305,7 @@ function getScientificObjectLabel(soUri: string): string {
 
 /** One color per scientific object */
 function getScientificObjectColor(soIndex: number): string {
-  return GRAPHIC_COLOR_PALETTE[soIndex % GRAPHIC_COLOR_PALETTE.length];
+  return getGraphicColor(soIndex);
 }
 
 /**
@@ -333,7 +330,7 @@ function buildSeriesRequests(scientificObjects: string[], variables: VariableDet
             provenances: f.provenance ? [f.provenance] : undefined
           },
           color: getScientificObjectColor(soIndex),
-          symbol: VARIABLE_SYMBOLS[variableIndex],
+          symbol: getGraphicSymbol(variableIndex),
           yAxisIndex: variableIndex
         };
       })

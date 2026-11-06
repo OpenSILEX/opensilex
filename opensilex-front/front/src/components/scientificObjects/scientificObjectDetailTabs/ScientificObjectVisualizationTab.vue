@@ -12,7 +12,7 @@
           <n-form-item class="compact-form-item">
             <VariableSelectorWithFilter
                 :label="t('experimentData.variable')"
-                placeholder="ScientificObjectVisualizationTab.variablePlaceholder"
+                placeholder="DataVisualisation.variablePlaceholder"
                 v-model:variables="filter.variables"
                 :objects="[scientificObject.uri]"
                 :withAssociatedData="true"
@@ -113,7 +113,12 @@ import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
 import DataVisuGraphic, {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuGraphic.vue";
 import VisuImagePanel from "@/components/visualization/VisuImagePanel.vue";
-import useDataVisualisation, {DataSeriesRequest, GRAPHIC_COLOR_PALETTE} from "@/composables/useDataVisualisation";
+import useDataVisualisation, {
+  colorEventsByType,
+  DataSeriesRequest,
+  getGraphicColor,
+  getLastFifteenDaysStartDate
+} from "@/composables/useDataVisualisation";
 import useVisuImagePanel from "@/composables/useVisuImagePanel";
 
 interface VisualisationFilter {
@@ -192,7 +197,7 @@ watch(() => [filter.value.start_date, filter.value.end_date], refreshEventsCount
 //#region Event handlers
 async function onSearch(): Promise<void> {
   if (filter.value.variables.length === 0) {
-    opensilex.showWarningToast(t("ScientificObjectVisualizationTab.missingVariable"));
+    opensilex.showWarningToast(t("DataVisualisation.missingVariable"));
     return;
   }
 
@@ -227,12 +232,9 @@ async function onSearch(): Promise<void> {
  * Only the data of the last 15 days by default
  */
 function defaultFilter(): VisualisationFilter {
-  const lastFifteenDays: Date = new Date();
-  lastFifteenDays.setDate(lastFifteenDays.getDate() - 15);
-  lastFifteenDays.setHours(0, 0, 0, 0);
   return {
     variables: [],
-    start_date: lastFifteenDays.toISOString(),
+    start_date: getLastFifteenDaysStartDate(),
     end_date: undefined,
     provenance: undefined,
     showEvents: false
@@ -257,7 +259,7 @@ function buildSeriesRequest(variable: VariableDetailsDTO): DataSeriesRequest {
       variables: [variable.uri],
       provenances: f.provenance ? [f.provenance] : undefined
     },
-    color: GRAPHIC_COLOR_PALETTE[0]
+    color: getGraphicColor(0)
   };
 }
 
@@ -266,18 +268,12 @@ function buildSeriesRequest(variable: VariableDetailsDTO): DataSeriesRequest {
  */
 async function loadObjectEvents(): Promise<DataVisuEvent[]> {
   const f: VisualisationFilter = filter.value;
-  const loadedEvents: DataVisuEvent[] = await loadEvents([{
+  return colorEventsByType(await loadEvents([{
     target: props.scientificObject.uri,
     start_date: f.start_date,
     end_date: f.end_date,
     seriesName: t("DataVisualisation.events")
-  }]);
-
-  const eventTypes: string[] = [...new Set(loadedEvents.map((event: DataVisuEvent) => event.event.rdf_type))];
-  return loadedEvents.map((event: DataVisuEvent): DataVisuEvent => ({
-    ...event,
-    color: GRAPHIC_COLOR_PALETTE[eventTypes.indexOf(event.event.rdf_type) % GRAPHIC_COLOR_PALETTE.length]
-  }));
+  }]));
 }
 
 async function refreshEventsCount(): Promise<void> {

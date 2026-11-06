@@ -1897,7 +1897,9 @@
         "datatypeMessage": "Le type de donnée de la variable {variable} est {datatype}. Pour le moment, seuls les types decimal ou entier sont acceptés.",
         "dataLimit": "Il y a {total} données pour {serie}. Seules les {limit} premières données sont affichées.",
         "showEvents": "Voir les événements",
-        "events": "Événements"
+        "events": "Événements",
+        "variablePlaceholder": "Sélectionner une variable",
+        "missingVariable": "Sélectionnez une variable."
     },
     "VisuImageCard": {
         "menu": "Options de l'image",
@@ -1910,8 +1912,7 @@
     "VisuImagePanel": {
         "annotationsTitle": "Annotations de l'image"
     },
-    "ScientificObjectVisualizationTab": {
-        "variablePlaceholder": "Sélectionner une variable",
-        "missingVariable": "Sélectionnez une variable."
+    "VariableVisualizationTab": {
+        "missingDevices": "Sélectionnez au moins un appareil."
     }
 }

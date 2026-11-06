@@ -34,6 +34,8 @@ const props = withDefaults(defineProps<{
   multiple?: boolean
   required?: boolean
   label?: string
+  /** URI of a variable, to only list the devices that measured it */
+  variable?: string
 }>(), {
   multiple: false,
   required: false,
@@ -83,7 +85,7 @@ async function search(query: string, pageArg: number, pageSizeArg: number) {
       props.type,      // rdf_type
       true,            // include_subtypes
       query,           // name
-      undefined,       // variable
+      props.variable,  // variable
       undefined,       // year
       undefined,       // existence_date
       undefined,       // facility
@@ -91,6 +93,7 @@ async function search(query: string, pageArg: number, pageSizeArg: number) {
       undefined,       // model
       undefined,       // serial_number
       undefined,       // metadata
+      undefined,       // relations
       ['name=asc'],
       pageArg,
       pageSizeArg

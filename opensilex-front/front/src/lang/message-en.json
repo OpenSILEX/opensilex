@@ -1839,7 +1839,9 @@
         "datatypeMessage": "The datatype of the variable {variable} is {datatype}. At this time only decimal or integer are accepted.",
         "dataLimit": "There are {total} data for {serie}. Only the {limit} first data are displayed.",
         "showEvents": "Show events",
-        "events": "Events"
+        "events": "Events",
+        "variablePlaceholder": "Select a variable",
+        "missingVariable": "Select a variable."
     },
     "VisuImageCard": {
         "menu": "Image options",
@@ -1852,8 +1854,7 @@
     "VisuImagePanel": {
         "annotationsTitle": "Annotations of the image"
     },
-    "ScientificObjectVisualizationTab": {
-        "variablePlaceholder": "Select a variable",
-        "missingVariable": "Select a variable."
+    "VariableVisualizationTab": {
+        "missingDevices": "Select at least one device."
     }
 }

@@ -225,6 +225,7 @@
 import {computed, h, inject, nextTick, onMounted, PropType, reactive, ref, resolveComponent, useTemplateRef, watch} from 'vue'
 import {useI18n} from 'vue-i18n'
 import {
+  DataTableColumns,
   DataTableRowKey,
   NButton,
   NCollapse,
@@ -562,7 +563,7 @@ const emit = defineEmits<{
   (e: 'selectall', items: Array<{ uri: string; name?: string }>): void
 }>()
 
-function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariable: Function) {
+function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariable: Function): DataTableColumns<{ item: VariableGetDTO }> {
   return [
     { type: 'selection' },
     {
@@ -585,7 +586,6 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
     {
       title: t('component.common.name'),
       key: 'item.name',
-      sortable: true,
       resizable: true,
       sorter: (a, b) => a.item.name.localeCompare(b.item.name),
       render(row: any) {
@@ -610,7 +610,6 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
     {
       title: t('component.variable.entity.entity'),
       key: 'item.entity.name',
-      sortable: true,
       resizable: true,
       sorter: (a, b) => (a.item.entity?.name || '').localeCompare(b.item.entity?.name || ''),
       render: row => row.item.entity?.name
@@ -618,7 +617,6 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
     {
       title: t('component.variable.characteristic.characteristic'),
       key: 'item.characteristic.name',
-      sortable: true,
       resizable: true,
       sorter: (a, b) => (a.item.characteristic?.name || '').localeCompare(b.item.characteristic?.name || ''),
       render: row => row.item.characteristic?.name
@@ -626,7 +624,6 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
     {
       title: t('component.variable.method.method'),
       key: 'item.method.name',
-      sortable: true,
       resizable: true,
       sorter: (a, b) => (a.item.method?.name || '').localeCompare(b.item.method?.name || ''),
       render: row => row.item.method?.name
@@ -634,7 +631,6 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
     {
       title: t('component.variable.unit.unit'),
       key: 'item.unit.name',
-      sortable: true,
       resizable: true,
       sorter: (a, b) => (a.item.unit?.name || '').localeCompare(b.item.unit?.name || ''),
       render: row => row.item.unit?.name
@@ -679,7 +675,7 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
 const columns = computed(() => {
   const cols = createColumns(t, emit, toggleExpand)
   return props.noActions
-    ? cols.filter(col => col.type !== 'expand' && col.key !== 'actions')
+    ? cols.filter(col => col.type !== 'expand' && !('key' in col && col.key === 'actions'))
     : cols
 })
 
@@ -801,9 +797,12 @@ function showGroupVariablesCreateForm() {
     }
 
     const labelMap = new Map(variables.value.map(variable => [variable.item.uri, variable.item.name]))
-    const selected = selectedUris.map(uri => ({ uri, name: labelMap.get(uri) || uri }))
+    const selected = selectedUris.map(uri => ({ id: uri, label: labelMap.get(uri) || uri }))
 
     groupVariablesForm.value?.showCreateForm({
+      uri: null,
+      name: null,
+      description: null,
       variables: selectedUris,
       __variablesWithLabels: selected
     })
@@ -1047,9 +1046,9 @@ const filter = reactive({
   notIncludedGroup: undefined as string | undefined,
   dataType: undefined as string | undefined,
   timeInterval: undefined as string | undefined,
-  experiment: undefined as string | undefined,
-  objects: undefined as string | undefined,
-  devices: undefined as string | undefined,
+  experiment: undefined as string[] | undefined,
+  objects: undefined as string[] | undefined,
+  devices: undefined as string[] | undefined,
   species: [] as string[]
 })
 

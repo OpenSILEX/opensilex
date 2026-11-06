@@ -222,7 +222,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, h, inject, nextTick, onMounted, reactive, ref, resolveComponent, useTemplateRef, watch} from 'vue'
+import {computed, h, inject, nextTick, onMounted, PropType, reactive, ref, resolveComponent, useTemplateRef, watch} from 'vue'
 import {useI18n} from 'vue-i18n'
 import {
   DataTableRowKey,
@@ -295,7 +295,16 @@ const props = defineProps({
   // Hide the search filters sidebar at first render (e.g. when used in a selection modal)
   filtersInitiallyCollapsed: { type: Boolean, default: false },
 
-  noActions: { type: Boolean, default: false }
+  noActions: { type: Boolean, default: false },
+
+  /** Maximum number of variables that can be selected, no limit if undefined */
+  maximumSelectedRows: { type: Number, default: undefined },
+  /** true to only list the variables having data (on the experiment, objects or devices below, if given) */
+  withAssociatedData: { type: Boolean, default: false },
+  /** Experiments, scientific objects and devices the variables are linked to. Replace the matching filters of the list */
+  experiment: { type: Array as PropType<string[]>, default: undefined },
+  objects: { type: Array as PropType<string[]>, default: undefined },
+  devices: { type: Array as PropType<string[]>, default: undefined }
 })
 
 const filtersCollapsed = ref(props.filtersInitiallyCollapsed) // true = replié, false = visible
@@ -355,10 +364,10 @@ const response = await $service.value.searchVariables(
   filter.dataType,          // data_type
   filter.timeInterval,      // time_interval
   filter.species,           // species
-  undefined,                // withAssociatedData
-  filter.experiment,        // experiments
-  filter.objects,           // scientific_objects
-  filter.devices,           // devices
+  props.withAssociatedData, // withAssociatedData
+  props.experiment?.length ? props.experiment : filter.experiment, // experiments
+  props.objects?.length ? props.objects : filter.objects,          // scientific_objects
+  props.devices?.length ? props.devices : filter.devices,          // devices
   orderBy,                  // order_by
   pageIndex,                // page (0-based)
   pageSize,                 // page_size
@@ -394,19 +403,7 @@ function isGloballySelected(key: DataTableRowKey): boolean {
 
 watch(checkedRowKeys, (now) => {
   const nowSet = new Set(now)
-  // Ajouts sur cette page
-  for (const key of nowSet) {
-    if (!prevPageChecked.has(key)) {
-       emit('select', { uri: String(key), name: variables.value.find(row => row.item.uri === key)?.item.name })
-
-      if (allSelected.value) {
-        unselectedSet.value.delete(key)
-      } else {
-        selectedSet.value.add(key)
-      }
-    }
-  }
-  // Retraits sur cette page
+  // Retraits sur cette page (avant les ajouts, pour libérer de la place si maximumSelectedRows est atteint)
   for (const key of prevPageChecked) {
     if (!nowSet.has(key)) {
        emit('unselect', { uri: String(key), name: variables.value.find(row => row.item.uri === key)?.item.name })
@@ -417,8 +414,36 @@ watch(checkedRowKeys, (now) => {
       }
     }
   }
+  // Ajouts sur cette page
+  /** Rows checked while maximumSelectedRows was already reached, they are unchecked */
+  const refusedKeys: DataTableRowKey[] = []
+  for (const key of nowSet) {
+    if (!prevPageChecked.has(key)) {
+      if (isSelectionLimitReached()) {
+        refusedKeys.push(key)
+        continue
+      }
+       emit('select', { uri: String(key), name: variables.value.find(row => row.item.uri === key)?.item.name })
+
+      if (allSelected.value) {
+        unselectedSet.value.delete(key)
+      } else {
+        selectedSet.value.add(key)
+      }
+    }
+  }
+  refusedKeys.forEach(key => nowSet.delete(key))
   prevPageChecked = nowSet
+  if (refusedKeys.length > 0) {
+    // Triggers this watcher again, without any change compared to prevPageChecked
+    checkedRowKeys.value = now.filter(key => !refusedKeys.includes(key))
+  }
 })
+
+/** true if maximumSelectedRows variables are already selected */
+function isSelectionLimitReached(): boolean {
+  return !!props.maximumSelectedRows && !allSelected.value && selectedSet.value.size >= props.maximumSelectedRows
+}
 
 /** Select All = sélection globale virtuelle */
 async function handleSelectAllClick() {
@@ -697,8 +722,11 @@ const selectionOptions = computed(() => [
   { label: onlySelected.value ? t('VariableList.selected-all') : t('component.common.selected-only') + t(' (' + selectedCount.value + ')'), key: 'toggleOnlySelected' },
   { type: 'divider' },
   { label: t('component.common.resetSelected'), key: 'resetSelection' },
-  { type: 'divider' },
-  { label: t('component.common.select-all') + t(' (' + total.value + ')'), key: 'selectAll' }
+  // "Select all" would ignore maximumSelectedRows
+  ...(props.maximumSelectedRows ? [] : [
+    { type: 'divider' },
+    { label: t('component.common.select-all') + t(' (' + total.value + ')'), key: 'selectAll' }
+  ])
 ])
 
 function handleSelectionAction(key: string) {

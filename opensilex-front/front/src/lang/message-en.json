@@ -1856,5 +1856,14 @@
     },
     "VariableVisualizationTab": {
         "missingDevices": "Select at least one device."
+    },
+    "Histogram": {
+        "graphicInformations": "Add information concerning your data, location for example",
+        "period": {
+            "day": "Last 24 hours",
+            "week": "Last week",
+            "month": "Last month",
+            "year": "Last year"
+        }
     }
 }

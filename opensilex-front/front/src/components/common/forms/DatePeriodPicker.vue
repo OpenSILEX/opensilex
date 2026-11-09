@@ -51,7 +51,7 @@
       </label>
 
       <!-- 6 month -->
-      <label class="btn periodBtn btn-toggle greenThemeColor"
+      <label v-if="doInclude6MonthOption" class="btn periodBtn btn-toggle greenThemeColor"
              :class="{
             active: selectedPeriodComputed == '6month'
           }"
@@ -64,6 +64,22 @@
           v-model="selectedPeriodComputed"
         >
         {{t('component.common.date-time.period-descriptions.6month')}}
+      </label>
+
+      <!-- year -->
+      <label v-if="doIncludeYearOption" class="btn periodBtn btn-toggle greenThemeColor"
+             :class="{
+            active: selectedPeriodComputed == 'year'
+          }"
+      >
+        <input
+          type="radio"
+          name="options"
+          id="option5"
+          value="year"
+          v-model="selectedPeriodComputed"
+        >
+        {{t('component.common.date-time.year')}}
       </label>
     </div>
   </div>
@@ -87,9 +103,16 @@ const { t } = useI18n()
 
 interface Props{
   selectedPeriod: Period
+  /** true to display the "6 months" option */
+  doInclude6MonthOption?: boolean
+  /** true to display the "year" option */
+  doIncludeYearOption?: boolean
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  doInclude6MonthOption: true,
+  doIncludeYearOption: false
+});
 
 //#endregion
 

@@ -1,179 +1,132 @@
 <template>
-  <div class="modal fade" ref="modal" tabindex="-1">
-    <div class="modal-dialog modal-md modal-dialog-centered">
-      <div class="modal-content">
-        
-        <!-- Header -->
-        <div class="modal-header">
-          <h4 class="modal-title">
-            <opensilex-Icon icon="fa#cog" />
-            {{ t("component.common.graphs.settings") }}
-          </h4>
-          <button type="button" class="btn-close" @click="hide"></button>
+  <Modal ref="modal">
+    <template #header>
+      <h4>
+        <Icon icon="fa#cog"/>
+        {{ t("component.common.graphs.settings") }}
+      </h4>
+    </template>
+
+    <n-form label-placement="top">
+      <!-- Period -->
+      <n-form-item :label="t('component.common.graphs.display_by')">
+        <DatePeriodPicker
+            v-model:selectedPeriod="selectedPeriod"
+            :doInclude6MonthOption="false"
+            :doIncludeYearOption="true"
+        ></DatePeriodPicker>
+      </n-form-item>
+
+      <!-- Devices -->
+      <n-form-item :label="t('component.common.graphs.filter')">
+        <div class="devicesFilter">
+          <n-checkbox v-model:checked="allDevices" :title="t('component.common.graphs.help')">
+            {{ t("component.device.all_devices") }}
+          </n-checkbox>
+          <n-select
+              v-model:value="selectedDevices"
+              :options="deviceOptions"
+              :disabled="allDevices"
+              :placeholder="t('component.device.select_devices')"
+              multiple
+              filterable
+          ></n-select>
         </div>
+      </n-form-item>
+    </n-form>
 
-        <!-- Body -->
-        <div class="modal-body">
-          <!-- Periods -->
-          <div class="mb-3">
-            <label class="form-label">{{ t('component.common.graphs.display_by') }}:</label>
-            <div class="btn-group w-100">
-              <button
-                v-for="(period, index) in periods"
-                :key="index"
-                type="button"
-                class="btn periodBtn"
-                :class="{ active: selectedPeriod === period.value }"
-                @click="selectedPeriod = period.value"
-              >
-                {{ period.text }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Devices Selection -->
-          <div class="mb-3">
-            <label class="form-label">{{ t('component.common.graphs.filter') }}:</label>
-            <div class="d-flex align-items-center">
-              <input 
-                type="checkbox" 
-                class="form-check-input me-2"
-                v-model="selectAll"
-                @change="changeSelectorAccess"
-              />
-              <span>{{ t('component.device.all_devices') }}</span>
-              <font-awesome-icon 
-                icon="question-circle" 
-                class="ms-2 text-muted"
-                v-tooltip="t('component.common.graphs.help')"
-              />
-            </div>
-          </div>
-
-          <!-- Devices selector -->
-          <!-- <opensilex-FormSelector
-            :multiple="true"
-            v-model="selectedDevices"
-            :disabled="selectorAccess"
-            :options="devicesLoaded"
-            placeholder="component.device.select_devices"
-          /> -->
-        </div>
-
-        <!-- Footer -->
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="hide">
-            {{ t('component.common.cancel') }}
-          </button>
-          <button class="btn greenThemeColor" @click="validate">
-            {{ t('component.common.apply') }}
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
+    <template #footer>
+      <FormFooter submitLabel="component.common.apply" @cancel="hide()" @submit="onApply()"></FormFooter>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed  } from "vue";
-import { useI18n } from "vue-i18n";
+import {computed, ComputedRef, ref, Ref, useTemplateRef} from "vue";
+import {useI18n} from "vue-i18n";
+import {NCheckbox, NForm, NFormItem, NSelect, SelectOption} from "naive-ui";
+import {DeviceGetDTO} from "opensilex-core/index";
+import Modal from "@/components/common/views/Modal.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
+import DatePeriodPicker, {Period} from "@/components/common/forms/DatePeriodPicker.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
-// i18n
-const { t } = useI18n();
+/**
+ * Settings of the dashboard graphic: the displayed period, and the displayed devices (all of them by default).
+ * Open it with show(), the settings are only applied (validate event) when the user clicks "Apply".
+ */
 
-
-// Props & Emits
-const props = defineProps<{
-  period: string;
-  devicesLoaded: Array<{ id: string; label: string }>;
+//#region Public
+const emit = defineEmits<{
+  /**
+   * The user applied the settings
+   *
+   * @param devices URIs of the selected devices, undefined for all the devices
+   */
+  validate: [period: Period, devices: string[] | undefined]
 }>();
 
-const emit = defineEmits(["update"]);
+const props = defineProps<{
+  /** Devices that can be selected */
+  devices: DeviceGetDTO[]
+}>();
+//#endregion
 
+//#region Private
+//#region Plugins & services
+const {t} = useI18n();
+//#endregion
 
-// Modal Control
-const modal = ref<HTMLDivElement | null>(null);
+//#region Template refs
+const modal = useTemplateRef<InstanceType<typeof Modal>>("modal");
+//#endregion
 
-// State
-const selectedPeriod = ref(props.period);
-const selectAll = ref(true);
-const selectorAccess = ref(true);
-const selectedDevices = ref<string[]>([]);
-const devicesToDisplay = ref<Array<{ label: string; id: string }>>([]);
+//#region Data & Computed
+const selectedPeriod: Ref<Period> = ref<Period>("day");
+/** true to display all the devices, the selector is then disabled */
+const allDevices: Ref<boolean> = ref<boolean>(true);
+const selectedDevices: Ref<string[]> = ref<string[]>([]);
 
-// Periods List
-const periods = computed(() => [
-  { text: t("component.common.date-time.day"), value: "day" },
-  { text: t("component.common.date-time.Week"), value: "week" },
-  { text: t("component.common.date-time.month"), value: "month" },
-  { text: t("component.common.date-time.year"), value: "year" },
-]);
+const deviceOptions: ComputedRef<SelectOption[]> = computed<SelectOption[]>(() =>
+    props.devices.map((device: DeviceGetDTO) => ({value: device.uri, label: device.name}))
+);
+//#endregion
 
-// Methods
-const changeSelectorAccess = () => {
-  selectorAccess.value = !selectorAccess.value;
-};
-
-
-const sendUpdate = () => {
-  if (selectAll.value) {
-    selectedDevices.value = [];
-    emit("update", props.devicesLoaded, selectedPeriod.value);
-  } else {
-    devicesToDisplay.value = props.devicesLoaded
-      .filter(device => selectedDevices.value.includes(device.id))
-      .map(device => ({ label: device.label, id: device.id }));
-
-    emit("update", devicesToDisplay.value.length ? devicesToDisplay.value : props.devicesLoaded, selectedPeriod.value);
-  }
-  console.log("selected devices to display ", selectedDevices)
-};
-
-const show = () => {
-  modal.value?.classList.add("show");
-  modal.value?.setAttribute("style", "display: block;");
-};
-
-const hide = () => {
-  modal.value?.classList.remove("show");
-  modal.value?.setAttribute("style", "display: none;");
-};
-
-const validate = () => {
-  sendUpdate();
+//#region Event handlers
+/**
+ * Without any selected device, all the devices are displayed
+ */
+function onApply(): void {
+  const devices: string[] | undefined = allDevices.value || selectedDevices.value.length === 0
+      ? undefined
+      : selectedDevices.value;
+  emit("validate", selectedPeriod.value, devices);
   hide();
-};
+}
+//#endregion
 
-// important ! avec script setup les methodes ne sont pas exposées automatiquement au parent via ref()
-defineExpose({ show, hide });
+//#region Methods
+function show(): void {
+  modal.value?.show();
+}
 
+function hide(): void {
+  modal.value?.hide();
+}
+//#endregion
+//#endregion
+
+defineExpose({
+  show,
+  hide
+});
 </script>
 
-<style scoped>
-.periodBtn {
-  border-color: var(--main-color-theme-hover);
-  background: #fff;
-  color: var(--main-color-theme-hover);
-  flex: 1;
-}
-
-.periodBtn.active {
-  background-color: var(--main-color-theme);
-  border-color: var(--main-color-theme);
-  color: #fff;
+<style scoped lang="scss">
+.devicesFilter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 </style>
-
-
-<i18n>
-en:
-  HistogramSettings:
-    help: Uncheck to use bellow selector
-
-fr:
-  HistogramSettings:
-    help: Décochez pour utiliser le sélecteur ci-dessous
-
-</i18n>
-

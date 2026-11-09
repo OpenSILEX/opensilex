@@ -115,6 +115,37 @@ export function getLastFifteenDaysStartDate(): string {
 }
 
 /**
+ * Names and styles the series of each (target, device) pair, after splitting the series of each device by target
+ * (see splitSeriesByTarget): one color per target, one symbol per device.
+ *
+ * The name is the target, followed by the device if there are several devices. The data without target is named
+ * after its device, and gets a color of its own for each device.
+ *
+ * @param deviceSeries the series of each device, before being split. Their names are the names of the devices
+ * @param targetSeries the series of each device, split by target
+ */
+export function styleDeviceTargetSeries(deviceSeries: DataVisuSerie[], targetSeries: TargetSerie[]): DataVisuSerie[] {
+    /** What gets its own color: the target, or the device for the data without target */
+    const colorKey = (targetSerie: TargetSerie): string => targetSerie.target ?? `device:${targetSerie.sourceIndex}`;
+    const colorKeys: string[] = [...new Set(targetSeries.map(colorKey))];
+    const multipleDevices: boolean = deviceSeries.length > 1;
+
+    return targetSeries.map((targetSerie: TargetSerie): DataVisuSerie => {
+        const deviceName: string = deviceSeries[targetSerie.sourceIndex].name;
+        let name: string = deviceName;
+        if (targetSerie.target) {
+            name = multipleDevices ? `${targetSerie.targetName} / ${deviceName}` : targetSerie.targetName;
+        }
+        return {
+            name,
+            points: targetSerie.points,
+            color: getGraphicColor(colorKeys.indexOf(colorKey(targetSerie))),
+            symbol: getGraphicSymbol(targetSerie.sourceIndex)
+        };
+    });
+}
+
+/**
  * @returns the events with one color per event type, e.g. when all the events are about the same element
  */
 export function colorEventsByType(events: DataVisuEvent[]): DataVisuEvent[] {

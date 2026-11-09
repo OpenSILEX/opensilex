@@ -1914,5 +1914,14 @@
     },
     "VariableVisualizationTab": {
         "missingDevices": "Sélectionnez au moins un appareil."
+    },
+    "Histogram": {
+        "graphicInformations": "Ajoutez des informations concernant vos données, leur localisation par exemple",
+        "period": {
+            "day": "Dernières 24 heures",
+            "week": "Dernière semaine",
+            "month": "Dernier mois",
+            "year": "Dernière année"
+        }
     }
 }

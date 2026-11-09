@@ -102,10 +102,8 @@ import useDataVisualisation, {
   colorEventsByType,
   DataSeriesRequest,
   EventsRequest,
-  getGraphicColor,
-  getGraphicSymbol,
   getLastFifteenDaysStartDate,
-  TargetSerie
+  styleDeviceTargetSeries
 } from "@/composables/useDataVisualisation";
 
 interface VisualisationFilter {
@@ -198,7 +196,7 @@ async function onSearch(): Promise<void> {
     ]);
 
     yAxisNames.value = [variable.unit?.name ? `${variable.name} (${variable.unit.name})` : variable.name];
-    series.value = toObjectSeries(deviceSeries, await splitSeriesByTarget(deviceSeries));
+    series.value = styleDeviceTargetSeries(deviceSeries, await splitSeriesByTarget(deviceSeries));
     events.value = loadedEvents;
     searchFiltersToggle.value = true;
   } catch (error) {
@@ -237,7 +235,7 @@ async function getDeviceNames(deviceUris: string[]): Promise<Map<string, string>
 
 /**
  * One request per selected device, named after the device. The series are then split by scientific object, see
- * toObjectSeries().
+ * styleDeviceTargetSeries().
  */
 function buildSeriesRequests(deviceNames: Map<string, string>): DataSeriesRequest[] {
   const f: VisualisationFilter = filter.value;
@@ -251,32 +249,6 @@ function buildSeriesRequests(deviceNames: Map<string, string>): DataSeriesReques
       provenances: f.provenance ? [f.provenance] : undefined
     }
   }));
-}
-
-/**
- * Names and styles the series of each (scientific object, device) pair: one color per scientific object, one
- * symbol per device. The name is the scientific object, followed by the device if several devices are selected.
- * The data without scientific object is named after the device.
- *
- * @param deviceSeries the series of each device, before being split
- */
-function toObjectSeries(deviceSeries: DataVisuSerie[], targetSeries: TargetSerie[]): DataVisuSerie[] {
-  const targets: Array<string | undefined> = [...new Set(targetSeries.map((s: TargetSerie) => s.target))];
-  const multipleDevices: boolean = deviceSeries.length > 1;
-
-  return targetSeries.map((targetSerie: TargetSerie): DataVisuSerie => {
-    const deviceName: string = deviceSeries[targetSerie.sourceIndex].name;
-    let name: string = deviceName;
-    if (targetSerie.target) {
-      name = multipleDevices ? `${targetSerie.targetName} / ${deviceName}` : targetSerie.targetName;
-    }
-    return {
-      name,
-      points: targetSerie.points,
-      color: getGraphicColor(targets.indexOf(targetSerie.target)),
-      symbol: getGraphicSymbol(targetSerie.sourceIndex)
-    };
-  });
 }
 
 /**

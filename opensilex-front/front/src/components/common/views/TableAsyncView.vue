@@ -353,6 +353,13 @@ function syncCheckedForCurrentPage() {
   checkedRowKeys.value = keysOnPage.filter((uri: string) => selectedUriSet.value.has(uri));
 }
 
+function setInitiallySelectedItems(items: Array<{ uri: string; name?: string }>) {
+  selectedUriSet.value = new Set(items.map((it) => it.uri));
+  selectedCache.value = new Map(items.map((it) => [it.uri, it]));
+  numberOfSelectedRows.value = selectedUriSet.value.size;
+  syncCheckedForCurrentPage();
+}
+
 function getSelected(): any[] {
   return Array.from(selectedCache.value.values());
 }
@@ -616,6 +623,7 @@ function setOnlySelected(value: boolean) {
 defineExpose({
   refresh,
   getSelected,
+  setInitiallySelectedItems,
   onItemSelected,
   onItemUnselected,
   getPaginationInfo,
@@ -626,7 +634,8 @@ defineExpose({
   resetSelection,
   setPage,
   checkSelectedItems,
-  setOnlySelected
+  setOnlySelected,
+  onlySelected
 });
 </script>
 

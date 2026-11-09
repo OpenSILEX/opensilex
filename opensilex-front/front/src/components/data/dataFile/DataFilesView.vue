@@ -114,7 +114,7 @@
               <DatafileProvenanceSelector
                 ref="provSelector"
                 v-model:provenances="filter.provenance"
-                :label="t('component.datafile.filters.provenance')"
+                :label="t('component.common.provenance')"
                 @select="loadProvenance"
                 :devices="passedDeviceUri ? [passedDeviceUri] : undefined"
                 :targets="filter.scientificObjects"

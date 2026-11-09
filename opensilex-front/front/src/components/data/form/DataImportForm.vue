@@ -29,7 +29,7 @@
           v-if="!selectDefaultProvenance"
           ref="provenanceSelector"
           v-model:provenances="form.provenance.uri"
-          label="component.data.dataImportForm.provenance"
+          label="component.common.provenance"
           @selectionChange="onProvenanceSelectionChange"
           @clear="reset()"
           :multiple="false"

@@ -30,14 +30,13 @@
     </p>
     <div class="details-container">
       <ProvenanceDetails
-        label="ResultModalView.provenanceLabel"
+        label="component.common.provenance"
         v-if="provenance"
         :provenance="provenance"
         :dataImportResult="true"
       />
 
       <BatchDetails
-        label="ResultModalView.batchLabel"
         v-if="batch"
         :batchUri="batch"
       />
@@ -137,18 +136,14 @@
       data-imported: observations ont été importées avec succès
       datum-imported: Observation importée avec succès
       title : Rapport de l'insertion des données 
-      provenanceLabel : Provenance
       annotations-imported: annotations ont été importées avec succès
       annotation-imported: Annotation importée avec succès
-      batchLabel : Batch
 
   en: 
     ResultModalView:
       data-imported: Observations have been imported successfully
       datum-imported: Observation imported successfully
       title : Data insertion report
-      provenanceLabel : Provenance
       annotations-imported: annotations have been imported successfully
       annotation-imported: Annotation imported successfully
-      batchLabel : Batch
 </i18n>

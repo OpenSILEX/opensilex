@@ -45,7 +45,7 @@
             path="provenance"
             ref="provenanceSelector"
             v-model:provenances="modalFormLogic.form.value.provenance"
-            :label="t('component.datafile.form.provenance')"
+            :label="t('component.common.provenance')"
             :multiple="false"
             @clear="reset"
             :actionHandler="
@@ -254,7 +254,7 @@ const rules = computed(() => ({
         ? true
         : new Error(
             t('validations.required_if', {
-              _field_: t('component.datafile.form.provenance')
+              _field_: t('component.common.provenance')
             }) as string
           )
     }

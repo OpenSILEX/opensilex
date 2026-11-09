@@ -104,7 +104,7 @@
               <DataProvenanceSelector
                   ref="provSelector"
                   v-model:provenances="filter.provenance"
-                  :label="t('experimentData.provenance')"
+                  :label="t('component.common.provenance')"
                   :placeholder="t('experimentData.provenance-placeholder')"
                   @select="loadProvenance"
                   :experiments="[uri]"

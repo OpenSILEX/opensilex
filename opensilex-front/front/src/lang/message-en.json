@@ -104,6 +104,7 @@
             "select": "Select",
             "next": "Next",
             "previous": "Previous",
+            "provenance": "Provenance",
             "colon": ":",
             "uri-copy": "URI copied to clipboard",
             "url-copy": "URL copied to clipboard",
@@ -1183,6 +1184,11 @@
                 "success-message": "data have been deleted.",
                 "error-message": "No data found."
             },
+            "batchDetails": {
+                "title": "Batch description",
+                "user-name": "Username",
+                "document-uri": "Document Uri"
+            },
             "dataTable": {
                 "target-object": "Object target",
                 "list-data": "Data",
@@ -1221,8 +1227,7 @@
                 "import-file": "Import data CSV",
                 "import": "Import",
                 "generate-template": "Generate template",
-                "add-provenance": "Add provenance",
-                "provenance": "Provenance"
+                "add-provenance": "Add provenance"
             },
             "dataHelp": {
                 "exceptedFormat": "Expected format",
@@ -1374,8 +1379,7 @@
             "fileName-placeholder": "Enter file name",
             "imagesView": "View",
             "filters": {
-                "rdfType-placeholder": "Select the datafile type",
-                "provenance": "Provenance"
+                "rdfType-placeholder": "Select the datafile type"
             },
             "list-title": "Datafiles",
             "list": {
@@ -1389,7 +1393,6 @@
                 "filename": "Filename",
                 "format": "Format",
                 "object": "Target",
-                "provenance": "Provenance",
                 "rdfType": "Type",
                 "selected": "Selected datafiles",
                 "selected-all": "All datafiles",
@@ -1407,7 +1410,6 @@
                 "fileDX": "File",
                 "fileDX-help": "Insert a file in JCAMP-DX, JDX, DX format. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.",
                 "fileSpectraCSV-help": "Insert a spectra file in CSV format with tabulation separator. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.",
-                "provenance": "Provenance",
                 "targets": "Target(s)",
                 "targets-help": "List of resources's URI concerned by the document",
                 "type": "Type",
@@ -1830,7 +1832,6 @@
         "date": "Date",
         "value": "Value",
         "variable": "Variable",
-        "provenance": "Provenance",
         "provenance-placeholder": "Select a provenance",
         "germplasm-group": "Germplasm group",
         "germplasm-group-placeholder": "Select a germplasm group",

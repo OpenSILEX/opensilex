@@ -105,6 +105,7 @@
             "select-date": "Choisissez une date",
             "next": "Suivant",
             "previous": "Précédent",
+            "provenance": "Provenance",
             "colon": " :",
             "uri-copy": "URI copiée dans le presse-papier",
             "url-copy": "URL copiée dans le presse-papier",
@@ -1241,6 +1242,11 @@
                 "success-message": "données ont été supprimées.",
                 "error-message": "Pas de données trouvées."
             },
+            "batchDetails": {
+                "title": "Description de Batch",
+                "user-name": "Nom d'utilisateur",
+                "document-uri": "Uri du Document"
+            },
             "dataTable": {
                 "target-object": "Objet cible",
                 "list-data": "Date",
@@ -1279,8 +1285,7 @@
                 "import-file": "Importez des données",
                 "import": "Importer",
                 "generate-template": "Générer un gabarit",
-                "add-provenance": "Ajouter une provenance",
-                "provenance": "Provenance"
+                "add-provenance": "Ajouter une provenance"
             },
             "dataHelp": {
                 "exceptedFormat": "Format attendu",
@@ -1432,8 +1437,7 @@
             "fileName-placeholder": "Saisir un nom de fichier",
             "imagesView": "Visualisation",
             "filters": {
-                "rdfType-placeholder": "Sélectionner le type de fichier",
-                "provenance": "Provenance"
+                "rdfType-placeholder": "Sélectionner le type de fichier"
             },
             "list-title": "Fichiers de données",
             "list": {
@@ -1447,7 +1451,6 @@
                 "filename": "Nom du fichier",
                 "format": "Format",
                 "object": "Objet cible",
-                "provenance": "Provenance",
                 "rdfType": "Type",
                 "selected": "Fichiers de données selectionnés",
                 "selected-all": "Tous les fichiers",
@@ -1465,7 +1468,6 @@
                 "fileDX": "Fichier",
                 "fileDX-help": "Insérer un fichier au format JCAMP-DX, JDX, DX. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.",
                 "fileSpectraCSV-help": "Insérer un fichier de spectres au format CSV avec le séparateur tabulation. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.",
-                "provenance": "Provenance",
                 "targets": "Cible(s)",
                 "targets-help": "Liste d'URI des ressources concernées par le document",
                 "type": "Type",
@@ -1888,7 +1890,6 @@
         "date": "Date",
         "value": "Valeur",
         "variable": "Variable",
-        "provenance": "Provenance",
         "provenance-placeholder": "Sélectionner une provenance",
         "germplasm-group": "Groupe de ressources génétiques",
         "germplasm-group-placeholder": "Sélectionner un groupe de ressources génétiques",

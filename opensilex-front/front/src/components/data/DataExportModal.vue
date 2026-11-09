@@ -10,17 +10,17 @@
     </template>
 
     <FormSelector
-      label="DataExportModal.select-format"
+      :label="t('DataExportModal.select-format')"
       v-model:selected="format"
       :required="true"
       :multiple="false"
       :clearable="false"
-      helpMessage="DataExportModal.select-format-help"
+      :helpMessage="t('DataExportModal.select-format-help')"
       :options="options"
     ></FormSelector>
     <FormField
-      label="DataExportModal.check-raw-data"
-      helpMessage="DataExportModal.raw-data-help"
+      :label="t('DataExportModal.check-raw-data')"
+      :helpMessage="t('DataExportModal.raw-data-help')"
     >
       <template #field>
         <div class="switch-field">

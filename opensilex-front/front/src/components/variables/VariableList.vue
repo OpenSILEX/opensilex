@@ -100,7 +100,7 @@
 
     <!-- Caractéristique -->
     <n-form-item :label="t('component.variable.characteristic.characteristic')" :show-feedback="false">
-      <opensilex-CharacteristicSelector
+      <CharacteristicSelector
         v-model:selected="filter.characteristic"
         :sharedResourceInstance="filter.sharedResourceInstance"
         @handlingEnterKey="applyFilters"
@@ -110,14 +110,14 @@
 
     <!-- Group of variables -->
     <n-form-item :label="t('component.variable.groupVariable.groupVariable')" :show-feedback="false">
-      <opensilex-GroupVariablesSelector
+      <GroupVariablesSelector
         v-if="!withoutGroup"
         v-model:variableGroup="filter.includedGroup"
         :sharedResourceInstance="filter.sharedResourceInstance"
         class="searchFilter"
         @handlingEnterKey="applyFilters"
       />
-      <opensilex-GroupVariablesSelector
+      <GroupVariablesSelector
         v-else
         v-model:variableGroup="filter.notIncludedGroup"
         :sharedResourceInstance="filter.sharedResourceInstance"
@@ -127,7 +127,7 @@
     </n-form-item>
 
     <!-- <n-form-item :show-feedback="false"> -->
-    <opensilex-CheckboxForm
+    <CheckboxForm
       :title="t('VariableList.withoutGroup')"
       :helpMessage="t('VariableList.withoutGroup-info')"
       v-model:value="withoutGroup"
@@ -144,7 +144,7 @@
     >
       <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
         <n-form-item :label="t('component.variable.entityOfInterest.entityOfInterest')" :show-feedback="false">
-          <opensilex-InterestEntitySelector
+          <InterestEntitySelector
             v-model:selected="filter.entityOfInterest"
             @handlingEnterKey="applyFilters"
             :placeholder="$t('component.variable.entityOfInterest.entityOfInterest-placeholder')"
@@ -152,7 +152,7 @@
         </n-form-item>
 
         <n-form-item :label="t('component.variable.method.method')" :show-feedback="false">
-          <opensilex-MethodSelector
+          <MethodSelector
             v-model:selected="filter.method"
             @handlingEnterKey="applyFilters"
             :placeholder="$t('component.variable.method.method-placeholder')"
@@ -160,7 +160,7 @@
         </n-form-item>
 
         <n-form-item :label="t('component.variable.unit.unit')" :show-feedback="false">
-          <opensilex-UnitSelector
+          <UnitSelector
             v-model:selected="filter.unit"
             @handlingEnterKey="applyFilters"
             :placeholder="$t('component.variable.unit.unit-placeholder')"
@@ -168,7 +168,7 @@
         </n-form-item>
 
         <n-form-item :label="t('component.variable.dataType.data-type')" :show-feedback="false">
-          <opensilex-VariableDataTypeSelector
+          <VariableDataTypeSelector
             v-model:selected="filter.dataType"
             @handlingEnterKey="applyFilters"
             :placeholder="$t('component.variable.dataType.datatype-placeholder')"
@@ -243,10 +243,12 @@ import {
   NInput,
   NLayout,
   NLayoutContent,
-  NSpace
+  NSpace,
+  useDialog
 } from 'naive-ui'
 import {VariablesService} from 'opensilex-core'
 import {VariableGetDTO} from 'opensilex-core/model/variableGetDTO'
+import {CopyResourceDTO} from 'opensilex-core/model/copyResourceDTO'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
@@ -254,6 +256,14 @@ import EntitySelector from "@/components/variables/form/EntitySelector.vue";
 import SpeciesSelector from "@/components/species/SpeciesSelector.vue";
 import GroupVariablesModalList from "@/components/groupVariable/GroupVariablesModalList.vue";
 import SharedResourceInstanceSelector from "@/components/sharedResouceInstances/SharedResourceInstanceSelector.vue";
+import VariableTimeIntervalSelector from "@/components/variables/form/VariableTimeIntervalSelector.vue";
+import MethodSelector from "@/components/variables/form/MethodSelector.vue";
+import InterestEntitySelector from "@/components/variables/form/InterestEntitySelector.vue";
+import CharacteristicSelector from "@/components/variables/form/CharacteristicSelector.vue";
+import GroupVariablesSelector from "@/components/groupVariable/GroupVariablesSelector.vue";
+import CheckboxForm from "@/components/common/forms/CheckboxForm.vue";
+import UnitSelector from "@/components/variables/form/UnitSelector.vue";
+import VariableDataTypeSelector from "@/components/variables/form/VariableDataTypeSelector.vue";
 
 /** Refs UI */
 const groupVariableSelection = ref()
@@ -263,6 +273,7 @@ const groupVariablesForm = useTemplateRef<InstanceType<typeof GroupVariablesForm
 const { t, n } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const $service = ref<VariablesService | null>(null)
+const dialog = useDialog()
 
 /** components */
 const EditButton = resolveComponent('opensilex-EditButton')
@@ -270,6 +281,7 @@ const DetailButton = resolveComponent('opensilex-DetailButton')
 const InteroperabilityButton = resolveComponent('opensilex-InteroperabilityButton')
 const DeleteButton = resolveComponent('opensilex-DeleteButton')
 const UriLink = resolveComponent('opensilex-UriLink')
+const Icon = resolveComponent('opensilex-Icon')
 
 /** Données */
 const variables = ref<Array<{ item: VariableGetDTO }>>([])  // page courante (serveur)
@@ -594,6 +606,22 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
       }
     },
     {
+      title: '',
+      key: 'db_logo',
+      width: 40,
+      render: row => row.item.onLocal
+        ? h(Icon, { icon: 'fa#database', title: t('component.sharedResourceInstances.on-local') })
+        : null
+    },
+    {
+      title: '',
+      key: 'share_logo',
+      width: 40,
+      render: row => row.item.sharedResourceInstance
+        ? h(Icon, { icon: 'fa#share-alt', title: row.item.sharedResourceInstance.label })
+        : null
+    },
+    {
       title: t('component.variable.entity.entity'),
       key: 'item.entity.name',
       sortable: true,
@@ -687,7 +715,9 @@ const dropdownOptions = computed(() => [
     children: [
       { label: t('VariableList.export-variables'), key: 'classicExportVariables' },
       { label: t('VariableList.export-variables-details'), key: 'detailsExportVariables' },
-      { label: t('VariableList.import-variables-from-shared-resources'), key: 'importVariablesOnLocal' }
+      ...(filter.sharedResourceInstance
+        ? [{ label: t('VariableList.import-variables-from-shared-resources'), key: 'importVariablesOnLocal' }]
+        : [])
     ]
   }
 ])
@@ -701,7 +731,79 @@ function handleDropdownAction(key: string) {
     case 'showGroupVariablesCreateForm':
       showGroupVariablesCreateForm()
       break
+    case 'classicExportVariables':
+      classicExportVariables()
+      break
+    case 'detailsExportVariables':
+      detailsExportVariables()
+      break
+    case 'importVariablesOnLocal':
+      importVariablesOnLocal()
+      break
   }
+}
+
+function classicExportVariables() {
+  const path = '/core/variables/export_classic_by_uris'
+  const today = new Date()
+  const filename = 'export_classic_variables_' + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0')
+  const variablesURIs = getSelectedUris()
+
+  $opensilex?.downloadFilefromPostService(path, filename, 'csv', { uris: variablesURIs }, $opensilex.getLang())
+}
+
+async function importVariablesOnLocal() {
+  const confirmMessage = [
+    h('p', t('component.sharedResourceInstances.variable-import-confirmation'))
+  ]
+  if (variables.value.some(row => isGloballySelected(row.item.uri) && row.item.onLocal)) {
+    confirmMessage.push(h('p', t('component.sharedResourceInstances.variable-warning-already-imported')))
+  }
+  const confirm = await new Promise<boolean>(resolve => {
+    dialog.info({
+      content: () => h('div', confirmMessage),
+      negativeText: t('component.common.cancel'),
+      positiveText: t('component.sharedResourceInstances.import'),
+      onPositiveClick: () => resolve(true),
+      onNegativeClick: () => resolve(false),
+      onClose: () => resolve(false),
+      onMaskClick: () => resolve(false)
+    })
+  })
+
+  if (!confirm) {
+    return
+  }
+
+  const variablesURIs = getSelectedUris()
+  const form: CopyResourceDTO = {
+    uris: variablesURIs,
+    sharedResourceInstance: filter.sharedResourceInstance
+  }
+  const http = await $service.value!.copyFromSharedResourceInstance(form)
+
+  if (http.status === 200) {
+    refresh()
+  }
+  const result = http.response.result
+  const message = t('component.common.success.import-success-message', {
+    variablesCount: result.variableUris?.length ?? 0,
+    entitiesCount: result.entityUris?.length ?? 0,
+    characteristicsCount: result.characteristicUris?.length ?? 0,
+    methodsCount: result.methodUris?.length ?? 0,
+    unitsCount: result.unitUris?.length ?? 0,
+    interestEntityCount: result.interestEntityUris?.length ?? 0
+  })
+  $opensilex?.showSuccessToast(message)
+}
+
+function detailsExportVariables() {
+  const path = '/core/variables/export_details_by_uris'
+  const today = new Date()
+  const filename = 'export_detailed_variables_' + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0')
+  const variablesURIs = getSelectedUris()
+
+  $opensilex?.downloadFilefromPostService(path, filename, 'csv', { uris: variablesURIs }, $opensilex.getLang())
 }
 
 const selectionOptions = computed(() => [

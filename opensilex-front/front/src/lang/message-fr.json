@@ -1398,6 +1398,13 @@
                 "tooLargeDataset": "Jeu de données trop volumineux : '{sizeMax}' observations attendues, '{nbLinesToImport}' observations soumises",
                 "invalidAnnotationErrors": "La colonne cible (Target) doit être remplie pour annoter."
             },
+            "resultModalView": {
+                "title": "Rapport de l'insertion des données",
+                "data-imported": "observations ont été importées avec succès",
+                "datum-imported": "Observation importée avec succès",
+                "annotations-imported": "annotations ont été importées avec succès",
+                "annotation-imported": "Annotation importée avec succès"
+            },
             "dataTemplateForm": {
                 "help": "Le bouton est désactivé si aucune variable n'est sélectionnée",
                 "with-raw-data": "Avec colonnes 'raw data' (données brutes)",

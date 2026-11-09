@@ -1340,6 +1340,13 @@
                 "tooLargeDataset": "Too large data :'{sizeMax}' observations expected, '{nbLinesToImport}' observations submitted",
                 "invalidAnnotationErrors": "The target column must be filled to annotate."
             },
+            "resultModalView": {
+                "title": "Data insertion report",
+                "data-imported": "Observations have been imported successfully",
+                "datum-imported": "Observation imported successfully",
+                "annotations-imported": "annotations have been imported successfully",
+                "annotation-imported": "Annotation imported successfully"
+            },
             "dataTemplateForm": {
                 "help": "The button is disabled if no variables are selected",
                 "with-raw-data": "With raw data columns",

@@ -4,7 +4,7 @@
       <i>
         <h4>
           <Icon icon="fa#list" />
-          {{ t("ResultModalView.title") }}
+          {{ t("component.data.resultModalView.title") }}
         </h4>
       </i>
       <button
@@ -17,15 +17,15 @@
     <p v-if="nbLinesImported != null" class="validation-confirm-container">
       {{
         nbLinesImported > 1
-          ? `${nbLinesImported} ${t("ResultModalView.data-imported")}`
-          : t("ResultModalView.datum-imported")
+          ? `${nbLinesImported} ${t("component.data.resultModalView.data-imported")}`
+          : t("component.data.resultModalView.datum-imported")
       }}
     </p>
     <p v-if="nbAnnotationsImported != null && nbAnnotationsImported > 0" class="validation-confirm-container">
       {{
         nbAnnotationsImported > 1
-          ? `${nbAnnotationsImported} ${t("ResultModalView.annotations-imported")}`
-          : t("ResultModalView.annotation-imported")
+          ? `${nbAnnotationsImported} ${t("component.data.resultModalView.annotations-imported")}`
+          : t("component.data.resultModalView.annotation-imported")
       }}
     </p>
     <div class="details-container">
@@ -130,20 +130,3 @@
   flex-wrap: wrap;
 }
 </style>
-<i18n>
-  fr: 
-    ResultModalView:
-      data-imported: observations ont été importées avec succès
-      datum-imported: Observation importée avec succès
-      title : Rapport de l'insertion des données 
-      annotations-imported: annotations ont été importées avec succès
-      annotation-imported: Annotation importée avec succès
-
-  en: 
-    ResultModalView:
-      data-imported: Observations have been imported successfully
-      datum-imported: Observation imported successfully
-      title : Data insertion report
-      annotations-imported: annotations have been imported successfully
-      annotation-imported: Annotation imported successfully
-</i18n>

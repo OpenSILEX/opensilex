@@ -155,6 +155,9 @@ onMounted(() => {
 //#region Watchers
 
 watch(selectedPeriodComputed, async (newSelectedPeriod, old) => {
+  // The dates are computed again from now, otherwise the ones of the previous period would be sent
+  endDate.value = new Date();
+  updateDatePeriod();
   emit("update", startDate.value, endDate.value);
 })
 //#endregion

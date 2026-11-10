@@ -1865,5 +1865,8 @@
             "month": "Last month",
             "year": "Last year"
         }
+    },
+    "VariableVisualizationTile": {
+        "clickToViewGraphic": "Click to view the graphic"
     }
 }

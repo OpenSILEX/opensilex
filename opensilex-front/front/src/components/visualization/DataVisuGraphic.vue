@@ -59,6 +59,8 @@ export interface DataVisuSerie {
   symbol?: string
   /** Index in the yAxisNames prop of the axis this series is drawn on */
   yAxisIndex?: number
+  /** true to hide the series at first, it can be displayed by clicking its name in the legend */
+  hidden?: boolean
 }
 
 /**
@@ -400,7 +402,11 @@ function buildBaseOption(yAxisNames: string[], zoomRange?: ZoomRange): DataVisuO
     legend: {
       /** Legend items that don't fit on one line are paginated with arrows, instead of overflowing */
       type: "scroll",
-      bottom: 0
+      bottom: 0,
+      /** Series hidden at first, by name */
+      selected: Object.fromEntries(props.series
+          .filter((serie: DataVisuSerie) => serie.hidden)
+          .map((serie: DataVisuSerie) => [serie.name, false]))
     },
     /** Position of the drawing area (axes and points) inside the container, in pixels */
     grid: {

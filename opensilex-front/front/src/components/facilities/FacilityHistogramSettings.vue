@@ -1,64 +1,42 @@
 <template>
+  <Modal ref="modal">
+    <template #header>
+      <h4 class="modal-title">
+        <Icon icon="fa#cog" />
+        {{ t("component.common.graphs.settings") }}
+      </h4>
+    </template>
 
+    <!-- Periods -->
+    <DatePeriodPicker
+      ref="periodPicker"
+      v-model:selectedPeriod="period"
+      @update="updateDatePeriod"
+    >
+    </DatePeriodPicker>
 
-  <div class="modal fade" ref="modal" tabindex="-1">
-    <div class="modal-dialog modal-md modal-dialog-centered">
-      <div class="modal-content">
-
-        <!-- Header -->
-        <div class="modal-header">
-          <h4 class="modal-title">
-            <Icon icon="fa#cog" />
-            {{ t("component.common.graphs.settings") }}
-          </h4>
-          <button type="button" class="btn-close" @click="hide"></button>
-        </div>
-
-        <!-- Body -->
-        <div class="modal-body">
-          <!-- Periods -->
-          <DatePeriodPicker
-            ref="periodPicker"
-            v-model:selectedPeriod="period"
-            @update="updateDatePeriod"
-          >
-          </DatePeriodPicker>
-
-          <!-- Devices Selection -->
-          <div class="mb-3">
-            <label class="form-label">{{ t('component.common.graphs.filter') }}:</label>
-            <div class="d-flex align-items-center">
-              <input
-                type="checkbox"
-                class="form-check-input me-2"
-                v-model="selectAll"
-
-              />
-              <span>{{ t('component.provenance.all_provenances') }}</span>
-              <font-awesome-icon
-                icon="question-circle"
-                class="ms-2 text-muted"
-                v-tooltip="t('component.common.graphs.help')"
-              />
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Footer -->
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="hide">
-            {{ t('component.common.cancel') }}
-          </button>
-          <button class="btn greenThemeColor" @click="validate">
-            {{ t('component.common.apply') }}
-          </button>
-        </div>
-
+    <!-- Devices Selection -->
+    <div class="mb-3">
+      <label class="form-label">{{ t('component.common.graphs.filter') }}:</label>
+      <div class="d-flex align-items-center">
+        <input
+          type="checkbox"
+          class="form-check-input me-2"
+          v-model="selectAll"
+        />
+        <span>{{ t('component.provenance.all_provenances') }}</span>
+        <font-awesome-icon
+          icon="question-circle"
+          class="ms-2 text-muted"
+          v-tooltip="t('component.common.graphs.help')"
+        />
       </div>
     </div>
-  </div>
 
+    <template #footer>
+      <FormFooter submitLabel="component.common.apply" @cancel="hide()" @submit="validate()"></FormFooter>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -68,6 +46,8 @@ import {useI18n} from "vue-i18n";
 import {inject, onMounted, ref} from "vue";
 import DatePeriodPicker, { Period } from "@/components/common/forms/DatePeriodPicker.vue";
 import Icon from "@/components/common/views/Icon.vue";
+import Modal from "@/components/common/views/Modal.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
@@ -75,7 +55,7 @@ const { t } = useI18n();
 //#endregion
 
 //#region Template refs
-const modal = ref<HTMLDivElement | null>(null);
+const modal = ref<InstanceType<typeof Modal> | null>(null);
 const periodPicker = ref<InstanceType<typeof DatePeriodPicker> | null>(null);
 //#endregion
 
@@ -118,13 +98,11 @@ function sendUpdate() {
 }
 
 const show = () => {
-  modal.value?.classList.add("show");
-  modal.value?.setAttribute("style", "display: block;");
+  modal.value?.show();
 };
 
 const hide = () => {
-  modal.value?.classList.remove("show");
-  modal.value?.setAttribute("style", "display: none;");
+  modal.value?.hide();
 };
 
 const validate = () => {

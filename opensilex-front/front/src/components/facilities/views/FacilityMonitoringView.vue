@@ -1,6 +1,8 @@
 <template>
-  <div>
+  <div class="monitoringView">
+    <!-- Only displayed if the facility has variable groups, otherwise it would be empty -->
     <Card
+      v-if="hasVariableGroup"
       :no-footer="true"
       :no-header="true"
       icon=""
@@ -10,26 +12,25 @@
           <div class="col-sm-6">
 
             <!-- Variable Group Selector -->
-            <div v-if="hasVariableGroup">
+            <div>
               <label for="variableGroupSelector">
                 {{ t("component.variable.groupVariable.enviromental-variable-groups") }}
               </label>
-              <font-awesome-icon
-                icon="question-circle"
-                class="variable-group-help"
-                v-b-tooltip.hover.top="t('component.variable.groupVariable.variable-group-help')"
-              />
+              <n-tooltip trigger="hover" placement="top">
+                <template #trigger>
+                  <font-awesome-icon
+                    icon="question-circle"
+                    class="variable-group-help"
+                  />
+                </template>
+                {{ t('component.variable.groupVariable.variable-group-help') }}
+              </n-tooltip>
               <FormSelector
                 id="variableGroupSelector"
                 v-model:selected="selectedVariableGroup"
                 :searchMethod="searchVariableGroups"
                 :placeholder="t('component.variable.groupVariable.all-enviromental-variables')"
                 class="searchFilter"
-                @clear="loadVariables"
-                @onValidate="loadVariables"
-                @onClose="loadVariables"
-                @select="loadVariables"
-                @handlingEnterKey="loadVariables"
               ></FormSelector>
             </div>
           </div>
@@ -44,17 +45,16 @@
     >
     </TextView>
 
-    <!-- Grid layout for tiles -->
-
+    <!-- One tile per variable -->
     <div v-if="isItemsLoaded"
          class="row">
-      <div v-for="item in layout"
+      <div v-for="variable in usedVariables"
            class="item col"
-           :key="item.i">
+           :key="variable.uri">
         <VariableVisualizationTile
           class="tile-content"
-          :variableUri="item.content.variableUri"
-          :target="item.content.target"
+          :variableUri="variable"
+          :target="uri"
           :defaultStartDate="startDate"
           :defaultEndDate="endDate"
         >
@@ -66,233 +66,163 @@
 </template>
 
 <script setup lang="ts">
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { FacilityGetDTO } from "opensilex-core/index";
+import {computed, ComputedRef, inject, onMounted, ref, Ref, watch} from "vue";
+import {useI18n} from "vue-i18n";
+import {NTooltip} from "naive-ui";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import {FacilityGetDTO} from "opensilex-core/index";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {DataService} from "opensilex-core/api/data.service";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
-import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
-import {computed, inject, onMounted, ref} from "vue";
-import {useStore} from "vuex";
-import {useRoute} from "vue-router";
-import { useI18n } from 'vue-i18n'
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import Card from "@/components/common/views/Card.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import TextView from "@/components/common/views/TextView.vue";
 import VariableVisualizationTile from "@/components/variables/views/VariableVisualizationTile.vue";
 
-//#region Constant values & Services
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
-const $store = useStore();
-const $route = useRoute()
-const { t } = useI18n()
-// services
-const organizationService: OrganizationsService = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService');
-const variablesService: VariablesService = $opensilex.getService<VariablesService>('opensilex.VariablesService');
-const dataService: DataService = $opensilex.getService<DataService>('opensilex.DataService');
+/**
+ * Monitoring tab of a facility: one tile per variable measured on the facility, or per variable of the selected
+ * environmental variable group. Each tile displays the last median data of its variable over the last 7 days, and
+ * opens its graphic when clicked.
+ */
+
+//#region Public
+const props = defineProps<{
+  /** URI of the facility */
+  uri: string
+}>();
 //#endregion
 
-//#region Reactive variable values (Data)
-/// GridLayout system
-const layout = ref<Array<any>>([]);
+//#region Private
+//#region Plugins & services
+const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const {t} = useI18n();
 
-const uri = ref<string>(null);
-const selected = ref<FacilityGetDTO>(null);
-const usedVariables = ref<NamedResourceDTOVariableModel[]>([]);
-const selectedVariableGroup = ref<string>(null);
-const startDate = ref<string>(null);
-const endDate = ref<string>(null);
-
-const isNoVariableFound = ref<boolean>(false);
-const isItemsLoaded = ref<boolean>(false);
+const organizationService: OrganizationsService = opensilex.getService<OrganizationsService>("opensilex.OrganizationsService");
+const variablesService: VariablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
+const dataService: DataService = opensilex.getService<DataService>("opensilex.DataService");
 //#endregion
 
-//#region: Computed
-const user = computed(() => {
-  return $store.state.user;
-});
+//#region Data & Computed
+/** Default period of the tiles: the last 7 days, ISO dates */
+const endDate: string = new Date().toISOString();
+const startDate: string = getSevenDaysAgo().toISOString();
 
-const credentials = computed(() => {
-  return $store.state.credentials;
-});
+const facility: Ref<FacilityGetDTO | undefined> = ref<FacilityGetDTO | undefined>(undefined);
+/** URI of the selected environmental variable group, all the variables of the facility are displayed without it */
+const selectedVariableGroup: Ref<string | undefined> = ref<string | undefined>(undefined);
+/** Variables displayed as tiles */
+const usedVariables: Ref<NamedResourceDTOVariableModel[]> = ref<NamedResourceDTOVariableModel[]>([]);
 
-const hasVariableGroup = computed(() => {
-  return selected.value?.variableGroups?.length > 0;
-});
+const isNoVariableFound: Ref<boolean> = ref<boolean>(false);
+const isItemsLoaded: Ref<boolean> = ref<boolean>(false);
+
+const hasVariableGroup: ComputedRef<boolean> = computed<boolean>(() => facility.value?.variableGroups?.length > 0);
 //#endregion
 
-//#region: Hooks
-onMounted(()=>{
-  //Route decoding
-  let raw = $route.params.uri
-  let param = Array.isArray(raw) ? raw[0] : raw
-  uri.value = param ? decodeURIComponent(param) : ''
-
-  initDatePeriod();
-  refresh();
+//#region Hooks and watcher
+onMounted(() => {
+  loadFacility();
 });
+
+// Selecting, changing or clearing the variable group (the selector has no clear event, only its value changes)
+watch(selectedVariableGroup, loadVariables);
 //#endregion
 
-function refresh() {
-  organizationService
-    .getFacility(uri.value)
-    .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
-      let detailDTO: FacilityGetDTO = http.response.result;
-      selected.value = detailDTO;
-      loadVariables();
-    });
+//#region Methods
+function getSevenDaysAgo(): Date {
+  const date: Date = new Date();
+  date.setDate(date.getDate() - 7);
+  return date;
 }
 
-function initDatePeriod() {
-  endDate.value = new Date().toISOString();
-  let begin = new Date();
-  begin.setDate(begin.getDate() - 7);
-  startDate.value = begin.toISOString();
+async function loadFacility(): Promise<void> {
+  try {
+    facility.value = (await organizationService.getFacility(props.uri)).response.result;
+    await loadVariables();
+  } catch (error) {
+    opensilex.errorHandler(error);
+  }
 }
 
-function searchVariableGroups() {
-  const variableGroupsURIs =
-    selected.value?.variableGroups?.map(group => group.uri) ?? [];
-  return variablesService
-    .getVariablesGroupByURIs(variableGroupsURIs, undefined)
-    .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
-      let nodeList = [];
-      for (let group of http.response.result) {
-        nodeList.push({
-          id: group.uri,
-          label: group.name
-        });
-      }
-      http.response.result = nodeList;
-      return http;
-    })
-    .catch($opensilex.errorHandler);
+/**
+ * Search method of the variable group selector: the environmental variable groups of the facility. The groups are
+ * given as they are ({uri, name}), the selector converts them into options itself.
+ */
+function searchVariableGroups(): Promise<HttpResponse<OpenSilexResponse<VariablesGroupGetDTO[]>>> {
+  const variableGroupsURIs: string[] = facility.value?.variableGroups?.map(group => group.uri) ?? [];
+  return variablesService.getVariablesGroupByURIs(variableGroupsURIs, undefined);
 }
 
-function loadVariables() {
+/**
+ * Loads the variables of the selected group, or all the variables measured on the facility if no group is selected
+ */
+async function loadVariables(): Promise<void> {
   isNoVariableFound.value = false;
   isItemsLoaded.value = false;
+  try {
+    const variables: NamedResourceDTOVariableModel[] = selectedVariableGroup.value
+        ? await loadVariablesFromGroup(selectedVariableGroup.value)
+        : await loadVariablesFromData();
 
-  if (selectedVariableGroup.value != null) {
-    loadVariablesFromGroup();
-  }
-  else {
-    loadVariablesFromData();
-  }
-}
-
-/**
- * Get all variables with this facility as target.
- */
-function loadVariablesFromData() {
-  dataService
-    .getUsedVariables(
-      null,
-      [uri.value],
-      null,
-      null)
-    .then((http) => {
-      let resultList = http.response.result;
-      setUsedVariables(resultList);
-    });
-}
-
-/**
- * Get variables contained in the selected variable group.
- */
-function loadVariablesFromGroup() {
-  variablesService
-    .searchVariables(
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      selectedVariableGroup.value,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      0,
-      0)
-    .then((http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>) => {
-      let resultList = http.response.result;
-      setUsedVariables(resultList);
-    });
-}
-
-function setUsedVariables(resultList) {
-  usedVariables.value = [];
-  for (let i in resultList) {
-    let variable = resultList[i];
-    usedVariables.value.push({
+    usedVariables.value = variables.map((variable: NamedResourceDTOVariableModel) => ({
       uri: variable.uri,
       name: variable.name
-    });
+    }));
+    isNoVariableFound.value = usedVariables.value.length === 0;
+    isItemsLoaded.value = !isNoVariableFound.value;
+  } catch (error) {
+    opensilex.errorHandler(error);
   }
-
-  if (usedVariables.value.length === 0) {
-    isNoVariableFound.value = true;
-    return;
-  }
-
-  loadTiles();
 }
 
 /**
- * Create add fill tiles according to the previously collected variables.
+ * @returns the variables having data with this facility as target
  */
-function loadTiles() {
-  layout.value = [];
-  let i = 0;
-  for (let v of usedVariables.value) {
-    layout.value.push({
-      "i":''+i,
-      "content": { target: uri.value, variableUri: v }
-    });
-    ++i;
-  }
-  isItemsLoaded.value = true;
+async function loadVariablesFromData(): Promise<NamedResourceDTOVariableModel[]> {
+  return (await dataService.getUsedVariables(null, [props.uri], null, null)).response.result;
 }
 
+/**
+ * @returns the variables of the variable group
+ */
+async function loadVariablesFromGroup(variableGroupUri: string): Promise<NamedResourceDTOVariableModel[]> {
+  return (await variablesService.searchVariables(
+      undefined,         // name
+      undefined,         // entity
+      undefined,         // entity_of_interest
+      undefined,         // characteristic
+      undefined,         // method
+      undefined,         // unit
+      variableGroupUri,  // group_of_variables
+      undefined,         // not_included_in_group_of_variables
+      undefined,         // data_type
+      undefined,         // time_interval
+      undefined,         // species
+      undefined,         // withAssociatedData
+      undefined,         // experiments
+      undefined,         // scientific_objects
+      undefined,         // devices
+      undefined,         // order_by
+      0,                 // page
+      0                  // page_size: all the variables
+  )).response.result;
+}
+//#endregion
+//#endregion
 </script>
 
 <style scoped lang="scss">
 
-.tile {
-  display: table;
+.monitoringView {
+  margin-top: 10px;
 }
 
 .tile-content {
   height: 100%;
   width: 100%;
-}
-
-#no-data-text {
-  margin: 10px;
-  font-size: 1em;
-  font-weight: bold;
-}
-
-.periodBtn{
-  border-color:var(--main-color-theme-hover);
-  background: #fff;
-  color: var(--main-color-theme-hover)
-}
-
-.active {
-  background-color: var(--main-color-theme);
-  border-color:var(--main-color-theme);
-  color: #fff;
 }
 
 .item {

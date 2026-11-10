@@ -1923,5 +1923,8 @@
             "month": "Dernier mois",
             "year": "Dernière année"
         }
+    },
+    "VariableVisualizationTile": {
+        "clickToViewGraphic": "Cliquez pour visualiser le graphique"
     }
 }

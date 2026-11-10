@@ -29,7 +29,7 @@ import {computed, ComputedRef, inject} from "vue";
 import {useI18n} from "vue-i18n";
 import {DropdownOption, NButton, NCard, NDropdown} from "naive-ui";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import type {VisuImage} from "@/components/visualization/VisuImagePanel.vue";
+import type {VisuImage} from "@/components/visualization/DataVisuTypes";
 
 /** Keys of the entries of the card menu */
 type MenuKey = "details" | "annotationDetails" | "annotate" | "hide";
@@ -63,7 +63,7 @@ const props = defineProps<{
 
 //#region Private
 //#region Plugins & services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
 //#endregion
 
@@ -76,7 +76,7 @@ const menuOptions: ComputedRef<DropdownOption[]> = computed<DropdownOption[]>(()
 ]);
 
 const formattedDate: ComputedRef<string> = computed<string>(() =>
-    props.image.date ? opensilex.$dateTimeFormatter.formatLocaleDateTime(props.image.date) : ""
+    props.image.date ? $opensilex.$dateTimeFormatter.formatLocaleDateTime(props.image.date) : ""
 );
 //#endregion
 

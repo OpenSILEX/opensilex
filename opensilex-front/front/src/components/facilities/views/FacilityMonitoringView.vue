@@ -8,32 +8,27 @@
       icon=""
     >
       <template v-slot:body>
-        <div class="row">
-          <div class="col-sm-6">
-
-            <!-- Variable Group Selector -->
-            <div>
-              <label for="variableGroupSelector">
-                {{ t("component.variable.groupVariable.enviromental-variable-groups") }}
-              </label>
-              <n-tooltip trigger="hover" placement="top">
-                <template #trigger>
-                  <font-awesome-icon
-                    icon="question-circle"
-                    class="variable-group-help"
-                  />
-                </template>
-                {{ t('component.variable.groupVariable.variable-group-help') }}
-              </n-tooltip>
-              <FormSelector
-                id="variableGroupSelector"
-                v-model:selected="selectedVariableGroup"
-                :searchMethod="searchVariableGroups"
-                :placeholder="t('component.variable.groupVariable.all-enviromental-variables')"
-                class="searchFilter"
-              ></FormSelector>
-            </div>
-          </div>
+        <!-- Variable Group Selector -->
+        <div class="variableGroupFilter">
+          <label for="variableGroupSelector">
+            {{ t("component.variable.groupVariable.enviromental-variable-groups") }}
+          </label>
+          <n-tooltip trigger="hover" placement="top">
+            <template #trigger>
+              <font-awesome-icon
+                icon="question-circle"
+                class="variable-group-help"
+              />
+            </template>
+            {{ t('component.variable.groupVariable.variable-group-help') }}
+          </n-tooltip>
+          <FormSelector
+            id="variableGroupSelector"
+            v-model:selected="selectedVariableGroup"
+            :searchMethod="searchVariableGroups"
+            :placeholder="t('component.variable.groupVariable.all-enviromental-variables')"
+            class="searchFilter"
+          ></FormSelector>
         </div>
       </template>
     </Card>
@@ -41,15 +36,15 @@
     <TextView
       v-if="isNoVariableFound"
       id="no-variable-text"
-      :label="t('component.variable.no-enviromental-variable')"
+      label="component.variable.no-enviromental-variable"
     >
     </TextView>
 
     <!-- One tile per variable -->
     <div v-if="isItemsLoaded"
-         class="row">
+         class="tiles">
       <div v-for="variable in usedVariables"
-           class="item col"
+           class="item"
            :key="variable.uri">
         <VariableVisualizationTile
           class="tile-content"
@@ -97,12 +92,12 @@ const props = defineProps<{
 
 //#region Private
 //#region Plugins & services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
 
-const organizationService: OrganizationsService = opensilex.getService<OrganizationsService>("opensilex.OrganizationsService");
-const variablesService: VariablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
-const dataService: DataService = opensilex.getService<DataService>("opensilex.DataService");
+const organizationService: OrganizationsService = $opensilex.getService<OrganizationsService>("opensilex.OrganizationsService");
+const variablesService: VariablesService = $opensilex.getService<VariablesService>("opensilex.VariablesService");
+const dataService: DataService = $opensilex.getService<DataService>("opensilex.DataService");
 //#endregion
 
 //#region Data & Computed
@@ -122,7 +117,7 @@ const isItemsLoaded: Ref<boolean> = ref<boolean>(false);
 const hasVariableGroup: ComputedRef<boolean> = computed<boolean>(() => facility.value?.variableGroups?.length > 0);
 //#endregion
 
-//#region Hooks and watcher
+//#region Hooks & watchers
 onMounted(() => {
   loadFacility();
 });
@@ -143,7 +138,7 @@ async function loadFacility(): Promise<void> {
     facility.value = (await organizationService.getFacility(props.uri)).response.result;
     await loadVariables();
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   }
 }
 
@@ -174,7 +169,7 @@ async function loadVariables(): Promise<void> {
     isNoVariableFound.value = usedVariables.value.length === 0;
     isItemsLoaded.value = !isNoVariableFound.value;
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   }
 }
 
@@ -218,6 +213,17 @@ async function loadVariablesFromGroup(variableGroupUri: string): Promise<NamedRe
 
 .monitoringView {
   margin-top: 10px;
+}
+
+/* The selector does not need the whole width of the card */
+.variableGroupFilter {
+  max-width: 50%;
+}
+
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .tile-content {

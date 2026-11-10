@@ -1926,5 +1926,9 @@
     },
     "VariableVisualizationTile": {
         "clickToViewGraphic": "Cliquez pour visualiser le graphique"
+    },
+    "DataVisuDetails": {
+        "provenance": "Provenance",
+        "data": "Donnée"
     }
 }

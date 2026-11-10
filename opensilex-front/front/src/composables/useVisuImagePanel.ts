@@ -1,8 +1,7 @@
 import {inject, nextTick, onBeforeUnmount, ref, Ref, ShallowRef} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import type {DataVisuPoint} from "@/components/visualization/DataVisuGraphic.vue";
+import type {DataVisuPoint, VisuImage} from "@/components/visualization/DataVisuTypes";
 import type VisuImagePanel from "@/components/visualization/VisuImagePanel.vue";
-import type {VisuImage} from "@/components/visualization/VisuImagePanel.vue";
 import useDataVisualisation from "@/composables/useDataVisualisation";
 
 /**
@@ -21,7 +20,7 @@ import useDataVisualisation from "@/composables/useDataVisualisation";
  */
 export default function useVisuImagePanel(imagePanel: Readonly<ShallowRef<InstanceType<typeof VisuImagePanel> | null>>) {
     //#region Plugins & services
-    const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+    const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
     const {loadImage} = useDataVisualisation();
     //#endregion
 
@@ -32,7 +31,7 @@ export default function useVisuImagePanel(imagePanel: Readonly<ShallowRef<Instan
     const highlightedImageUri: Ref<string | undefined> = ref<string | undefined>(undefined);
     //#endregion
 
-    //#region Hooks
+    //#region Hooks & watchers
     onBeforeUnmount(() => {
         clearImagePanel();
     });
@@ -53,7 +52,7 @@ export default function useVisuImagePanel(imagePanel: Readonly<ShallowRef<Instan
             await nextTick();
             imagePanel.value?.scrollToImage(imageUri);
         } catch (error) {
-            opensilex.errorHandler(error);
+            $opensilex.errorHandler(error);
         }
     }
 

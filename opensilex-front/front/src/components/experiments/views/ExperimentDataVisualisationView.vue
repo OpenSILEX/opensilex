@@ -88,8 +88,8 @@
       </SearchFiltersSidebar>
 
       <n-layout-content class="visualisation-content">
-        <div class="card">
-          <div class="card-body">
+        <Card :noHeader="true" :noFooter="true">
+          <template #body>
             <VisuImagePanel
                 v-if="panelImages.length > 0"
                 ref="imagePanel"
@@ -111,8 +111,8 @@
                   @imageHover="highlightedImageUri = $event"
               ></DataVisuGraphic>
             </n-spin>
-          </div>
-        </div>
+          </template>
+        </Card>
       </n-layout-content>
     </n-layout>
   </PageContent>
@@ -126,12 +126,14 @@ import {NBadge, NCollapse, NCollapseItem, NForm, NFormItem, NLayout, NLayoutCont
 import {ExperimentsService, VariableDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageContent from "@/components/layout/PageContent.vue";
+import Card from "@/components/common/views/Card.vue";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 import ModalFormSelector from "@/components/variables/form/ModalFormSelector.vue";
 import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
-import DataVisuGraphic, {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuGraphic.vue";
+import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
+import type {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import VisuImagePanel from "@/components/visualization/VisuImagePanel.vue";
 import {ScientificObjectFilter} from "@/components/scientificObjects/ScientificObjectList.vue";
 import useDataVisualisation, {
@@ -168,12 +170,12 @@ const props = defineProps<{
 
 //#region Private
 //#region Plugins & services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
 const route = useRoute();
 const {getNumericVariables, loadDataSeries, loadEvents, countEvents} = useDataVisualisation();
 
-const experimentsService: ExperimentsService = opensilex.getService<ExperimentsService>("opensilex.ExperimentsService");
+const experimentsService: ExperimentsService = $opensilex.getService<ExperimentsService>("opensilex.ExperimentsService");
 //#endregion
 
 //#region Template refs
@@ -218,7 +220,7 @@ const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
 });
 //#endregion
 
-//#region Hooks and watcher
+//#region Hooks & watchers
 onMounted(() => {
   initDefaultDates();
 });
@@ -233,7 +235,7 @@ watch(
 async function onSearch(): Promise<void> {
   const {scientificObjects, variables} = filter.value;
   if (scientificObjects.length === 0 || variables.length === 0) {
-    opensilex.showWarningToast(t("ExperimentDataVisualisationView.missingFilters"));
+    $opensilex.showWarningToast(t("ExperimentDataVisualisationView.missingFilters"));
     return;
   }
 
@@ -255,7 +257,7 @@ async function onSearch(): Promise<void> {
     clearImagePanel();
     searchFiltersToggle.value = true;
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   } finally {
     loading.value = false;
   }
@@ -288,7 +290,7 @@ function initDefaultDates(): void {
           filter.value.start_date = getLastFifteenDaysStartDate();
         }
       })
-      .catch(error => opensilex.errorHandler(error));
+      .catch(error => $opensilex.errorHandler(error));
 }
 
 function resetFilters(): void {
@@ -357,7 +359,7 @@ async function refreshEventsCount(): Promise<void> {
   try {
     eventsCount.value = await countEvents(f.scientificObjects, f.start_date, f.end_date);
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   } finally {
     eventsCountLoading.value = false;
   }

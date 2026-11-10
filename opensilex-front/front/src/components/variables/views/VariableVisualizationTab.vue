@@ -8,17 +8,15 @@
           @reset="resetFilters()"
       >
         <n-form>
-          <!-- Devices -->
-          <n-form-item class="compact-form-item">
-            <DeviceSelector
-                :value="filter.devices"
-                @update:value="onDeviceSelectorUpdate"
-                :variable="variable"
-                :multiple="true"
-                :required="true"
-                class="searchFilter"
-            ></DeviceSelector>
-          </n-form-item>
+          <!-- Devices, not in an n-form-item: the selector renders its own -->
+          <DeviceSelector
+              :value="filter.devices"
+              @update:value="onDeviceSelectorUpdate"
+              :variable="variable"
+              :multiple="true"
+              :required="true"
+              class="searchFilter"
+          ></DeviceSelector>
 
           <!-- Start Date -->
           <n-form-item class="compact-form-item">
@@ -68,8 +66,8 @@
       </SearchFiltersSidebar>
 
       <n-layout-content class="visualisation-content">
-        <div class="card">
-          <div class="card-body">
+        <Card :noHeader="true" :noFooter="true">
+          <template #body>
             <n-spin :show="loading">
               <DataVisuGraphic
                   :series="series"
@@ -79,8 +77,8 @@
                   :events="events"
               ></DataVisuGraphic>
             </n-spin>
-          </div>
-        </div>
+          </template>
+        </Card>
       </n-layout-content>
     </n-layout>
   </PageContent>
@@ -93,11 +91,13 @@ import {NBadge, NCollapse, NCollapseItem, NForm, NFormItem, NLayout, NLayoutCont
 import {DeviceGetDTO, DevicesService, VariableDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageContent from "@/components/layout/PageContent.vue";
+import Card from "@/components/common/views/Card.vue";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 import DeviceSelector from "@/components/devices/DeviceSelector.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
-import DataVisuGraphic, {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuGraphic.vue";
+import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
+import type {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import useDataVisualisation, {
   colorEventsByType,
   DataSeriesRequest,
@@ -133,11 +133,11 @@ const props = defineProps<{
 
 //#region Private
 //#region Plugins & services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
 const {getNumericVariables, loadDataSeries, loadEvents, countEvents, splitSeriesByTarget} = useDataVisualisation();
 
-const devicesService: DevicesService = opensilex.getService<DevicesService>("opensilex.DevicesService");
+const devicesService: DevicesService = $opensilex.getService<DevicesService>("opensilex.DevicesService");
 //#endregion
 
 //#region Data & Computed
@@ -160,7 +160,7 @@ const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
 });
 //#endregion
 
-//#region Hooks and watcher
+//#region Hooks & watchers
 watch(
     () => [filter.value.devices, filter.value.start_date, filter.value.end_date],
     refreshEventsCount
@@ -177,7 +177,7 @@ function onDeviceSelectorUpdate(value: string | string[] | null): void {
 
 async function onSearch(): Promise<void> {
   if (filter.value.devices.length === 0) {
-    opensilex.showWarningToast(t("VariableVisualizationTab.missingDevices"));
+    $opensilex.showWarningToast(t("VariableVisualizationTab.missingDevices"));
     return;
   }
 
@@ -200,7 +200,7 @@ async function onSearch(): Promise<void> {
     events.value = loadedEvents;
     searchFiltersToggle.value = true;
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   } finally {
     loading.value = false;
   }
@@ -271,7 +271,7 @@ async function refreshEventsCount(): Promise<void> {
   try {
     eventsCount.value = await countEvents(f.devices, f.start_date, f.end_date);
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   } finally {
     eventsCountLoading.value = false;
   }

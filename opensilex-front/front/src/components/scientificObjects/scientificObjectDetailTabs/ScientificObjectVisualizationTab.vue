@@ -69,8 +69,8 @@
       </SearchFiltersSidebar>
 
       <n-layout-content class="visualisation-content">
-        <div class="card">
-          <div class="card-body">
+        <Card :noHeader="true" :noFooter="true">
+          <template #body>
             <VisuImagePanel
                 v-if="panelImages.length > 0"
                 ref="imagePanel"
@@ -92,8 +92,8 @@
                   @imageHover="highlightedImageUri = $event"
               ></DataVisuGraphic>
             </n-spin>
-          </div>
-        </div>
+          </template>
+        </Card>
       </n-layout-content>
     </n-layout>
   </PageContent>
@@ -107,11 +107,13 @@ import {VariableDetailsDTO} from "opensilex-core/index";
 import {ScientificObjectDetailByExperimentsDTO} from "opensilex-core/model/scientificObjectDetailByExperimentsDTO";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageContent from "@/components/layout/PageContent.vue";
+import Card from "@/components/common/views/Card.vue";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
-import DataVisuGraphic, {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuGraphic.vue";
+import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
+import type {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import VisuImagePanel from "@/components/visualization/VisuImagePanel.vue";
 import useDataVisualisation, {
   colorEventsByType,
@@ -147,7 +149,7 @@ const props = defineProps<{
 
 //#region Private
 //#region Plugins & services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
 const {getNumericVariables, loadDataSeries, loadEvents, countEvents} = useDataVisualisation();
 //#endregion
@@ -186,7 +188,7 @@ const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
 });
 //#endregion
 
-//#region Hooks and watcher
+//#region Hooks & watchers
 onMounted(() => {
   refreshEventsCount();
 });
@@ -197,7 +199,7 @@ watch(() => [filter.value.start_date, filter.value.end_date], refreshEventsCount
 //#region Event handlers
 async function onSearch(): Promise<void> {
   if (filter.value.variables.length === 0) {
-    opensilex.showWarningToast(t("DataVisualisation.missingVariable"));
+    $opensilex.showWarningToast(t("DataVisualisation.missingVariable"));
     return;
   }
 
@@ -220,7 +222,7 @@ async function onSearch(): Promise<void> {
     clearImagePanel();
     searchFiltersToggle.value = true;
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   } finally {
     loading.value = false;
   }
@@ -282,7 +284,7 @@ async function refreshEventsCount(): Promise<void> {
   try {
     eventsCount.value = await countEvents([props.scientificObject.uri], f.start_date, f.end_date);
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   } finally {
     eventsCountLoading.value = false;
   }

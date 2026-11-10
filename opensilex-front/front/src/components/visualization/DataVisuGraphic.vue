@@ -18,73 +18,22 @@
     </div>
     <div v-show="series.length > 0" ref="chartContainer" class="chartContainer"></div>
     <n-empty v-if="series.length === 0" :description="t('component.common.search.noDataFound')" class="emptyGraphic"/>
+    <!-- Details of the clicked data point or event pin -->
+    <DataVisuDetails
+        v-if="selectedPoint?.data || selectedEvent"
+        :data="selectedPoint?.data"
+        :event="selectedEvent?.event"
+    ></DataVisuDetails>
   </div>
 </template>
-
-<script lang="ts">
-import type {DataGetSearchDTO, EventGetDTO} from "opensilex-core/index";
-
-/**
- * One point of a series
- */
-export interface DataVisuPoint {
-  /** Date of the point, in milliseconds */
-  timestamp: number
-  value: number
-  /** The Data this point was made from, kept for the interactions on the point (e.g. displaying its provenance) */
-  data?: DataGetSearchDTO
-  /** The image the value was measured from (its provenance "prov_used"), if any. Drawn as a pin on the point */
-  image?: DataVisuPointImage
-}
-
-/**
- * Image a point was measured from
- */
-export interface DataVisuPointImage {
-  /** URI of the image data file */
-  uri: string
-  /** true if the image has annotations, its pin is then red */
-  annotated: boolean
-}
-
-/**
- * Type to represent one series drawn on the graphic, e.g. the data of one (ScientificObject, Variable) pair.
- */
-export interface DataVisuSerie {
-  name: string
-  /** Points sorted by date */
-  points: DataVisuPoint[]
-  color?: string
-  /** ECharts symbol name (circle, rect, triangle, diamond...) */
-  symbol?: string
-  /** Index in the yAxisNames prop of the axis this series is drawn on */
-  yAxisIndex?: number
-  /** true to hide the series at first, it can be displayed by clicking its name in the legend */
-  hidden?: boolean
-}
-
-/**
- * One event, drawn as a pin at the bottom of the graphic
- */
-export interface DataVisuEvent {
-  /** Date where the pin is drawn, in milliseconds */
-  timestamp: number
-  /** Text written in the pin, e.g. the first letter of the event type */
-  label: string
-  /**
-   * Name of the legend entry grouping this event with others, e.g. "Events -> plot 1". Events with the same
-   * seriesName can be hidden together by clicking the legend.
-   */
-  seriesName: string
-  color?: string
-  event: EventGetDTO
-}
-</script>
 
 <script setup lang="ts">
 import {computed, ComputedRef, h, onBeforeUnmount, onMounted, ref, Ref, useTemplateRef, VNode, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import {DropdownOption, NButton, NDropdown, NEmpty} from "naive-ui";
+import DataVisuDetails from "@/components/visualization/DataVisuDetails.vue";
+import type {EventGetDTO} from "opensilex-core/index";
+import type {DataVisuEvent, DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import * as echarts from "echarts/core";
 import type {ECElementEvent} from "echarts/core";
 import {LineChart, ScatterChart} from "echarts/charts";
@@ -211,6 +160,9 @@ let eventsBySeriesId: Map<string, DataVisuEvent[]> = new Map<string, DataVisuEve
  */
 let imagePointsBySeriesId: Map<string, DataVisuPoint[]> = new Map<string, DataVisuPoint[]>();
 
+/** Data series by ECharts id, used to find the point of a clicked symbol. Rebuilt with the series. */
+let dataSeriesById: Map<string, DataVisuSerie> = new Map<string, DataVisuSerie>();
+
 /**
  * The ECharts instance drawing in chartContainer. Not reactive on purpose: ECharts manages its own state, and
  * wrapping it in a Vue ref would only add overhead.
@@ -223,6 +175,15 @@ let resizeObserver: ResizeObserver | undefined;
 const lineMode: Ref<boolean> = ref<boolean>(false);
 /** true when the X axis is zoomed, to display the "Reset zoom" button */
 const isZoomed: Ref<boolean> = ref<boolean>(false);
+/** Clicked data point, its details are displayed under the graphic */
+const selectedPoint: Ref<DataVisuPoint | undefined> = ref<DataVisuPoint | undefined>(undefined);
+/** Clicked event pin, its details are displayed under the graphic */
+const selectedEvent: Ref<DataVisuEvent | undefined> = ref<DataVisuEvent | undefined>(undefined);
+/**
+ * ECharts position of the point drawn in black. ECharts only unselects the previous point of the same series, the
+ * previous point of another series is unselected by onChartClick().
+ */
+let selectedSymbol: { seriesId: string, dataIndex: number } | undefined;
 
 const menuOptions: ComputedRef<DropdownOption[]> = computed<DropdownOption[]>(() => [
   lineMode.value
@@ -233,7 +194,7 @@ const menuOptions: ComputedRef<DropdownOption[]> = computed<DropdownOption[]>(()
 ]);
 //#endregion
 
-//#region Hooks and watcher
+//#region Hooks & watchers
 onMounted(() => {
   chart = echarts.init(chartContainer.value);
   chart.on("datazoom", onChartDataZoom);
@@ -285,12 +246,37 @@ function onMenuSelect(key: MenuKey): void {
 }
 
 /**
- * Called by ECharts when any element of the chart is clicked, only the image pins are handled
+ * Called by ECharts when any element of the chart is clicked:
+ * - an image pin emits imageClick
+ * - a data point is drawn in black and its details are displayed under the chart, clicking it again hides them
+ * - an event pin displays the details of the event under the chart
  */
 function onChartClick(params: ECElementEvent): void {
-  const point: DataVisuPoint | undefined = getImagePoint(params);
-  if (point) {
-    emit("imageClick", point);
+  const imagePoint: DataVisuPoint | undefined = getImagePoint(params);
+  if (imagePoint) {
+    emit("imageClick", imagePoint);
+    return;
+  }
+  const dataPoint: DataVisuPoint | undefined = dataSeriesById.get(params.seriesId)?.points[params.dataIndex];
+  if (dataPoint) {
+    if (selectedSymbol?.seriesId === params.seriesId && selectedSymbol.dataIndex === params.dataIndex) {
+      // Clicking the selected point again unselects it (ECharts does it for its color), and hides its details
+      selectedSymbol = undefined;
+      selectedPoint.value = undefined;
+      return;
+    }
+    if (selectedSymbol && selectedSymbol.seriesId !== params.seriesId) {
+      chart?.dispatchAction({type: "unselect", seriesId: selectedSymbol.seriesId, dataIndex: selectedSymbol.dataIndex});
+    }
+    selectedSymbol = {seriesId: params.seriesId, dataIndex: params.dataIndex};
+    selectedPoint.value = dataPoint;
+    selectedEvent.value = undefined;
+    return;
+  }
+  const event: DataVisuEvent | undefined = eventsBySeriesId.get(params.seriesId)?.[params.dataIndex];
+  if (event) {
+    selectedEvent.value = event;
+    selectedPoint.value = undefined;
   }
 }
 
@@ -467,7 +453,9 @@ function buildBaseOption(yAxisNames: string[], zoomRange?: ZoomRange): DataVisuO
  * Converts the series prop into ECharts series, drawn as points or lines depending on lineMode.
  */
 function buildSeries(): Array<ScatterSeriesOption | LineSeriesOption> {
+  dataSeriesById = new Map<string, DataVisuSerie>();
   return props.series.map((serie: DataVisuSerie, index: number): ScatterSeriesOption | LineSeriesOption => {
+    dataSeriesById.set(`data:${index}`, serie);
     /** Options shared by the scatter and the line series */
     const common = {
       /** Identifies the series when only the series are updated (line mode), so ECharts updates the right one */
@@ -492,6 +480,9 @@ function buildSeries(): Array<ScatterSeriesOption | LineSeriesOption> {
        * focus "series" fades out every other series, so the hovered point's series stands out.
        */
       emphasis: {focus: "series" as const},
+      /** A clicked point is selected and drawn in black, until another point is clicked, see onChartClick() */
+      selectedMode: "single" as const,
+      select: {itemStyle: {color: "#000"}},
     };
 
     if (lineMode.value) {
@@ -699,6 +690,9 @@ function render(): void {
   // notMerge so series removed from the props are removed from the graphic
   chart.setOption(buildOption(), {notMerge: true});
   isZoomed.value = false;
+  selectedPoint.value = undefined;
+  selectedEvent.value = undefined;
+  selectedSymbol = undefined;
   enableDragZoom();
   layoutEventPins(chart);
 }

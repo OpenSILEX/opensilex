@@ -19,9 +19,9 @@ import type {
     DataVisuEvent,
     DataVisuPoint,
     DataVisuPointImage,
-    DataVisuSerie
-} from "@/components/visualization/DataVisuGraphic.vue";
-import type {VisuImage} from "@/components/visualization/VisuImagePanel.vue";
+    DataVisuSerie,
+    VisuImage
+} from "@/components/visualization/DataVisuTypes";
 
 /**
  * Filters of DataService.searchDataList used by the graphics. Undefined filters are not applied.
@@ -172,15 +172,15 @@ const NUMERIC_DATATYPES: string[] = ["decimal", "integer"];
  */
 export default function useDataVisualisation() {
     //#region Plugins & services
-    const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+    const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
     const {t} = useI18n();
     const store = useStore();
 
-    const dataService: DataService = opensilex.getService<DataService>("opensilex.DataService");
-    const variablesService: VariablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
-    const eventsService: EventsService = opensilex.getService<EventsService>("opensilex.EventsService");
-    const annotationsService: AnnotationsService = opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
-    const ontologyService: OntologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");
+    const dataService: DataService = $opensilex.getService<DataService>("opensilex.DataService");
+    const variablesService: VariablesService = $opensilex.getService<VariablesService>("opensilex.VariablesService");
+    const eventsService: EventsService = $opensilex.getService<EventsService>("opensilex.EventsService");
+    const annotationsService: AnnotationsService = $opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
+    const ontologyService: OntologyService = $opensilex.getService<OntologyService>("opensilex.OntologyService");
     //#endregion
 
     //#region Methods
@@ -196,7 +196,7 @@ export default function useDataVisualisation() {
             (v: VariableDetailsDTO) => !NUMERIC_DATATYPES.includes(getDatatypeName(v))
         );
         if (nonNumericVariable) {
-            opensilex.showInfoToast(t("DataVisualisation.datatypeMessage", {
+            $opensilex.showInfoToast(t("DataVisualisation.datatypeMessage", {
                 variable: nonNumericVariable.name,
                 datatype: getDatatypeName(nonNumericVariable)
             }));
@@ -215,7 +215,7 @@ export default function useDataVisualisation() {
         }
 
         if (series.every((s: DataVisuSerie) => s.points.length === 0)) {
-            opensilex.showInfoToast(t("component.common.search.noDataFound"));
+            $opensilex.showInfoToast(t("component.common.search.noDataFound"));
         }
         return series;
     }
@@ -256,7 +256,7 @@ export default function useDataVisualisation() {
             + `?scaled_width=${THUMBNAIL_WIDTH}&scaled_height=${THUMBNAIL_HEIGHT}`;
         return {
             uri: image.uri,
-            src: await opensilex.viewImageFromGetService(thumbnailPath),
+            src: await $opensilex.viewImageFromGetService(thumbnailPath),
             // The local name of the type, e.g. "RGBImage" for "vocabulary:RGBImage"
             typeName: description.rdf_type.split(/[#:]/).pop(),
             target: description.target,
@@ -326,7 +326,7 @@ export default function useDataVisualisation() {
         const data: DataGetSearchDTO[] = http.response.result;
 
         if (data.length >= limit) {
-            opensilex.showWarningToast(t("DataVisualisation.dataLimit", {
+            $opensilex.showWarningToast(t("DataVisualisation.dataLimit", {
                 total: http.response.metadata?.pagination?.totalCount ?? data.length,
                 serie: request.name,
                 limit

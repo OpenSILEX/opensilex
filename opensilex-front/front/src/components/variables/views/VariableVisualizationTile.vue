@@ -12,44 +12,42 @@
 
             <TextView v-if="isNoDataFound"
                                 id="no-data-text"
-                                :label="t('component.data.no-data')">
+                                label="component.data.no-data">
             </TextView>
 
             <div
               id="data-infos"
               v-if="isDataLoaded">
-              <div class="row">
-                <div class="col" v-if="isDataOutOfReach">
-                  <TextView
-                    style="margin-bottom: 0;"
-                    :value="t('component.data.lastDataStored')">
-                  </TextView>
-                  <DateView
-                    style="font-size: x-large; margin-bottom: 0; color: #e53935;"
-                    :value="lastData.date"
-                    :isDateTime="true"
-                    :useLocaleFormat="true"
-                    :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
-                  </DateView>
-                </div>
-                <div class="col" v-else>
-                  <TextView
-                    style="margin-bottom: 0;"
-                    :value="t('component.data.lastMedianData')">
-                  </TextView>
-                  <TextView
-                    style="font-size: x-large; margin-bottom: 0;"
-                    :value="lastData.value"
-                  >
-                  </TextView>
-                  <DateView
-                    style="font-size: x-large; margin-bottom: 0;"
-                    :value="lastData.date"
-                    :isDateTime="true"
-                    :useLocaleFormat="true"
-                    :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
-                  </DateView>
-                </div>
+              <div v-if="isDataOutOfReach">
+                <TextView
+                  style="margin-bottom: 0;"
+                  :value="t('component.data.lastDataStored')">
+                </TextView>
+                <DateView
+                  style="font-size: x-large; margin-bottom: 0; color: #e53935;"
+                  :value="lastData.date"
+                  :isDatetime="true"
+                  :useLocaleFormat="true"
+                  :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
+                </DateView>
+              </div>
+              <div v-else>
+                <TextView
+                  style="margin-bottom: 0;"
+                  :value="t('component.data.lastMedianData')">
+                </TextView>
+                <TextView
+                  style="font-size: x-large; margin-bottom: 0;"
+                  :value="lastData.value"
+                >
+                </TextView>
+                <DateView
+                  style="font-size: x-large; margin-bottom: 0;"
+                  :value="lastData.date"
+                  :isDatetime="true"
+                  :useLocaleFormat="true"
+                  :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
+                </DateView>
               </div>
             </div>
 
@@ -57,7 +55,7 @@
 
             <Modal ref="graphicModal" modalSize="xl">
               <template #header>
-                <h4 class="modal-title">
+                <h4>
                   {{ variableUri.name }}
                 </h4>
               </template>
@@ -71,18 +69,18 @@
 
                 <!-- Settings button -->
                 <Button
-                  :label="t('component.facility.monitoring.settings')"
+                  label="component.facility.monitoring.settings"
                   class="settingsButton"
                   icon="fa#cog"
                   @click="histogramSettings.show()"
                 ></Button>
               </div>
 
-              <div class="row justify-content-center">
+              <div class="d-flex justify-content-center">
                 <TextView
                   v-if="!isDataForGraph && isGraphicLoaded"
                   id="no-data-text"
-                  :label="t('component.data.no-data')"
+                  label="component.data.no-data"
                 >
                 </TextView>
               </div>
@@ -127,7 +125,8 @@ import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import DataVisuGraphic, {DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuGraphic.vue";
+import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
+import type {DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import {getGraphicColor} from "@/composables/useDataVisualisation";
 import {Period} from "@/components/common/forms/DatePeriodPicker.vue";
 import FacilityHistogramSettings from "@/components/facilities/FacilityHistogramSettings.vue";
@@ -171,12 +170,12 @@ const props = defineProps<{
 
 //#region Private
 //#region Plugins & services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const store = useStore();
 const {t} = useI18n();
 
-const variablesService: VariablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
-const dataService: DataService = opensilex.getService<DataService>("opensilex.DataService");
+const variablesService: VariablesService = $opensilex.getService<VariablesService>("opensilex.VariablesService");
+const dataService: DataService = $opensilex.getService<DataService>("opensilex.DataService");
 //#endregion
 
 //#region Template refs
@@ -232,7 +231,7 @@ const yAxisNames: ComputedRef<string[]> = computed<string[]>(() => {
 });
 //#endregion
 
-//#region Hooks and watcher
+//#region Hooks & watchers
 onMounted(() => {
   loadVariableAndLastData();
 });
@@ -254,11 +253,11 @@ function onSettingsChanged(newPeriod: Period, begin: string, end: string, select
  * shows the loader when a request starts, so the loader is enabled again right after, for the next requests.
  */
 function withoutPageLoader<T>(request: () => Promise<T>): Promise<T> {
-  opensilex.disableLoader();
+  $opensilex.disableLoader();
   try {
     return request();
   } finally {
-    opensilex.enableLoader();
+    $opensilex.enableLoader();
   }
 }
 
@@ -269,7 +268,7 @@ async function loadVariableAndLastData(): Promise<void> {
   } catch (error) {
     // Without data, the loading overlay of the tile is removed
     isNoDataFound.value = true;
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   }
 }
 
@@ -325,7 +324,7 @@ async function loadAllData(): Promise<void> {
     warnIfDataLimitReached();
     showGraphic();
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   } finally {
     isGraphicLoaded.value = true;
   }
@@ -376,7 +375,7 @@ function warnIfDataLimitReached(): void {
   const limit: number = store.state.graphDataLimit;
   for (const serie of [...calculatedDataSeries.value, ...dataSeries.value]) {
     if ((serie.data?.length ?? 0) > limit) {
-      opensilex.showInfoToast(t("component.common.search.limitSizeMessageBasic", {count: serie.data.length}));
+      $opensilex.showInfoToast(t("component.common.search.limitSizeMessageBasic", {count: serie.data.length}));
     }
   }
 }

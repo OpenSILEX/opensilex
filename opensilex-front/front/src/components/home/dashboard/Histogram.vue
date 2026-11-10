@@ -9,13 +9,13 @@
 
       <template #rightHeader>
         <div class="graphicOptions">
-          <span class="badge rounded-pill greenThemeColor periodBadge">
+          <n-tag round class="greenThemeColor">
             <Icon icon="fa#hourglass-half"/>
             {{ t(`Histogram.period.${period}`) }}
-          </span>
+          </n-tag>
           <Button
-              class="btn settingsButton"
-              :label="t('component.facility.monitoring.settings')"
+              class="settingsButton"
+              label="component.facility.monitoring.settings"
               icon="fa#cog"
               :small="true"
               @click="histogramSettings?.show()"
@@ -46,10 +46,11 @@
 <script setup lang="ts">
 import {inject, onMounted, ref, Ref, useTemplateRef} from "vue";
 import {useI18n} from "vue-i18n";
-import {NSpin} from "naive-ui";
+import {NSpin, NTag} from "naive-ui";
 import {DeviceGetDTO, DevicesService, VariableDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import DataVisuGraphic, {DataVisuSerie} from "@/components/visualization/DataVisuGraphic.vue";
+import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
+import type {DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import HistogramSettings from "@/components/home/dashboard/HistogramSettings.vue";
 import {Period} from "@/components/common/forms/DatePeriodPicker.vue";
 import useDataVisualisation, {
@@ -78,11 +79,11 @@ const props = defineProps<{
 
 //#region Private
 //#region Plugins & services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
 const {getNumericVariables, loadDataSeries, splitSeriesByTarget} = useDataVisualisation();
 
-const devicesService: DevicesService = opensilex.getService<DevicesService>("opensilex.DevicesService");
+const devicesService: DevicesService = $opensilex.getService<DevicesService>("opensilex.DevicesService");
 //#endregion
 
 //#region Template refs
@@ -100,7 +101,7 @@ const PERIOD_LENGTHS: Record<Period, { days?: number, months?: number }> = {
 };
 
 /** Text displayed in the header, set in the front configuration (front.dashboard.graph1.dataLocationInformations) */
-const dataLocationInformations: string = opensilex.getConfig().dashboard.graph1.dataLocationInformations;
+const dataLocationInformations: string = $opensilex.getConfig().dashboard.graph1.dataLocationInformations;
 
 const period: Ref<Period> = ref<Period>("day");
 /** All the devices that measured the variable */
@@ -114,7 +115,7 @@ const series: Ref<DataVisuSerie[]> = ref<DataVisuSerie[]>([]);
 const yAxisNames: Ref<string[]> = ref<string[]>([]);
 //#endregion
 
-//#region Hooks and watcher
+//#region Hooks & watchers
 onMounted(async () => {
   await loadDevices();
   await loadData();
@@ -154,7 +155,7 @@ async function loadDevices(): Promise<void> {
     );
     devices.value = http.response.result;
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   }
 }
 
@@ -171,7 +172,7 @@ async function loadData(): Promise<void> {
     yAxisNames.value = [variable.value.unit?.name ? `${variable.value.name} (${variable.value.unit.name})` : variable.value.name];
     series.value = styleDeviceTargetSeries(deviceSeries, await splitSeriesByTarget(deviceSeries));
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   } finally {
     loading.value = false;
   }
@@ -203,7 +204,7 @@ function buildSeriesRequests(): DataSeriesRequest[] {
 //#endregion
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .settingsButton {
   color: #00A28C;
   font-size: 1.2em;

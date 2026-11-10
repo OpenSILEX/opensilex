@@ -24,30 +24,13 @@
   </div>
 </template>
 
-<script lang="ts">
-/**
- * An image displayed in the VisuImagePanel
- */
-export interface VisuImage {
-  /** URI of the image data file */
-  uri: string
-  /** Thumbnail of the image, as an object URL (blob:...) */
-  src: string
-  /** Local name of the image type, e.g. "RGBImage" */
-  typeName: string
-  /** URI of the element the image is about, e.g. a scientific object */
-  target?: string
-  date?: string
-  annotated: boolean
-}
-</script>
-
 <script setup lang="ts">
 import {inject, ref, Ref, useTemplateRef} from "vue";
 import {useI18n} from "vue-i18n";
 import {DataFileGetDTO, DataService, ProvenanceGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import VisuImageCard from "@/components/visualization/VisuImageCard.vue";
+import type {VisuImage} from "@/components/visualization/DataVisuTypes";
 import ImageModal from "@/components/data/ImageModal.vue";
 import DataProvenanceModalView from "@/components/data/DataProvenanceModalView.vue";
 import AnnotationsModal from "@/components/annotations/list/AnnotationsModal.vue";
@@ -78,9 +61,9 @@ defineProps<{
 
 //#region Private
 //#region Plugins & services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex");
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
-const dataService: DataService = opensilex.getService<DataService>("opensilex.DataService");
+const dataService: DataService = $opensilex.getService<DataService>("opensilex.DataService");
 //#endregion
 
 //#region Template refs
@@ -114,7 +97,7 @@ async function onCardDetails(imageUri: string): Promise<void> {
     provenanceModal.value?.setProvenanceAndBatch({data: description, provenance});
     provenanceModal.value?.show();
   } catch (error) {
-    opensilex.errorHandler(error);
+    $opensilex.errorHandler(error);
   }
 }
 

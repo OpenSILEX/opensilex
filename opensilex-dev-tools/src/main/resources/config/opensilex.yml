@@ -29,8 +29,7 @@ big-data:
             database: semantics
     #            timezone: Europe/Paris
 
-phisws:
-    infrastructure: opensilex
+
 # Configuration for module: SecurityModule (SecurityConfig)
 # security:
 # #    Email service (EmailService)
@@ -65,9 +64,14 @@ server:
 
 system:
     ignoredModules:
-        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
+        org.opensilex.phis.PhisWsModule: opensilex-phis.jar
 
 front:
+    theme: opensilex-sixtine-citrus#sixtine-new-version
+    loginComponent: opensilex-sixtine-citrus-SixtineLoginComponent
+    headerComponent: opensilex-sixtine-citrus-SixtineHeaderComponent
+    applicationName: Sixtine
+    connectAsGuest: true
     agroportal:
         entity:
             - AGROVOC

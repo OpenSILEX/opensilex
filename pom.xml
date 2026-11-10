@@ -75,6 +75,7 @@
         <module>opensilex-incubator</module>
         <module>opensilex-deref</module>
         <module>opensilex-report</module>
+        <module>opensilex-sixtine-citrus</module>
     </modules>
     
     <dependencies>
@@ -176,6 +177,12 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-report</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sixtine-citrus</artifactId>
             <version>${revision}</version>
         </dependency>
 

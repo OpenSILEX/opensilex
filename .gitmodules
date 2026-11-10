@@ -7,3 +7,6 @@
 [submodule "opensilex-incubator"]
 	path = opensilex-incubator
 	url = git@forge.inrae.fr:OpenSILEX/dereferencement/opensilex-incubator.git
+[submodule "opensilex-sixtine-citrus"]
+	path = opensilex-sixtine-citrus
+	url = git@forge.inrae.fr:OpenSILEX/dereferencement/opensilex-sixtine-citrus.git

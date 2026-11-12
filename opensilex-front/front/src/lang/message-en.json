@@ -1228,6 +1228,13 @@
             "lastMedianData": "Last median value",
             "lastDataStored": "Last data imported on the date",
             "no-data": "No data found for this period",
+            "resultModal": {
+                "title": "Data insertion report",
+                "data-imported": "{number} observations have been imported successfully",
+                "datum-imported": "{number} observation imported successfully",
+                "annotations-imported": "{number} annotations have been imported successfully",
+                "annotation-imported": "{number} annotation imported successfully"
+            },
             "view": {
                 "buttons": {
                     "create-data": "Add data",

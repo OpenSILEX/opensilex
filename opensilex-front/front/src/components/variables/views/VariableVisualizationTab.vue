@@ -75,6 +75,7 @@
                   :elementName="elementName"
                   :elementUri="variable"
                   :events="events"
+                  @eventCreated="onGraphicEventCreated"
               ></DataVisuGraphic>
             </n-spin>
           </template>
@@ -168,6 +169,17 @@ watch(
 //#endregion
 
 //#region Event handlers
+/**
+ * An event was created from the menu of a data point: the count is refreshed, and the graphic too if it displays the
+ * events
+ */
+function onGraphicEventCreated(): void {
+  refreshEventsCount();
+  if (filter.value.showEvents) {
+    onSearch();
+  }
+}
+
 /**
  * The selector gives null when it is cleared, the filter always keeps an array
  */

@@ -10,7 +10,7 @@ import useDataVisualisation from "@/composables/useDataVisualisation";
  *
  * - the panel receives `images` and `highlightedImageUri`, and its events are handled by `onImagePanelHide`,
  *   `onImagePanelAnnotationCreated`, and `@hover="highlightedImageUri = $event"`
- * - the graphic receives `highlightedImageUri`, and its events are handled by `onGraphicImageClick` and
+ * - the graphic receives `highlightedImageUri`, and its events are handled by `onGraphicImageClicked` and
  *   `@imageHover="highlightedImageUri = $event"`
  * - `clearImagePanel()` is called on each new search
  *
@@ -41,7 +41,7 @@ export default function useVisuImagePanel(imagePanel: Readonly<ShallowRef<Instan
     /**
      * Adds the image of the clicked pin to the image panel, if it isn't there yet, and scrolls the panel to it.
      */
-    async function onGraphicImageClick(point: DataVisuPoint): Promise<void> {
+    async function onGraphicImageClicked(point: DataVisuPoint): Promise<void> {
         const imageUri: string = point.image.uri;
         try {
             if (!panelImages.value.some((image: VisuImage) => image.uri === imageUri)) {
@@ -90,7 +90,7 @@ export default function useVisuImagePanel(imagePanel: Readonly<ShallowRef<Instan
     return {
         panelImages,
         highlightedImageUri,
-        onGraphicImageClick,
+        onGraphicImageClicked,
         onImagePanelAnnotationCreated,
         onImagePanelHide,
         clearImagePanel

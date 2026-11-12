@@ -17,6 +17,7 @@
       <Card :label="t('component.annotation.list-title')" :noFooter="true">
         <template #body>
           <AnnotationList
+              ref="annotationList"
               :key="data.uri"
               :target="data.uri"
               :displayTargetColumn="false"
@@ -55,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, ref, Ref, watch} from "vue";
+import {computed, ComputedRef, inject, ref, Ref, useTemplateRef, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import {NSpin} from "naive-ui";
 import {DataGetSearchDTO, DataService, EventDetailsDTO, EventGetDTO, EventsService, ProvenanceGetDTO} from "opensilex-core/index";
@@ -89,6 +90,10 @@ const {t} = useI18n();
 
 const dataService: DataService = $opensilex.getService<DataService>("opensilex.DataService");
 const eventsService: EventsService = $opensilex.getService<EventsService>("opensilex.EventsService");
+//#endregion
+
+//#region Template refs
+const annotationList = useTemplateRef<InstanceType<typeof AnnotationList>>("annotationList");
 //#endregion
 
 //#region Data & Computed
@@ -145,8 +150,19 @@ async function loadEventDetails(): Promise<void> {
   }
 }
 
+
+/**
+ * Reloads the annotations of the data, e.g. after an annotation was created on it
+ */
+function refreshAnnotations(): void {
+  annotationList.value?.refresh();
+}
 //#endregion
 //#endregion
+
+defineExpose({
+  refreshAnnotations
+});
 </script>
 
 <style scoped lang="scss">

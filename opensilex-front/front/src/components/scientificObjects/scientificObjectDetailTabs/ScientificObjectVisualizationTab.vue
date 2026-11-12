@@ -87,8 +87,9 @@
                   :elementName="elementName"
                   :elementUri="scientificObject.uri"
                   :events="events"
+                  @eventCreated="onGraphicEventCreated"
                   :highlightedImageUri="highlightedImageUri"
-                  @imageClick="onGraphicImageClick"
+                  @imageClick="onGraphicImageClicked"
                   @imageHover="highlightedImageUri = $event"
               ></DataVisuGraphic>
             </n-spin>
@@ -163,7 +164,7 @@ const imagePanel = useTemplateRef<InstanceType<typeof VisuImagePanel>>("imagePan
 const {
   panelImages,
   highlightedImageUri,
-  onGraphicImageClick,
+  onGraphicImageClicked,
   onImagePanelAnnotationCreated,
   onImagePanelHide,
   clearImagePanel
@@ -197,6 +198,17 @@ watch(() => [filter.value.start_date, filter.value.end_date], refreshEventsCount
 //#endregion
 
 //#region Event handlers
+/**
+ * An event was created from the menu of a data point: the count is refreshed, and the graphic too if it displays the
+ * events
+ */
+function onGraphicEventCreated(): void {
+  refreshEventsCount();
+  if (filter.value.showEvents) {
+    onSearch();
+  }
+}
+
 async function onSearch(): Promise<void> {
   if (filter.value.variables.length === 0) {
     $opensilex.showWarningToast(t("DataVisualisation.missingVariable"));

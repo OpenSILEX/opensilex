@@ -106,8 +106,10 @@
                   :elementName="elementName"
                   :elementUri="uri"
                   :events="events"
+                  :eventContext="uri"
+                  @eventCreated="onGraphicEventCreated"
                   :highlightedImageUri="highlightedImageUri"
-                  @imageClick="onGraphicImageClick"
+                  @imageClick="onGraphicImageClicked"
                   @imageHover="highlightedImageUri = $event"
               ></DataVisuGraphic>
             </n-spin>
@@ -187,7 +189,7 @@ const imagePanel = useTemplateRef<InstanceType<typeof VisuImagePanel>>("imagePan
 const {
   panelImages,
   highlightedImageUri,
-  onGraphicImageClick,
+  onGraphicImageClicked,
   onImagePanelAnnotationCreated,
   onImagePanelHide,
   clearImagePanel
@@ -232,6 +234,17 @@ watch(
 //#endregion
 
 //#region Event handlers
+/**
+ * An event was created from the menu of a data point: the count is refreshed, and the graphic too if it displays the
+ * events
+ */
+function onGraphicEventCreated(): void {
+  refreshEventsCount();
+  if (filter.value.showEvents) {
+    onSearch();
+  }
+}
+
 async function onSearch(): Promise<void> {
   const {scientificObjects, variables} = filter.value;
   if (scientificObjects.length === 0 || variables.length === 0) {

@@ -36,7 +36,7 @@
     </n-form>
 
     <template #footer>
-      <FormFooter submitLabel="component.common.apply" @cancel="hide()" @submit="onApply()"></FormFooter>
+      <FormFooter submitLabel="component.common.apply" @cancel="hide()" @submit="onFooterSubmit()"></FormFooter>
     </template>
   </Modal>
 </template>
@@ -96,7 +96,7 @@ const deviceOptions: ComputedRef<SelectOption[]> = computed<SelectOption[]>(() =
 /**
  * Without any selected device, all the devices are displayed
  */
-function onApply(): void {
+function onFooterSubmit(): void {
   const devices: string[] | undefined = allDevices.value || selectedDevices.value.length === 0
       ? undefined
       : selectedDevices.value;

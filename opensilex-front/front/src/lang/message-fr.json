@@ -1891,6 +1891,8 @@
         "eventBegin": "Début",
         "eventEnd": "Fin",
         "eventOngoing": "en cours",
+        "addEvent": "Ajouter un événement",
+        "annotateData": "Annoter la donnée",
         "imageSeriesName": "Images / {serie}"
     },
     "DataVisualisation": {

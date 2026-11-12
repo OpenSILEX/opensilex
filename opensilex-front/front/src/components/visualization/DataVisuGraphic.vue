@@ -9,7 +9,7 @@
           placement="bottom-end"
           :options="menuOptions"
           :to="graphicCard ?? 'body'"
-          @select="onMenuSelect"
+          @select="onBurgerMenuSelect"
       >
         <n-button quaternary circle :title="t('DataVisuGraphic.menu')">
           <i class="bi bi-list menuIcon"></i>
@@ -18,21 +18,48 @@
     </div>
     <div v-show="series.length > 0" ref="chartContainer" class="chartContainer"></div>
     <n-empty v-if="series.length === 0" :description="t('component.common.search.noDataFound')" class="emptyGraphic"/>
-    <!-- Details of the clicked data point or event pin -->
+    <!-- Details of the clicked data point or event pin, not in fullscreen where the graphic takes the whole screen -->
     <DataVisuDetails
-        v-if="selectedPoint?.data || selectedEvent"
+        v-if="(selectedPoint?.data || selectedEvent) && !isFullscreen"
+        ref="details"
         :data="selectedPoint?.data"
         :event="selectedEvent?.event"
     ></DataVisuDetails>
+
+    <!-- Menu of a right-clicked data point, at the position of the mouse -->
+    <n-dropdown
+        trigger="manual"
+        placement="bottom-start"
+        :show="rightClickMenuPoint !== undefined"
+        :x="rightClickMenuPosition.x"
+        :y="rightClickMenuPosition.y"
+        :options="rightClickMenuOptions"
+        :to="graphicCard ?? 'body'"
+        @select="onRightClickMenuSelect"
+        @clickoutside="rightClickMenuPoint = undefined"
+    ></n-dropdown>
+
+    <EventForm
+        ref="eventForm"
+        createTitle="component.events.add"
+        editTitle="component.events.edit"
+        :target="eventFormTarget"
+        :eventCreatedTime="eventFormTime"
+        :context="eventContext"
+        @onCreate="emit('eventCreated')"
+    ></EventForm>
+    <AnnotationModalForm ref="annotationForm" @onCreate="onAnnotationFormCreated"></AnnotationModalForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, h, onBeforeUnmount, onMounted, ref, Ref, useTemplateRef, VNode, watch} from "vue";
+import {computed, ComputedRef, h, nextTick, onBeforeUnmount, onMounted, ref, Ref, useTemplateRef, VNode, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import {DropdownOption, NButton, NDropdown, NEmpty} from "naive-ui";
 import DataVisuDetails from "@/components/visualization/DataVisuDetails.vue";
-import type {EventGetDTO} from "opensilex-core/index";
+import EventForm from "@/components/events/form/EventForm.vue";
+import AnnotationModalForm from "@/components/annotations/list/form/AnnotationModalForm.vue";
+import type {DataGetSearchDTO, EventGetDTO} from "opensilex-core/index";
 import type {DataVisuEvent, DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import * as echarts from "echarts/core";
 import type {ECElementEvent} from "echarts/core";
@@ -102,6 +129,8 @@ const emit = defineEmits<{
   imageClick: [point: DataVisuPoint]
   /** The mouse entered (image URI) or left (undefined) an image pin */
   imageHover: [imageUri: string | undefined]
+  /** An event was created from the menu of a data point, e.g. to load the events again */
+  eventCreated: []
 }>();
 
 const props = withDefaults(defineProps<{
@@ -117,6 +146,8 @@ const props = withDefaults(defineProps<{
   events?: DataVisuEvent[]
   /** URI of the image whose pins are enlarged, e.g. because its card is hovered in the image panel */
   highlightedImageUri?: string
+  /** Context (e.g. experiment URI) of the events created from the menu of a data point */
+  eventContext?: string
 }>(), {
   yAxisNames: () => [],
   events: () => []
@@ -131,6 +162,9 @@ const {t, locale} = useI18n();
 //#region Template refs
 const graphicCard = useTemplateRef<HTMLDivElement>("graphicCard");
 const chartContainer = useTemplateRef<HTMLDivElement>("chartContainer");
+const details = useTemplateRef<InstanceType<typeof DataVisuDetails>>("details");
+const eventForm = useTemplateRef<InstanceType<typeof EventForm>>("eventForm");
+const annotationForm = useTemplateRef<InstanceType<typeof AnnotationModalForm>>("annotationForm");
 //#endregion
 
 //#region Data & Computed
@@ -175,15 +209,32 @@ let resizeObserver: ResizeObserver | undefined;
 const lineMode: Ref<boolean> = ref<boolean>(false);
 /** true when the X axis is zoomed, to display the "Reset zoom" button */
 const isZoomed: Ref<boolean> = ref<boolean>(false);
+/** true while the component is in fullscreen */
+const isFullscreen: Ref<boolean> = ref<boolean>(false);
 /** Clicked data point, its details are displayed under the graphic */
 const selectedPoint: Ref<DataVisuPoint | undefined> = ref<DataVisuPoint | undefined>(undefined);
 /** Clicked event pin, its details are displayed under the graphic */
 const selectedEvent: Ref<DataVisuEvent | undefined> = ref<DataVisuEvent | undefined>(undefined);
 /**
  * ECharts position of the point drawn in black. ECharts only unselects the previous point of the same series, the
- * previous point of another series is unselected by onChartClick().
+ * previous point of another series is unselected by onChartClicked().
  */
 let selectedSymbol: { seriesId: string, dataIndex: number } | undefined;
+
+/** Right-clicked data point, its menu is displayed while it is defined */
+const rightClickMenuPoint: Ref<DataVisuPoint | undefined> = ref<DataVisuPoint | undefined>(undefined);
+/** Position of the mouse when the data point was right-clicked, in the window */
+const rightClickMenuPosition: Ref<{ x: number, y: number }> = ref<{ x: number, y: number }>({x: 0, y: 0});
+/** Target and date given to the event form, from the right-clicked data point */
+const eventFormTarget: Ref<string | undefined> = ref<string | undefined>(undefined);
+const eventFormTime: Ref<{ time: string } | undefined> = ref<{ time: string } | undefined>(undefined);
+/** URI of the data being annotated in the annotation form */
+const annotatedDataUri: Ref<string | undefined> = ref<string | undefined>(undefined);
+
+const rightClickMenuOptions: ComputedRef<DropdownOption[]> = computed<DropdownOption[]>(() => [
+  {key: "addEvent", label: t("DataVisuGraphic.addEvent"), icon: renderIcon("bi-flag")},
+  {key: "annotateData", label: t("DataVisuGraphic.annotateData"), icon: renderIcon("bi-chat-left-text")}
+]);
 
 const menuOptions: ComputedRef<DropdownOption[]> = computed<DropdownOption[]>(() => [
   lineMode.value
@@ -196,13 +247,15 @@ const menuOptions: ComputedRef<DropdownOption[]> = computed<DropdownOption[]>(()
 
 //#region Hooks & watchers
 onMounted(() => {
+  document.addEventListener("fullscreenchange", onFullscreenChange);
   chart = echarts.init(chartContainer.value);
-  chart.on("datazoom", onChartDataZoom);
+  chart.on("datazoom", onChartZoomed);
   // Hidden events series don't take space anymore, the pins of the others can move down
   chart.on("legendselectchanged", () => layoutEventPins(chart));
-  chart.on("click", onChartClick);
+  chart.on("click", onChartClicked);
   chart.on("mouseover", onChartMouseOver);
   chart.on("mouseout", onChartMouseOut);
+  chart.on("contextmenu", onChartRightClicked);
   render();
   // The container size changes when the filters sidebar is toggled or in fullscreen, not only when the window is resized
   resizeObserver = new ResizeObserver(() => {
@@ -213,12 +266,21 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  document.removeEventListener("fullscreenchange", onFullscreenChange);
   resizeObserver?.disconnect();
   chart?.dispose();
   chart = undefined;
 });
 
 watch(() => props.highlightedImageUri, highlightImagePins);
+
+// The tooltip is drawn above everything: it is hidden while the menu of a data point is open
+watch(rightClickMenuPoint, (point: DataVisuPoint | undefined) => {
+  if (point) {
+    chart?.dispatchAction({type: "hideTip"});
+  }
+  chart?.setOption({tooltip: {show: !point}});
+});
 
 // Redraw the whole chart when the parent passes new series, axes or events
 watch(() => [props.series, props.yAxisNames, props.events], render);
@@ -231,7 +293,7 @@ watch(lineMode, () => {
 //#endregion
 
 //#region Event handlers
-function onMenuSelect(key: MenuKey): void {
+function onBurgerMenuSelect(key: MenuKey): void {
   switch (key) {
     case "toggleLineMode":
       lineMode.value = !lineMode.value;
@@ -251,7 +313,7 @@ function onMenuSelect(key: MenuKey): void {
  * - a data point is drawn in black and its details are displayed under the chart, clicking it again hides them
  * - an event pin displays the details of the event under the chart
  */
-function onChartClick(params: ECElementEvent): void {
+function onChartClicked(params: ECElementEvent): void {
   const imagePoint: DataVisuPoint | undefined = getImagePoint(params);
   if (imagePoint) {
     emit("imageClick", imagePoint);
@@ -280,6 +342,60 @@ function onChartClick(params: ECElementEvent): void {
   }
 }
 
+function onFullscreenChange(): void {
+  isFullscreen.value = document.fullscreenElement === graphicCard.value;
+}
+
+/**
+ * Called by ECharts when any element of the chart is right-clicked: a data point opens its menu instead of the menu
+ * of the browser
+ */
+function onChartRightClicked(params: ECElementEvent): void {
+  const point: DataVisuPoint | undefined = dataSeriesById.get(params.seriesId)?.points[params.dataIndex];
+  if (!point?.data) {
+    return;
+  }
+  const mouseEvent: MouseEvent | undefined = params.event?.event as MouseEvent | undefined;
+  mouseEvent?.preventDefault();
+  rightClickMenuPosition.value = {x: mouseEvent?.clientX ?? 0, y: mouseEvent?.clientY ?? 0};
+  rightClickMenuPoint.value = point;
+}
+
+async function onRightClickMenuSelect(key: "addEvent" | "annotateData"): Promise<void> {
+  const data: DataGetSearchDTO | undefined = rightClickMenuPoint.value?.data;
+  rightClickMenuPoint.value = undefined;
+  if (!data) {
+    return;
+  }
+  // The forms are modals of the page, they are not visible in fullscreen
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+  }
+  switch (key) {
+    case "addEvent":
+      // The event is about the target of the data, or the device that measured it
+      eventFormTarget.value = data.target ?? data.provenance?.prov_was_associated_with?.[0]?.uri;
+      eventFormTime.value = {time: new Date(data.date).toISOString()};
+      // The form reads its target and time props when it is opened
+      await nextTick();
+      eventForm.value?.showCreateForm();
+      break;
+    case "annotateData":
+      annotatedDataUri.value = data.uri;
+      annotationForm.value?.showCreateForm([data.uri]);
+      break;
+  }
+}
+
+/**
+ * Reloads the annotations displayed under the chart, if they are the ones of the annotated data
+ */
+function onAnnotationFormCreated(): void {
+  if (selectedPoint.value?.data?.uri === annotatedDataUri.value) {
+    details.value?.refreshAnnotations();
+  }
+}
+
 function onChartMouseOver(params: ECElementEvent): void {
   const point: DataVisuPoint | undefined = getImagePoint(params);
   if (point) {
@@ -296,7 +412,7 @@ function onChartMouseOut(params: ECElementEvent): void {
 /**
  * Called by ECharts after each zoom, by dragging, with the mouse wheel or with resetZoom()
  */
-function onChartDataZoom(): void {
+function onChartZoomed(): void {
   const zoomRange: ZoomRange = getZoomRange();
   isZoomed.value = zoomRange.start > 0 || zoomRange.end < 100;
   // Pins that overlapped may be far enough apart after zooming, and the other way round
@@ -480,7 +596,7 @@ function buildSeries(): Array<ScatterSeriesOption | LineSeriesOption> {
        * focus "series" fades out every other series, so the hovered point's series stands out.
        */
       emphasis: {focus: "series" as const},
-      /** A clicked point is selected and drawn in black, until another point is clicked, see onChartClick() */
+      /** A clicked point is selected and drawn in black, until another point is clicked, see onChartClicked() */
       selectedMode: "single" as const,
       select: {itemStyle: {color: "#000"}},
     };
@@ -726,7 +842,8 @@ function resetZoom(): void {
 }
 
 /**
- * Puts the whole component (header included, so the menu stays usable) in fullscreen, or exits the fullscreen.
+ * Puts the component (header included, so the menu stays usable) in fullscreen, or exits the fullscreen. The details
+ * of a clicked element are hidden in fullscreen, as in the former graphics.
  */
 function toggleFullscreen(): void {
   if (document.fullscreenElement) {

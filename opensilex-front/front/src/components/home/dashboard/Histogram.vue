@@ -38,7 +38,7 @@
     <HistogramSettings
         ref="histogramSettings"
         :devices="devices"
-        @validate="onSettingsValidate"
+        @validate="onSettingsApplied"
     ></HistogramSettings>
   </div>
 </template>
@@ -123,7 +123,7 @@ onMounted(async () => {
 //#endregion
 
 //#region Event handlers
-function onSettingsValidate(newPeriod: Period, newDevices: string[] | undefined): void {
+function onSettingsApplied(newPeriod: Period, newDevices: string[] | undefined): void {
   period.value = newPeriod;
   selectedDevices.value = newDevices;
   loadData();

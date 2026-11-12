@@ -98,7 +98,7 @@
               <!-- Modal settings component-->
               <FacilityHistogramSettings
                 ref="histogramSettings"
-                @update="onSettingsChanged"
+                @update="onSettingsApplied"
               ></FacilityHistogramSettings>
 
               <template #footer></template>
@@ -238,7 +238,7 @@ onMounted(() => {
 //#endregion
 
 //#region Event handlers
-function onSettingsChanged(newPeriod: Period, begin: string, end: string, selectAll: boolean): void {
+function onSettingsApplied(newPeriod: Period, begin: string, end: string, selectAll: boolean): void {
   period.value = newPeriod;
   graphicStartDate.value = begin;
   graphicEndDate.value = end;

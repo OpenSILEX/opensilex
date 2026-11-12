@@ -1833,6 +1833,8 @@
         "eventBegin": "Begin",
         "eventEnd": "End",
         "eventOngoing": "ongoing",
+        "addEvent": "Add an event",
+        "annotateData": "Annotate data",
         "imageSeriesName": "Images / {serie}"
     },
     "DataVisualisation": {

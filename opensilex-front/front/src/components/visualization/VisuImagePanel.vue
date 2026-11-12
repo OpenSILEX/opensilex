@@ -20,7 +20,7 @@
 
     <AnnotationsModal ref="annotationsModal" :title="t('VisuImagePanel.annotationsTitle')"></AnnotationsModal>
 
-    <AnnotationModalForm ref="annotationForm" @onCreate="onAnnotationCreate"></AnnotationModalForm>
+    <AnnotationModalForm ref="annotationForm" @onCreate="onAnnotationFormCreated"></AnnotationModalForm>
   </div>
 </template>
 
@@ -110,7 +110,7 @@ function onCardAnnotate(imageUri: string): void {
   annotationForm.value?.showCreateForm([imageUri]);
 }
 
-function onAnnotationCreate(): void {
+function onAnnotationFormCreated(): void {
   emit("annotationCreated", annotatedImageUri.value);
 }
 //#endregion

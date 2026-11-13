@@ -5,9 +5,13 @@
 | Date       | Editor(s)        | OpenSILEX version | Comment           |
 |------------|------------------|-------------------|-------------------|
 | 2024-08-29 | Valentin Rigolle | 1.3.3             | Document creation |
+| 2026-10-22 | Arnaud Charleroy | develop (Vue 3)   | Link to the Vue 3 file structure |
 
 This file describes coding guidelines and good practices that should be applied to Vue components in OpenSILEX.
 You can find a full example at the end of this file, as well as an empty template to copy / paste into your components.
+
+> These guidelines target Vue 2 class components (`vue-property-decorator`). For Vue 3 components written with
+> `<script setup>`, see [Vue file structure](./vuejs-file-structure.md).
 
 <!-- TOC -->
 * [Vue component guidelines and template](#vue-component-guidelines-and-template)

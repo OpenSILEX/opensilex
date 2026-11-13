@@ -8,7 +8,7 @@
         :required="false"
         class="col-md-5 criteriaFields"
         @update:variables="updateField('variable_uri', $event)"
-        @select="loadVariableInformation"
+        @selectionChange="loadVariableInformation"
         />
     </div>
 
@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import type { SelectOption } from 'naive-ui'
 import { inject, ref } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import Xsd from '../../ontologies/Xsd'
@@ -150,11 +151,15 @@ function loadCriteriaInformation(criteriaIdAndLabelJson: SelectableItem) {
   )
 }
 
-async function loadVariableInformation(variableIdAndLabelJson: SelectableItem) {
-  const lineFieldsToChange: Record<string, any> = {}
-  const variableUri = variableIdAndLabelJson.id
+async function loadVariableInformation(selectedVariable: SelectOption | undefined) {
+  if (!selectedVariable) {
+    return
+  }
 
-  lineFieldsToChange.variable_name = variableIdAndLabelJson.label
+  const lineFieldsToChange: Record<string, any> = {}
+  const variableUri = selectedVariable.value as string
+
+  lineFieldsToChange.variable_name = selectedVariable.label as string
 
   const alreadyFetchedType = savedVariablesDatatypes.value.get(variableUri)
 

@@ -43,15 +43,11 @@
                 label="component.variable.entity.entity"
                 :placeholder="$t('component.variable.entity.entity-placeholder')"
                 :helpMessage="$t('component.variable.entity.entity-help')"
-                noResultsText="VariableForm.no-entity"
                 v-model:selected="modalFormLogic.form.value.entity"
                 :multiple="false"
                 :required="true"
                 :actionHandler="modalFormLogic.isEditMode.value ? undefined : showEntityCreateForm"
-                :searchMethod="searchEntities"
-                @select="updateEntity"
-                :itemLoadingMethod="loadEntity"
-                :conversionMethod="objectToSelectNode"
+                @selectionChange="updateEntity"
                 :disabled="false"
               />
             <AgroportalEntityForm
@@ -71,10 +67,6 @@
                 v-model:selected="modalFormLogic.form.value.entity_of_interest"
                 :actionHandler="modalFormLogic.isEditMode.value ? undefined : showInterestEntityCreateForm"
                 :helpMessage="$t('component.variable.entityOfInterest.interestEntity-help')"
-                :searchMethod="searchInterestEntities"
-                :itemLoadingMethod="loadInterestEntity"
-                :conversionMethod="objectToSelectNode"
-                noResultsText="VariableForm.no-interestEntity"
               />
             <AgroportalEntityOfInterestForm
               ref="interestEntityForm"
@@ -94,13 +86,9 @@
                 v-model:selected="modalFormLogic.form.value.characteristic"
                 :multiple="false"
                 :required="true"
-                @select="updateCharacteristic"
+                @selectionChange="updateCharacteristic"
                 :actionHandler="modalFormLogic.isEditMode.value ? undefined : showCharacteristicCreateForm"
                 :helpMessage="$t('component.variable.characteristic.characteristic-help')"
-                :searchMethod="searchCharacteristics"
-                :itemLoadingMethod="loadCharacteristic"
-                :conversionMethod="objectToSelectNode"
-                noResultsText="VariableForm.no-characteristic"
               />
             <AgroportalCharacteristicForm
               ref="characteristicForm"
@@ -133,12 +121,8 @@
                 :required="true"
                 v-model:selected="modalFormLogic.form.value.method"
                 :helpMessage="$t('component.variable.method.method-help')"
-                noResultsText="VariableForm.no-method"
                 :actionHandler="modalFormLogic.isEditMode.value ? undefined : showMethodCreateForm"
-                @select="updateMethod"
-                :searchMethod="searchMethods"
-                :itemLoadingMethod="loadMethod"
-                :conversionMethod="objectToSelectNode"
+                @selectionChange="updateMethod"
               />
             <AgroportalMethodForm
               ref="methodForm"
@@ -184,13 +168,9 @@
                 :multiple="false"
                 :required="true"
                 v-model:selected="modalFormLogic.form.value.unit"
-                @select="updateUnit"
+                @selectionChange="updateUnit"
                 :helpMessage="$t('component.variable.unit.unit-help')"
                 :actionHandler="modalFormLogic.isEditMode.value ? undefined : showUnitCreateForm"
-                :searchMethod="searchUnits"
-                :itemLoadingMethod="loadUnit"
-                :conversionMethod="objectToSelectNode"
-                noResultsText="VariableForm.no-unit"
               />
             <AgroportalUnitForm
               ref="unitForm"
@@ -648,73 +628,6 @@ function continueFormEditing() {
   if (savedVariable.value) {
     Object.assign(modalFormLogic.form.value, savedVariable.value)
   }
-}
-//#endregion
-
-//#region API calls (search / load)
-function searchEntities(name: string, page: number, pageSize: number) {
-  return service.searchEntities(name, ['name=asc'], page, pageSize)
-}
-
-function loadEntity(uris: Array<string | { uri: string }>) {
-  if (!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if (typeof item === 'object' && 'uri' in item) {
-    return [modalFormLogic.form.value.entity]
-  }
-  return service.getEntity(item).then(res => [res.response.result])
-}
-
-function searchInterestEntities(name: string, page: number, pageSize: number) {
-  return service.searchInterestEntity(name, ['name=asc'], page, pageSize)
-}
-
-function loadInterestEntity(uris: Array<string | { uri: string }>) {
-  if (!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if (typeof item === 'object' && 'uri' in item) {
-    return [modalFormLogic.form.value.entity_of_interest]
-  }
-  return service.getInterestEntity(item).then(res => [res.response.result])
-}
-
-function searchCharacteristics(name: string, page: number, pageSize: number) {
-  return service.searchCharacteristics(name, ['name=asc'], page, pageSize)
-}
-
-function loadCharacteristic(uris: Array<string | { uri: string }>) {
-  if (!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if (typeof item === 'object' && 'uri' in item) {
-    return [modalFormLogic.form.value.characteristic]
-  }
-  return service.getCharacteristic(item).then(res => [res.response.result])
-}
-
-function searchMethods(name: string, page: number, pageSize: number) {
-  return service.searchMethods(name, ['name=asc'], page, pageSize)
-}
-
-function loadMethod(uris: Array<string | { uri: string }>) {
-  if (!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if (typeof item === 'object' && 'uri' in item) {
-    return [modalFormLogic.form.value.method]
-  }
-  return service.getMethod(item).then(res => [res.response.result])
-}
-
-function searchUnits(name: string, page: number, pageSize: number) {
-  return service.searchUnits(name, ['name=asc'], page, pageSize)
-}
-
-function loadUnit(uris: Array<string | { uri: string }>) {
-  if (!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if (typeof item === 'object' && 'uri' in item) {
-    return [modalFormLogic.form.value.unit]
-  }
-  return service.getUnit(item).then(res => [res.response.result])
 }
 //#endregion
 

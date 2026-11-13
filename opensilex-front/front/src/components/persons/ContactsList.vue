@@ -26,9 +26,3 @@ withDefaults(
   }
 )
 </script>
-
-<style scoped lang="scss">
-.static-field-line {
-  margin-right: 3px;
-}
-</style>

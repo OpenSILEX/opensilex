@@ -1287,6 +1287,13 @@
             "lastMedianData": "Dernière valeur médiane",
             "lastDataStored": "Dernière donnée importée à la date",
             "no-data": "Aucune donnée trouvée pour cette période",
+            "resultModal": {
+                "title": "Rapport de l'insertion des données",
+                "data-imported": "{number} observations ont été importées avec succès",
+                "datum-imported": "{number} observation importée avec succès",
+                "annotations-imported": "{number} annotations ont été importées avec succès",
+                "annotation-imported": "{number} annotation importée avec succès"
+            },
             "view": {
                 "buttons": {
                     "create-data": "Ajouter un jeu de données",
@@ -1295,7 +1302,6 @@
                     "export": "Exporter"
                 },
                 "description": "Visualiser et exporter des données",
-                "data-imported": "observations ont été importées avec succès",
                 "form": {
                     "create": "Ajouter des données",
                     "update": "Modifier"

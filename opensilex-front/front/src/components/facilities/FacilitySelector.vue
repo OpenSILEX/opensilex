@@ -1,37 +1,34 @@
 <template>
-  <div>
-    <opensilex-FormSelector
-      :label="label"
-      v-model:selected="facilitiesURI"
-      :multiple="multiple"
-      :helpMessage="helpMessage"
-      :placeholder="t(placeholder)"
-      :searchMethod="searchFacilities"
-      :itemLoadingMethod="loadFacilities"
-      :conversionMethod="facilityToSelectNode"
-      noResultsText="FacilitySelector.no-result"
-      @select="(v) => emit('select', v)"
-      @deselect="(v) => emit('deselect', v)"
-      @clear="onClear"
-      :path="path"
-    />
-  </div>
+  <InfiniteScrollDropdown
+    v-model:selected="facilitiesURIs"
+    :fetchPage="searchFacilities"
+    :placeholder="t(placeholder)"
+    :noResultsText="t('FacilitySelector.no-result')"
+    :conversionMethod="facilityToSelectNode"
+    :itemLoadingMethod="loadFacilities"
+    :multiple="multiple"
+    :label="label"
+    :helpMessage="helpMessage"
+    :required="required"
+    :path="path"
+    @selectionChange="(option) => emit('selectionChange', option)"
+  ></InfiniteScrollDropdown>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
+import { inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { OrganizationsService } from 'opensilex-core/api/organizations.service'
 import type { NamedResourceDTO } from 'opensilex-core/index'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 const { t } = useI18n()
 
 const props = withDefaults(
   defineProps<{
-    facilities?: any // string | string[] selon multiple
     label?: string
     multiple?: boolean
     helpMessage?: string
@@ -40,49 +37,29 @@ const props = withDefaults(
     path?: string
   }>(),
   {
-    facilities: () => [],
     placeholder: 'FacilitySelector.placeholder',
     multiple: false,
     required: false
   }
 )
 
-const emit = defineEmits<{
-  (e: 'update:facilities', v: any): void
-  (e: 'select', v: any): void
-  (e: 'deselect', v: any): void
-  (e: 'clear'): void
-}>()
+const emit = defineEmits(['selectionChange'])
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
 const service = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService')
 
-// v-model replacement of PropSync("facilities")
-const facilitiesURI = ref<any>(props.facilities)
+const facilitiesURIs = defineModel<string | string[] | null>('facilities');
 
-watch(
-  () => props.facilities,
-  (v) => {
-    facilitiesURI.value = v
-  },
-  { deep: true }
-)
 
-watch(
-  facilitiesURI,
-  (v) => emit('update:facilities', v),
-  { deep: true }
-)
-
-async function searchFacilities(searchQuery: string) {
+async function searchFacilities(searchQuery: string, pageIndex: number, pageSize: number) {
   try {
     const http = await service.minimalSearchFacilities(
       searchQuery,
       undefined,
-      undefined,
-      undefined,
-      0
+      ['name=asc'],
+      pageIndex,
+      pageSize
     ) as HttpResponse<OpenSilexResponse<NamedResourceDTO[]>>
     return http
   } catch (e) {
@@ -98,16 +75,11 @@ async function loadFacilities(facilitiesUris: string[]) {
 }
 
 function facilityToSelectNode(dto: NamedResourceDTO) {
-  if (!dto) return undefined
   return {
     label: dto.name,
     // shortUri needed to avoid auto deselection problem on selectors with both short and long URIs
-    id: $opensilex.getShortUri(dto.uri)
+    value: $opensilex.getShortUri(dto.uri)
   }
-}
-
-function onClear() {
-  emit('clear')
 }
 </script>
 

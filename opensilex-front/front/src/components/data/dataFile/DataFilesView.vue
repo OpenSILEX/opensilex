@@ -60,7 +60,7 @@
                 :label="t('component.experiment.view.experiment-experiments')"
                 v-model:experiments="filter.experiments"
                 :multiple="true"
-                @select="updateSOFilter"
+                @selectionChange="updateSOFilter"
                 @clear="updateSOFilter"
                 class="searchFilter"
                 :key="resetExperimentSelectorKey"
@@ -254,6 +254,8 @@ interface Props{
   enforcedScientificObjectUri?: string | undefined
   /** When coming from Device details, we pass the device to have better display of possible provenances */
   passedDeviceUri?: string | undefined
+  enforcedExperimentUri?: string | undefined
+
 }
 const props = withDefaults(
   defineProps<Props>(),

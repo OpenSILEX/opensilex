@@ -66,10 +66,10 @@
                 </span>
                 <span
                     v-else
-                    class="badge badge-pill badge-light"
+                    class="badge rounded-pill text-bg-light"
                     :title="t('component.experiment.view.status.finished')"
                 >
-                  <i class="ik ik-archive"></i>
+                  <i class="bi bi-archive me-1"></i>
                   {{ t("component.experiment.common.status.finished") }}
                 </span>
 
@@ -104,20 +104,14 @@
             ></MetadataView>
           </template>
 
-          <template v-slot:footer v-if="experiment.funding">
-            <div
-                :label="t('component.experiment.funding')"
-                :value="experiment.funding"
-                class="text-right"
+          <template #footer v-if="displayedFundingUris.length > 0">
+            <img
+                v-for="fundingUri in displayedFundingUris"
+                :key="fundingUri"
+                :src="opensilex.getResourceURI('images/' + opensilex.getShortUri(fundingUri), ['png', 'svg', 'jpg'])"
+                class="funding-tag"
+                :title="fundingUri"
             >
-              <img
-                  v-for="fundingUri in experiment.funding.slice(0, 3)"
-                  :key="fundingUri"
-                  v-bind:src="opensilex.getResourceURI('images/'+fundingUri, ['png', 'svg', 'jpg'])"
-                  class="funding-tag"
-                  :title="fundingUri"
-              >
-            </div>
           </template>
 
         </Card>
@@ -248,6 +242,10 @@ onMounted(() => {
 //#region Data and computed
 const isGermplasmMenuExcluded = computed(() => {
   return opensilex.getConfig().menuExclusions.includes("germplasm");
+})
+
+const displayedFundingUris = computed<string[]>(() => {
+  return [...(experiment.value?.funding ?? [])].sort().slice(0, 3);
 })
 
 const organizationsListURIs = computed(() => {
@@ -521,13 +519,10 @@ function isEnded(experiment: { end_date: string | number | Date; }) {
 <style scoped lang="scss">
 .funding-tag {
   margin: 0 5px;
-  width: clamp(20px, 45px, 60px);
-  border-radius: 50%;
-  transition: box-shadow 0.6s ease-in-out;
-}
-
-.funding-tag:hover {
-  box-shadow: 0 0 15px #00A3A6;
+  height: 40px;
+  width: auto;
+  max-width: 88px;
+  object-fit: contain;
 }
 
 </style>

@@ -3,7 +3,7 @@
     <ListActionsBar
       :paginationInfo="paginationInfo"
       :displayOptions="displayDropdownOptions"
-      :displayLabel="t('component.datafile.list.display')"
+      :displayLabel="t('component.common.display')"
       :actionsOptions="actionsDropdownOptions"
       :selectedCount="selectedCount"
       :selectedLabel="t('component.datafile.list.selected')"

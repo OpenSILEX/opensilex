@@ -3,6 +3,7 @@
 
     <PageHeader
       icon="bi#bi-bullseye"
+      :hasIcon="true"
       description="component.menu.scientificObjects"
       :title="selected ? selected.name : ''"
       class="detail-element-header"

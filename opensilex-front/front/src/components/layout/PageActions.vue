@@ -30,11 +30,11 @@
           type="button"
           :title="t('pageActions.returnToTitle')"
           class="btn mr-2 h-100 back-button"
-          @click="$router.go(-1)"
+          @click="returnTo ? $router.push(returnTo) : $router.go(-1)"
         >
           <Icon
             class="icon-title back-button-icon"
-            icon="bi#bi-arrow-90deg-left"
+            icon="fa#fa-solid fa-list-check"
           />
         </button>
 
@@ -59,6 +59,7 @@ import Icon from "@/components/common/views/Icon.vue";
 const props = defineProps<{
   returnToTitle?: string;
   returnButton?: boolean;
+  returnTo?: string;
   small?: boolean;
   tabs?: { label: string }[];
   currentTab?: number;

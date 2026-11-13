@@ -193,6 +193,8 @@ const IMAGE_SERIES_ID_PREFIX: string = "image:";
 const IMAGE_PIN_SIZE: number = 20;
 /** Color of the pin of an annotated image */
 const ANNOTATED_IMAGE_COLOR: string = "#FF0000";
+/** ECharts id of the series drawing the clicked data point in black, see buildSelectedPointSeries() */
+const SELECTED_POINT_SERIES_ID: string = "selectedPoint";
 
 /**
  * Events grouped by the ECharts id of the series drawing them, in the order of the series data. Used to find the
@@ -227,11 +229,6 @@ const isFullscreen: Ref<boolean> = ref<boolean>(false);
 const selectedPoint: Ref<DataVisuPoint | undefined> = ref<DataVisuPoint | undefined>(undefined);
 /** Clicked event pin, its details are displayed under the graphic */
 const selectedEvent: Ref<DataVisuEvent | undefined> = ref<DataVisuEvent | undefined>(undefined);
-/**
- * ECharts position of the point drawn in black. ECharts only unselects the previous point of the same series, the
- * previous point of another series is unselected by onChartClicked().
- */
-let selectedSymbol: { seriesId: string, dataIndex: number } | undefined;
 
 /** Right-clicked data point, its menu is displayed while it is defined */
 const rightClickMenuPoint: Ref<DataVisuPoint | undefined> = ref<DataVisuPoint | undefined>(undefined);
@@ -286,6 +283,9 @@ onBeforeUnmount(() => {
 
 watch(() => props.highlightedImageUri, highlightImagePins);
 
+// The clicked point is drawn in black, see buildSelectedPointSeries()
+watch(selectedPoint, () => chart?.setOption({series: [buildSelectedPointSeries()]}));
+
 // The tooltip is drawn above everything: it is hidden while the menu of a data point is open
 watch(rightClickMenuPoint, (point: DataVisuPoint | undefined) => {
   if (point) {
@@ -333,17 +333,8 @@ function onChartClicked(params: ECElementEvent): void {
   }
   const dataPoint: DataVisuPoint | undefined = dataSeriesById.get(params.seriesId)?.points[params.dataIndex];
   if (dataPoint) {
-    if (selectedSymbol?.seriesId === params.seriesId && selectedSymbol.dataIndex === params.dataIndex) {
-      // Clicking the selected point again unselects it (ECharts does it for its color), and hides its details
-      selectedSymbol = undefined;
-      selectedPoint.value = undefined;
-      return;
-    }
-    if (selectedSymbol && selectedSymbol.seriesId !== params.seriesId) {
-      chart?.dispatchAction({type: "unselect", seriesId: selectedSymbol.seriesId, dataIndex: selectedSymbol.dataIndex});
-    }
-    selectedSymbol = {seriesId: params.seriesId, dataIndex: params.dataIndex};
-    selectedPoint.value = dataPoint;
+    // Clicking the selected point again hides its details
+    selectedPoint.value = dataPoint === selectedPoint.value ? undefined : dataPoint;
     selectedEvent.value = undefined;
     return;
   }
@@ -573,7 +564,7 @@ function buildBaseOption(yAxisNames: string[], zoomRange?: ZoomRange): DataVisuO
       /** Horizontal background lines: only drawn by the first axis, otherwise the two axes' lines overlap */
       splitLine: {show: index === 0}
     })),
-    series: [...buildSeries(), ...buildImageSeries(), ...buildEventSeries()]
+    series: [...buildSeries(), ...buildImageSeries(), ...buildEventSeries(), buildSelectedPointSeries()]
   };
 }
 
@@ -608,9 +599,6 @@ function buildSeries(): Array<ScatterSeriesOption | LineSeriesOption> {
        * focus "series" fades out every other series, so the hovered point's series stands out.
        */
       emphasis: {focus: "series" as const},
-      /** A clicked point is selected and drawn in black, until another point is clicked, see onChartClicked() */
-      selectedMode: "single" as const,
-      select: {itemStyle: {color: "#000"}},
     };
 
     if (lineMode.value) {
@@ -633,6 +621,33 @@ function buildSeries(): Array<ScatterSeriesOption | LineSeriesOption> {
       large: true
     };
   });
+}
+
+/**
+ * The clicked data point (selectedPoint), drawn in black on top of its series. A separate series, as the style of a
+ * single point is ignored by the optimised rendering of big scatter series (large: true). Empty when no point is
+ * selected.
+ */
+function buildSelectedPointSeries(): ScatterSeriesOption {
+  const point: DataVisuPoint | undefined = selectedPoint.value;
+  const serie: DataVisuSerie | undefined = point
+      ? Array.from(dataSeriesById.values()).find((s: DataVisuSerie) => s.points.includes(point))
+      : undefined;
+  return {
+    type: "scatter",
+    id: SELECTED_POINT_SERIES_ID,
+    /** Same name as its data series: the legend shows them as one entry, and hides them together */
+    name: serie?.name,
+    yAxisIndex: serie?.yAxisIndex ?? 0,
+    data: point && serie ? [[point.timestamp, point.value]] : [],
+    color: "#000",
+    symbol: serie?.symbol ?? "circle",
+    symbolSize: 6,
+    /** Drawn above the data series */
+    z: 3,
+    /** Not clickable nor hoverable: the mouse goes through it to the data point below, see onChartClicked() */
+    silent: true
+  };
 }
 
 /**
@@ -820,7 +835,6 @@ function render(): void {
   isZoomed.value = false;
   selectedPoint.value = undefined;
   selectedEvent.value = undefined;
-  selectedSymbol = undefined;
   enableDragZoom();
   layoutEventPins(chart);
 }
@@ -911,6 +925,8 @@ function downloadImage(): void {
       selected: currentLegend[0]?.selected
     }
   });
+  // The clicked point is not drawn in black in the image
+  exportChart.setOption({series: [{id: SELECTED_POINT_SERIES_ID, data: []}]});
   layoutEventPins(exportChart);
 
   const link: HTMLAnchorElement = document.createElement("a");

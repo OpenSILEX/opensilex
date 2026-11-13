@@ -274,10 +274,10 @@
             }
         },
         "copyToClipboard": {
-            "copyUri": "Copier l'URI dans le presse papier",
-            "copyUrl": "Copier l'URL dans le presse papier",
+            "copyUri": "Copier l'URI dans le presse-papier",
+            "copyUrl": "Copier l'URL dans le presse-papier",
             "copyEmail": "Copier l'adresse email de ce contact",
-            "copyText": "Copier le texte dans le presse papier"
+            "copyText": "Copier le texte dans le presse-papier"
         },
         "header": {
             "account": {

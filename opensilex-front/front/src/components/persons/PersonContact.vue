@@ -173,7 +173,8 @@ function copyURI (address: string) {
 .person_contact:hover { color: #212121; text-decoration: underline; }
 
 .champ-popup { display: flex; }
-.title-popup { font-weight: bold; padding-right: 1%; }
+.title-popup { font-weight: bold; padding-right: 1%; flex-shrink: 0; white-space: nowrap; }
+.champ-popup p:last-child { min-width: 0; overflow-wrap: anywhere; }
 .champ-popup a:hover { text-decoration: underline; }
 
 /* Modal minimaliste */

@@ -36,7 +36,7 @@
             <StringFilter
                 id="name"
                 v-model:filter="filters.name"
-                placeholder="ExperimentScientificObjects.name-placeholder"
+                placeholder="component.experiment.label"
                 class="searchFilter"
                 @handlingEnterKey="unselectRefresh()"
             ></StringFilter>
@@ -44,7 +44,7 @@
 
           <!-- Object type -->
           <n-form-item
-              :label="t('ExperimentScientificObjects.objectType')"
+              :label="t('component.scientificObjects.objectType')"
               :show-feedback="false"
               class="compact-form-item"
           >

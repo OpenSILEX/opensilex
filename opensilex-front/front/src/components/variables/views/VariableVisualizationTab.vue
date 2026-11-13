@@ -41,11 +41,13 @@
           </n-form-item>
 
           <!-- Events -->
-          <n-form-item :label="t('DataVisualisation.showEvents')" class="compact-form-item">
-            <n-switch v-model:value="filter.showEvents"></n-switch>
-            <n-spin v-if="eventsCountLoading" :size="14" class="eventsCount"></n-spin>
-            <n-badge v-else :value="eventsCount" :show-zero="true" type="info" class="eventsCount"></n-badge>
-          </n-form-item>
+          <DataVisuEventsSwitch
+              ref="eventsSwitch"
+              v-model="filter.showEvents"
+              :targets="filter.devices"
+              :startDate="filter.start_date"
+              :endDate="filter.end_date"
+          ></DataVisuEventsSwitch>
 
           <!-- Advanced search -->
           <n-collapse :accordion="false" class="advancedFiltersSearch">
@@ -86,9 +88,9 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, ref, Ref, watch} from "vue";
+import {computed, ComputedRef, inject, ref, Ref, useTemplateRef} from "vue";
 import {useI18n} from "vue-i18n";
-import {NBadge, NCollapse, NCollapseItem, NForm, NFormItem, NLayout, NLayoutContent, NSpin, NSwitch} from "naive-ui";
+import {NCollapse, NCollapseItem, NForm, NFormItem, NLayout, NLayoutContent, NSpin} from "naive-ui";
 import {DeviceGetDTO, DevicesService, VariableDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageContent from "@/components/layout/PageContent.vue";
@@ -98,6 +100,7 @@ import DeviceSelector from "@/components/devices/DeviceSelector.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
 import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
+import DataVisuEventsSwitch from "@/components/visualization/DataVisuEventsSwitch.vue";
 import type {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import useDataVisualisation, {
   colorEventsByType,
@@ -136,9 +139,13 @@ const props = defineProps<{
 //#region Plugins & services
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
-const {getNumericVariables, loadDataSeries, loadEvents, countEvents, splitSeriesByTarget} = useDataVisualisation();
+const {getNumericVariables, loadDataSeries, loadEvents, splitSeriesByTarget} = useDataVisualisation();
 
 const devicesService: DevicesService = $opensilex.getService<DevicesService>("opensilex.DevicesService");
+//#endregion
+
+//#region Template refs
+const eventsSwitch = useTemplateRef<InstanceType<typeof DataVisuEventsSwitch>>("eventsSwitch");
 //#endregion
 
 //#region Data & Computed
@@ -149,9 +156,6 @@ const loading: Ref<boolean> = ref<boolean>(false);
 const series: Ref<DataVisuSerie[]> = ref<DataVisuSerie[]>([]);
 const yAxisNames: Ref<string[]> = ref<string[]>([]);
 const events: Ref<DataVisuEvent[]> = ref<DataVisuEvent[]>([]);
-/** Number of events of the selected devices between the selected dates, displayed next to the switch */
-const eventsCount: Ref<number> = ref<number>(0);
-const eventsCountLoading: Ref<boolean> = ref<boolean>(false);
 
 const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
   const f: VisualisationFilter = filter.value;
@@ -161,20 +165,13 @@ const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
 });
 //#endregion
 
-//#region Hooks & watchers
-watch(
-    () => [filter.value.devices, filter.value.start_date, filter.value.end_date],
-    refreshEventsCount
-);
-//#endregion
-
 //#region Event handlers
 /**
  * An event was created from the menu of a data point: the count is refreshed, and the graphic too if it displays the
  * events
  */
 function onGraphicEventCreated(): void {
-  refreshEventsCount();
+  eventsSwitch.value?.refresh();
   if (filter.value.showEvents) {
     onSearch();
   }
@@ -276,18 +273,6 @@ function buildEventsRequests(deviceNames: Map<string, string>): EventsRequest[] 
     seriesName: `${t("DataVisualisation.events")} -> ${deviceNames.get(deviceUri) ?? deviceUri}`
   }));
 }
-
-async function refreshEventsCount(): Promise<void> {
-  const f: VisualisationFilter = filter.value;
-  eventsCountLoading.value = true;
-  try {
-    eventsCount.value = await countEvents(f.devices, f.start_date, f.end_date);
-  } catch (error) {
-    $opensilex.errorHandler(error);
-  } finally {
-    eventsCountLoading.value = false;
-  }
-}
 //#endregion
 //#endregion
 </script>
@@ -309,9 +294,5 @@ async function refreshEventsCount(): Promise<void> {
 
 .advancedFiltersSearch {
   margin-top: 10px;
-}
-
-.eventsCount {
-  margin-left: 8px;
 }
 </style>

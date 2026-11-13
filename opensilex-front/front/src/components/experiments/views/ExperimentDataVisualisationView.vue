@@ -63,11 +63,13 @@
           </n-form-item>
 
           <!-- Events -->
-          <n-form-item :label="t('DataVisualisation.showEvents')" class="compact-form-item">
-            <n-switch v-model:value="filter.showEvents"></n-switch>
-            <n-spin v-if="eventsCountLoading" :size="14" class="eventsCount"></n-spin>
-            <n-badge v-else :value="eventsCount" :show-zero="true" type="info" class="eventsCount"></n-badge>
-          </n-form-item>
+          <DataVisuEventsSwitch
+              ref="eventsSwitch"
+              v-model="filter.showEvents"
+              :targets="filter.scientificObjects"
+              :startDate="filter.start_date"
+              :endDate="filter.end_date"
+          ></DataVisuEventsSwitch>
 
           <!-- Advanced search -->
           <n-collapse :accordion="false" class="advancedFiltersSearch">
@@ -121,10 +123,10 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, onMounted, ref, Ref, useTemplateRef, watch} from "vue";
+import {computed, ComputedRef, inject, onMounted, ref, Ref, useTemplateRef} from "vue";
 import {useI18n} from "vue-i18n";
 import {useRoute} from "vue-router";
-import {NBadge, NCollapse, NCollapseItem, NForm, NFormItem, NLayout, NLayoutContent, NSpin, NSwitch} from "naive-ui";
+import {NCollapse, NCollapseItem, NForm, NFormItem, NLayout, NLayoutContent, NSpin} from "naive-ui";
 import {ExperimentsService, VariableDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageContent from "@/components/layout/PageContent.vue";
@@ -135,6 +137,7 @@ import VariableSelectorWithFilter from "@/components/variables/views/VariableSel
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
 import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
+import DataVisuEventsSwitch from "@/components/visualization/DataVisuEventsSwitch.vue";
 import type {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import VisuImagePanel from "@/components/visualization/VisuImagePanel.vue";
 import {ScientificObjectFilter} from "@/components/scientificObjects/ScientificObjectList.vue";
@@ -175,12 +178,13 @@ const props = defineProps<{
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
 const route = useRoute();
-const {getNumericVariables, loadDataSeries, loadEvents, countEvents} = useDataVisualisation();
+const {getNumericVariables, loadDataSeries, loadEvents} = useDataVisualisation();
 
 const experimentsService: ExperimentsService = $opensilex.getService<ExperimentsService>("opensilex.ExperimentsService");
 //#endregion
 
 //#region Template refs
+const eventsSwitch = useTemplateRef<InstanceType<typeof DataVisuEventsSwitch>>("eventsSwitch");
 const imagePanel = useTemplateRef<InstanceType<typeof VisuImagePanel>>("imagePanel");
 //#endregion
 
@@ -210,9 +214,6 @@ const loading: Ref<boolean> = ref<boolean>(false);
 const series: Ref<DataVisuSerie[]> = ref<DataVisuSerie[]>([]);
 const yAxisNames: Ref<string[]> = ref<string[]>([]);
 const events: Ref<DataVisuEvent[]> = ref<DataVisuEvent[]>([]);
-/** Number of events of the selected scientific objects between the selected dates, displayed next to the switch */
-const eventsCount: Ref<number> = ref<number>(0);
-const eventsCountLoading: Ref<boolean> = ref<boolean>(false);
 
 const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
   const f: VisualisationFilter = filter.value;
@@ -226,11 +227,6 @@ const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
 onMounted(() => {
   initDefaultDates();
 });
-
-watch(
-    () => [filter.value.scientificObjects, filter.value.start_date, filter.value.end_date],
-    refreshEventsCount
-);
 //#endregion
 
 //#region Event handlers
@@ -239,7 +235,7 @@ watch(
  * events
  */
 function onGraphicEventCreated(): void {
-  refreshEventsCount();
+  eventsSwitch.value?.refresh();
   if (filter.value.showEvents) {
     onSearch();
   }
@@ -365,18 +361,6 @@ function buildEventsRequests(scientificObjects: string[]): EventsRequest[] {
     color: getScientificObjectColor(soIndex)
   }));
 }
-
-async function refreshEventsCount(): Promise<void> {
-  const f: VisualisationFilter = filter.value;
-  eventsCountLoading.value = true;
-  try {
-    eventsCount.value = await countEvents(f.scientificObjects, f.start_date, f.end_date);
-  } catch (error) {
-    $opensilex.errorHandler(error);
-  } finally {
-    eventsCountLoading.value = false;
-  }
-}
 //#endregion
 //#endregion
 </script>
@@ -398,9 +382,5 @@ async function refreshEventsCount(): Promise<void> {
 
 .advancedFiltersSearch {
   margin-top: 10px;
-}
-
-.eventsCount {
-  margin-left: 8px;
 }
 </style>

@@ -4,6 +4,7 @@
       <n-button v-if="isZoomed" size="small" @click="resetZoom()">
         {{ t("DataVisuGraphic.resetZoom") }}
       </n-button>
+      <HelpButton label="DataVisuGraphic.help" :small="true" @click="showHelp()"></HelpButton>
       <n-dropdown
           trigger="click"
           placement="bottom-end"
@@ -49,6 +50,13 @@
         @onCreate="emit('eventCreated')"
     ></EventForm>
     <AnnotationModalForm ref="annotationForm" @onCreate="onAnnotationFormCreated"></AnnotationModalForm>
+
+    <Modal ref="helpModal" modalSize="lg">
+      <template #header>
+        <h4>{{ t("DataVisuGraphic.help") }}</h4>
+      </template>
+      <DataVisuHelp></DataVisuHelp>
+    </Modal>
   </div>
 </template>
 
@@ -59,6 +67,9 @@ import {DropdownOption, NButton, NDropdown, NEmpty} from "naive-ui";
 import DataVisuDetails from "@/components/visualization/DataVisuDetails.vue";
 import EventForm from "@/components/events/form/EventForm.vue";
 import AnnotationModalForm from "@/components/annotations/list/form/AnnotationModalForm.vue";
+import HelpButton from "@/components/common/buttons/HelpButton.vue";
+import Modal from "@/components/common/views/Modal.vue";
+import DataVisuHelp from "@/components/visualization/DataVisuHelp.vue";
 import type {DataGetSearchDTO, EventGetDTO} from "opensilex-core/index";
 import type {DataVisuEvent, DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import * as echarts from "echarts/core";
@@ -165,6 +176,7 @@ const chartContainer = useTemplateRef<HTMLDivElement>("chartContainer");
 const details = useTemplateRef<InstanceType<typeof DataVisuDetails>>("details");
 const eventForm = useTemplateRef<InstanceType<typeof EventForm>>("eventForm");
 const annotationForm = useTemplateRef<InstanceType<typeof AnnotationModalForm>>("annotationForm");
+const helpModal = useTemplateRef<InstanceType<typeof Modal>>("helpModal");
 //#endregion
 
 //#region Data & Computed
@@ -839,6 +851,16 @@ function getZoomRange(): ZoomRange {
 
 function resetZoom(): void {
   chart?.dispatchAction({type: "dataZoom", start: 0, end: 100});
+}
+
+/**
+ * Displays the help of the graphic. Its modal is a modal of the page, not visible in fullscreen
+ */
+async function showHelp(): Promise<void> {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+  }
+  helpModal.value?.show();
 }
 
 /**

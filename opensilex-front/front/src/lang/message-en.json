@@ -1829,6 +1829,7 @@
         "fullscreen": "Fullscreen",
         "download": "Download image",
         "resetZoom": "Reset zoom",
+        "help": "Help on the graphic",
         "name": "Name",
         "eventBegin": "Begin",
         "eventEnd": "End",

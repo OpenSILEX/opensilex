@@ -18,7 +18,7 @@
       <ScientificObjectCSVImporter
           ref="importForm"
           :experimentURI="uri"
-          @csvImported="refresh()"
+          @csvImported="onCsvImported()"
       ></ScientificObjectCSVImporter>
     </PageActions>
 
@@ -313,6 +313,12 @@ const documentsService = opensilex.getService<DocumentsService>('opensilex.Docum
 const positionsService = opensilex.getService<PositionsService>('opensilex.PositionsService')
 //#endregion
 
+//#region Emits
+const emit = defineEmits<{
+  scientificObjectsUpdated: []
+}>()
+//#endregion
+
 //#region Template refs
 const soForm = useTemplateRef<InstanceType<typeof ScientificObjectForm>>('soForm')
 const soTree = useTemplateRef<InstanceType<typeof TreeViewAsync>>('soTree')
@@ -558,6 +564,11 @@ function unselectRefresh() {
   refresh();
 }
 
+function onCsvImported() {
+  refresh();
+  emit('scientificObjectsUpdated');
+}
+
 function resetSearch() {
   resetFilters();
   refresh();
@@ -601,6 +612,7 @@ function refreshAfterCreateOrUpdate(result) {
     refresh();
   }
   refreshTypeSelectorComponent();
+  emit('scientificObjectsUpdated');
   if (!result || !result.response.result) {
     return;
   }
@@ -793,6 +805,7 @@ function deleteScientificObject(node) {
         selectedObjects.value = selectedObjects.value.filter(soUri => soUri !== deletedUri);
         soTree.value?.refresh();
         refreshTypeSelectorComponent();
+        emit('scientificObjectsUpdated');
       })
       .catch(opensilex.errorHandler);
 }

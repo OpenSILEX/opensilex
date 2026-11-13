@@ -1345,7 +1345,7 @@
                 "error-message": "Pas de données trouvées."
             },
             "batchDetails": {
-                "title": "Description de Batch",
+                "title": "Description de lot",
                 "user-name": "Nom d'utilisateur",
                 "document-uri": "Uri du Document"
             },

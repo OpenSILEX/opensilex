@@ -1666,6 +1666,7 @@
                 "xsd": "Discover XML schema languages.",
                 "placeholder": "Enter an URI, ex : http://www.opensilex.org/",
                 "XSD-placehorlder": {
+                    "XSDStringInput-placeholder": "Enter text, ex : Opensilex",
                     "XSDLongStringInput-placeholder": "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data.",
                     "XSDIntegerInput-placeholder": "Enter an integer number, ex : 8611",
                     "XSDDecimalInput-placeholder": "Enter a decimal number, ex : 8611.53",

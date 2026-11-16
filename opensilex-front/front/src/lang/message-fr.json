@@ -1721,6 +1721,7 @@
                 "qudt": "Les modèles Quantities, Units, Dimensions and Data Types (QUDT) sont fondés sur l’analyse dimensionnelle exprimée dans le langage OWL (Web Ontology Language). L’approche dimensionnelle relie chaque unité à un système d’unités de base à l’aide de facteurs numériques et d’un vecteur d’exposants défini sur un ensemble de dimensions fondamentales.",
                 "xsd": "Découvrez les langages de schémas XML.",
                 "XSD-placehorlder": {
+                    "XSDStringInput-placeholder": "Saisir du texte, ex : Opensilex",
                     "XSDLongStringInput-placeholder": "Saisissez un texte long, ex : OpenSILEX est un système d'information guidé par des ontologies, conçu pour les données issues des sciences de la vie ",
                     "XSDIntegerInput-placeholder": "Saisir un nombre entier, ex : 8611",
                     "XSDDecimalInput-placeholder": "Saisir un nombre décimal, ex : 8611.53",

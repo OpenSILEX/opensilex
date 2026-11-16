@@ -323,7 +323,7 @@ routes:
         component: opensilex-ExperimentScientificObjects
         # Tabs of the detail panel of the selected scientific object, rendered by the router-view of ExperimentScientificObjects
         children:
-          - path: ''
+          - path: 'details'
             component: opensilex-ScientificObjectDetailProperties
             name: ExperimentScientificObjectDetails
           - path: events

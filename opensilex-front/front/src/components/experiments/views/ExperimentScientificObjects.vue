@@ -214,7 +214,7 @@
                 <slot name="name">&nbsp;{{ selected.name }}</slot>
               </h5>
 
-              <nav class="tabs mb-3">
+              <nav class="tabs detail-tabs mb-3">
                 <router-link
                     v-for="tab in detailTabs"
                     :key="tab.key"
@@ -997,6 +997,16 @@ function onSelectAll() {
 .so-panels--row > .selectedCard {
   flex: 1 1 0;
   min-width: 0;
+}
+
+/* Tabs wrap onto several lines instead of overflowing the card when their badges make them too wide */
+.detail-tabs {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
+.detail-tabs > .tab {
+  white-space: nowrap;
 }
 </style>
 

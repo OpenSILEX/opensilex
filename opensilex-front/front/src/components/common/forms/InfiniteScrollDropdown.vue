@@ -9,8 +9,10 @@
       <!-- NFormItem handles the asterisk, the red border and the message, through the parent NForm rules -->
       <n-form-item :path="path" :show-label="false">
         <div class="select-button-container">
+          <!-- Never `undefined`: n-select would then fall back to its own last value, so a parent resetting
+               its filter to `undefined` would still show the old selection -->
           <n-select
-            v-model:value="selectedValue"
+            :value="selectedValue ?? null"
             :id="id"
             class="select-main"
             filterable
@@ -30,6 +32,7 @@
             @search="onSearch"
             @scroll="onDropdownScroll"
             @update:value="onSelectionChange"
+            @update:show="onMenuShowChange"
             @clear="emit('clear')"
             @keydown.enter.prevent="emit('handlingEnterKey')"
           >
@@ -221,6 +224,7 @@ const {
   hasMoreResults,
   totalCount,
   displayedCount,
+  searchText,
   search: onSearch,
   reload,
   onScroll: onDropdownScroll,
@@ -280,10 +284,21 @@ const detailsButtonLabel = computed(() => props.viewHandlerDetailsVisible
 
 //#region Event handlers
 /**
+ * When the menu closes, n-select empties its search input without emitting `search`: the options
+ * would stay filtered by the old text the next time the menu opens. Reloads them unfiltered.
+ */
+function onMenuShowChange(show: boolean) {
+  if (!show && searchText.value !== '') {
+    onSearch('');
+  }
+}
+
+/**
  * Emits the selected option(s) rather than the bare value: callers generally need the label, as the
  * treeselect's `select` event used to provide.
  */
 function onSelectionChange(value: string | string[] | null) {
+  selectedValue.value = value;
   const optionFor = (uri: string | number) =>
     displayedOptions.value.find(option => uriKey(option.value) === uriKey(uri));
 

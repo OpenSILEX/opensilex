@@ -63,7 +63,6 @@
                 @selectionChange="updateSOFilter"
                 @clear="updateSOFilter"
                 class="searchFilter"
-                :key="resetExperimentSelectorKey"
               />
             </n-form-item>
 
@@ -272,7 +271,6 @@ const filtersCollapsed = ref(true);
 const refreshKey = ref(0);
 const provenanceDetailsAreVisible = ref(false);
 const selectedProvenance = ref<any>(null);
-const resetExperimentSelectorKey = ref(0);
 
 const filter = ref<FilterModel>({
   name: undefined,
@@ -433,7 +431,6 @@ function reset() {
   resetFilter();
   refresh();
   normalizeDates();
-  resetExperimentSelectorKey.value += 1;
 }
 
 function showProvenanceDetails() {

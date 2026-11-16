@@ -69,7 +69,6 @@
               v-model:experiments="filter.experiment"
               class="searchFilter"
               @handlingEnterKey="refresh()"
-              :key="resetExperimentSelectorKey"
           ></ExperimentSelector>
 
           <!-- Germplasm Parents filter -->
@@ -294,7 +293,6 @@ const speciesSelector = ref<any>()
 //#endregion
 
 //#region Data and computed
-const resetExperimentSelectorKey = ref<number>(0)
 
 const user = computed(() => {
   return store.state.user;
@@ -444,7 +442,6 @@ function reset() {
   };
 
   refresh();
-  resetExperimentSelectorKey.value++;
 }
 
 function onItemUnselected(row) {

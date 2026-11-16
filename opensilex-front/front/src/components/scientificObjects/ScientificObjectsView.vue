@@ -59,7 +59,6 @@
               :multiple="false"
               class="searchFilter"
               @handlingEnterKey="soList.refresh()"
-              :key="resetExperimentSelectorKey"
             />
           </n-form-item>
 
@@ -187,7 +186,7 @@
 
 <script setup lang="ts">
 
-import {computed, ref} from "vue";
+import {computed, nextTick, ref} from "vue";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 import CriteriaSearchModalCreator from "./CriteriaSearchModalCreator.vue";
 import {useStore} from "vuex";
@@ -236,7 +235,6 @@ const filter = ref<ScientificObjectFilter>({
   creationDate: undefined,
   criteriaDto: {criteria_list:[]}
 });
-const resetExperimentSelectorKey = ref(0);
 const searchFiltersToggle = ref(false);
 const loadAdvancedSearchFilters = ref(false);
 const expandedNCollapseNames = ref<string[]>([])
@@ -334,7 +332,7 @@ function initForm(): DocumentFormModel{
   };
 }
 
-function reset(): void {
+async function reset(): Promise<void> {
   filter.value = {
     name: "",
     experiment: undefined,
@@ -345,9 +343,10 @@ function reset(): void {
     creationDate: undefined,
     criteriaDto: {criteria_list:[]}
   };
-  criteriaSearchCreateModal.value.resetCriteriaListAndSave();
-  soList.value.refresh();
-  resetExperimentSelectorKey.value++;
+  criteriaSearchCreateModal.value?.resetCriteriaListAndSave();
+  // The list keeps its own copy of the filter, synced by a watcher: wait for it before searching
+  await nextTick();
+  soList.value?.refresh();
 }
 
 function onCollapseUpdate(names: string[]) {

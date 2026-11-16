@@ -77,7 +77,6 @@
                 @select="updateSOFilter"
                 @clear="updateSOFilter"
                 class="searchFilter"
-                :key="resetExperimentSelectorKey"
             ></ExperimentSelector>
 
           <!-- Scientific objects -->
@@ -297,7 +296,6 @@ const visibleDetails = ref<boolean>(false);
 const selectedProvenance = ref<ProvenanceGetDTO>(null);
 const filterProvenanceLabel = ref<string>(null);
 const refreshKey = ref<number>(0);
-const resetExperimentSelectorKey = ref<number>(0);
 const toggleSearchFilters = ref<boolean>(true);
 const loadAdvancedSearchFilters = ref<boolean>(false);
 const renderImportForm = ref<boolean>(false);
@@ -391,7 +389,6 @@ function refresh() {
 function reset() {
   resetFilter();
   refresh();
-  resetExperimentSelectorKey.value += 1;
 }
 
 function showProvenanceDetails() {

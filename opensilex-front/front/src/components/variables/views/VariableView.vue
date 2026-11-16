@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-3">
     <!-- Header -->
-    <opensilex-PageHeader
+    <PageHeader
       icon="fa#sun"
       :hasIcon="true"
       :title="variable?.name"
@@ -10,7 +10,7 @@
     />
 
     <!-- Onglets -->
-    <opensilex-PageActions :tabs="true" :returnButton="true" class="navigationTabs">
+    <PageActions :tabs="true" :returnButton="true" class="navigationTabs">
       <template v-slot>
         <nav class="tabs mb-3">
           <button
@@ -49,19 +49,19 @@
           </button>
         </nav>
       </template>
-    </opensilex-PageActions>
+    </PageActions>
 
     <!-- Contenu -->
-    <opensilex-PageContent>
+    <PageContent>
       <template #default>
-        <opensilex-VariableDetails
+        <VariableDetails
           v-if="isDetailsTab"
           :variable="variable"
           :displayLocalActions="onLocalInstance"
           @onUpdate="updateVariable"
         />
 
-        <opensilex-AnnotationList
+        <AnnotationList
           v-else-if="isAnnotationTab"
           class="projectAnnotations"
           ref="annotationList"
@@ -72,20 +72,20 @@
           :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
         />
 
-        <opensilex-VariableVisualizationTab
+        <VariableVisualizationTab
           v-else-if="isVisualizationTab"
           :variable="uri"
           :elementName="variable?.name"
           :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         />
 
-        <opensilex-DocumentTabList
+        <DocumentTabList
           v-else-if="isDocumentTab"
           :uri="uri"
           :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
         />
       </template>
-    </opensilex-PageContent>
+    </PageContent>
   </div>
 </template>
 
@@ -98,6 +98,12 @@ import { useRoute, useRouter } from 'vue-router';
 import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
 import  HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import type { VariablesService, AnnotationsService, DocumentsService, VariableDetailsDTO } from 'opensilex-core/index';
+import PageHeader from "@/components/layout/PageHeader.vue";
+import PageActions from "@/components/layout/PageActions.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import VariableDetails from "@/components/variables/VariableDetails.vue";
+import DocumentTabList from "@/components/documents/DocumentTabList.vue";
+import AnnotationList from "@/components/annotations/list/AnnotationList.vue";
 
 const { t } = useI18n();
 const store = useStore();

@@ -13,7 +13,7 @@
           @click="exportModal.show()"
           class="exportButton greenThemeColor createButton"
           :small="false"
-          :label="t('component.data.export')"
+          :label="t('component.data.export.export')"
       ></Button>
       <!-- Delete by batch button -->
       <Button

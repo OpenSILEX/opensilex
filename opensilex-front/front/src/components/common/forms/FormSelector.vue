@@ -81,7 +81,7 @@ import { NButton, NFormItem } from 'naive-ui'
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import FormField from "@/components/common/forms/FormField.vue";
-import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
+import CustomTreeselect, {SelectorNamedResource, SelectorItem} from "@/components/common/forms/CustomTreeselect.vue";
 
 const { t } = useI18n()
 
@@ -97,7 +97,7 @@ const props = defineProps<{
   optionsLoadingMethod?: Function
   options?: any[]
   showCount?: boolean
-  conversionMethod?: Function
+  conversionMethod?: (dto: SelectorNamedResource) => SelectorItem
   label?: string
   helpMessage?: string
   placeholder?: string

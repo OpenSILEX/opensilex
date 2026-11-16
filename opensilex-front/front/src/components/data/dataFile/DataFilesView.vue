@@ -254,6 +254,8 @@ interface Props{
   enforcedScientificObjectUri?: string | undefined
   /** When coming from Device details, we pass the device to have better display of possible provenances */
   passedDeviceUri?: string | undefined
+  enforcedExperimentUri?: string | undefined
+
 }
 const props = withDefaults(
   defineProps<Props>(),

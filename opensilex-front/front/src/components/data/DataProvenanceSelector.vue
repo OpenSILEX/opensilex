@@ -8,10 +8,10 @@
     :placeholder="
       placeholder ??
       (multiple
-        ? t('component.data.form.selector.placeholder-multiple')
-        : t('component.data.form.selector.placeholder'))
+        ? t('component.datafile.provenance-selector.placeholder-multiple')
+        : t('component.datafile.provenance-selector.placeholder'))
     "
-    :noResultsText="t('component.data.form.selector.filter-search-no-result')"
+    :noResultsText="t('component.datafile.provenance-selector.filter-search-no-result')"
     :disableBranchNodes="true"
     :showCount="true"
     :actionHandler="actionHandler"
@@ -31,6 +31,8 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse, ProvenanceGetDTO } from 'opensilex-core/index'
+import type { DataService } from 'opensilex-core/api/data.service'
+import FormSelector from '@/components/common/forms/FormSelector.vue'
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()
@@ -91,7 +93,7 @@ function onEnter() {
  */
 function loadProvenances() {
   return $opensilex
-    .getService('opensilex.DataService')
+    .getService<DataService>('opensilex.DataService')
     .getUsedProvenancesByTargets(
       props.experiments,
       props.variables,

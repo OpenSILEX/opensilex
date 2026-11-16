@@ -23,6 +23,10 @@
             :consistent-menu-width="false"
             :resetMenuOnOptionsChange="false"
             :multiple="multiple"
+            :show-checkmark="false"
+            :render-label="renderOptionLabel"
+            :render-tag="renderSelectedTag"
+            :theme-overrides="selectThemeOverrides"
             @search="onSearch"
             @scroll="onDropdownScroll"
             @update:value="onSelectionChange"
@@ -77,10 +81,10 @@
 </template>
 
 <script setup lang="ts" generic="T extends NamedResourceDTO">
-import {computed, inject, onBeforeUnmount, onMounted, ref, watch} from "vue";
+import {computed, h, inject, onBeforeUnmount, onMounted, ref, watch, type VNodeChild} from "vue";
 import type {NamedResourceDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {NButton, NFormItem, NSelect, SelectOption} from "naive-ui";
+import {NButton, NCheckbox, NFormItem, NSelect, NTag, SelectOption, type CheckboxProps, type SelectProps, type SelectRenderTag} from "naive-ui";
 import useInfiniteScrollSearch from "@/composables/useInfiniteScrollSearch";
 import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
@@ -136,6 +140,22 @@ const PAGE_SIZE = 20;
 const { t } = useI18n();
 // Guards against out-of-order resolutions if the selection changes while a load is in flight.
 let resolveRequestId = 0;
+/** Selected rows look like the former vue-treeselect: light blue background, black text */
+const selectThemeOverrides: SelectProps['themeOverrides'] = {
+  peers: {
+    InternalSelectMenu: {
+      optionTextColorActive: '#000',
+      optionColorActive: '#e3f2fd',
+      optionColorActivePending: '#d0e8fb'
+    }
+  }
+};
+/** Blue checkbox in multiple mode, instead of the primary green */
+const checkboxThemeOverrides: CheckboxProps['themeOverrides'] = {
+  colorChecked: 'var(--color-blue)',
+  borderChecked: '1px solid var(--color-blue)',
+  borderFocus: '1px solid var(--color-blue)'
+};
 //#endregion
 
 //#region Reactive Data (Refs)
@@ -157,6 +177,35 @@ function toOption(dto: T): SelectOption {
     ? props.conversionMethod(dto)
     : { label: dto.name, value: dto.uri };
 }
+
+/**
+ * Label of a dropdown row: bold when selected, preceded by a checkbox in multiple mode. The checkbox
+ * only reflects the state: a click on it reaches the row, which toggles the selection. Inline styles,
+ * as the menu is teleported out of this component and its scoped styles don't reach it.
+ */
+function renderOptionLabel(option: SelectOption, selected: boolean): VNodeChild {
+  const label = h('span', { style: { fontWeight: selected ? 'bold' : 'normal' } }, String(option.label ?? ''));
+  if (!props.multiple) {
+    return label;
+  }
+  return h('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
+    h(NCheckbox, { checked: selected, focusable: false, themeOverrides: checkboxThemeOverrides }),
+    label
+  ]);
+}
+
+/**
+ * What the field shows for the selected value(s): naive-ui's default rendering (plain label, or a
+ * closable tag in multiple mode). Needed because the field would otherwise reuse `renderOptionLabel`,
+ * meant for the dropdown rows only.
+ */
+const renderSelectedTag: SelectRenderTag = ({ option, handleClose }) => {
+  const label = String(option.label ?? '');
+  if (!props.multiple) {
+    return label;
+  }
+  return h(NTag, { closable: !option.disabled, disabled: props.disabled, onClose: handleClose }, { default: () => label });
+};
 
 /**
  * Normalised comparison key

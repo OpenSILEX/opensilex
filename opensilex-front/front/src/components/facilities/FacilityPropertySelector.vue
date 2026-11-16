@@ -7,7 +7,7 @@
         :multiple="property.is_list"
         :required="property.is_required"
         :optionsLoadingMethod="loadFacilities"
-        :placeholder="$t('FacilityPropertySelector.placeholder')"
+        :placeholder="t('component.facility.facility-placeholder')"
     />
   </div>
 </template>
@@ -44,8 +44,8 @@ const internalValue = defineModel<string>("value");
 function loadFacilities() {
   if (props.context?.experimentURI) {
     return opensilex
-        ?.getService("opensilex.ExperimentsService")
-        .getAvailableFacilities<ExperimentsService>(
+        ?.getService<ExperimentsService>("opensilex.ExperimentsService")
+        .getAvailableFacilities(
             props.context.experimentURI
         )
         .then(http => {
@@ -58,19 +58,19 @@ function loadFacilities() {
 
   if (props.context?.organizationURI) {
     return opensilex
-        ?.getService("opensilex.OrganizationsService")
-        .getOrganization<OrganizationsService>(props.context.organizationURI)
+        ?.getService<OrganizationsService>("opensilex.OrganizationsService")
+        .getOrganization(props.context.organizationURI)
         .then(http => {
           return http.response.result.facilities.map(facility => ({
             id: facility.uri,
-            label: t('component.site.facilities')
+            label: facility.name
           }));
         });
   }
 
   return opensilex
-      ?.getService("opensilex.OrganizationsService")
-      .getAllFacilities<OrganizationsService>()
+      ?.getService<OrganizationsService>("opensilex.OrganizationsService")
+      .getAllFacilities()
       .then(http => {
         return http.response.result.map(facility => ({
           id: facility.uri,

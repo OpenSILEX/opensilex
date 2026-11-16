@@ -1026,6 +1026,7 @@
             "modal-title": "Selected scientific objects",
             "scientificObjects": "Scientific object(s)",
             "scientificObjects-placeholder": "Select scientific objects",
+            "scientificObject-placeholder": "Select a scientific object",
             "parent-placeholder": "Select a parent",
             "objectType": "Object type",
             "alertSelectAllLimitSize": "The selection has too many lines for this feature, refine your search, maximum=",
@@ -1205,6 +1206,7 @@
                 "facility-default-date": "Default date"
             },
             "filter-placeholder": "Search facilities...",
+            "facility-placeholder": "Select a facility",
             "view": {
                 "list": {
                     "previous": "Consult the previous facility",

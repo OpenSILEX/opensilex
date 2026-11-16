@@ -1008,6 +1008,7 @@
             "modal-title": "Objets scientifiques sélectionnés",
             "scientificObjects": "Objet(s) scientifique(s)",
             "scientificObjects-placeholder": "Sélectionner des objets scientifiques",
+            "scientificObject-placeholder": "Sélectionner un objet scientifique",
             "parent-placeholder": "Sélectionner un parent",
             "objectType": "Type d'objet",
             "alertSelectAllLimitSize": "La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum=",
@@ -1262,6 +1263,7 @@
                 "facility-default-date": "Date par défaut"
             },
             "filter-placeholder": "Rechercher des installations environnementales...",
+            "facility-placeholder": "Sélectionner une installation environnementale",
             "view": {
                 "list": {
                     "previous": "Consulter l'infrastructure précédente",

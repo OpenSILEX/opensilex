@@ -434,6 +434,8 @@ function renderIcon(iconClass: string): () => VNode {
 /**
  * Builds the HTML content of the tooltip, the little popup displayed when hovering a point or an event.
  * For a point, it displays the series' colored marker and name, the date of the point and its value.
+ *
+ * The names come from the database (scientific objects, event types...): they are escaped, as the tooltip is HTML.
  */
 function formatTooltip(params: TooltipComponentFormatterCallbackParams): string {
   // The tooltip is triggered on a single item, so there is only one param
@@ -445,7 +447,7 @@ function formatTooltip(params: TooltipComponentFormatterCallbackParams): string 
     return formatEventTooltip(event, marker);
   }
   const [timestamp, value] = item.value as [number, number];
-  return `${marker}${item.seriesName}<br/>`
+  return `${marker}${echarts.format.encodeHTML(item.seriesName)}<br/>`
       + `${new Date(timestamp).toLocaleString(locale.value)}<br/>`
       + `<b>${value}</b>`;
 }
@@ -455,7 +457,7 @@ function formatTooltip(params: TooltipComponentFormatterCallbackParams): string 
  */
 function formatEventTooltip(event: DataVisuEvent, marker: string): string {
   const dto: EventGetDTO = event.event;
-  const title: string = `${marker}<b>${dto.rdf_type_name ?? dto.rdf_type ?? ""}</b><br/>`;
+  const title: string = `${marker}<b>${echarts.format.encodeHTML(dto.rdf_type_name ?? dto.rdf_type ?? "")}</b><br/>`;
   if (!dto.start) {
     return title + formatDate(dto.end);
   }

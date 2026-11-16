@@ -29,6 +29,8 @@ export default function useVisuImagePanel(imagePanel: Readonly<ShallowRef<Instan
     const panelImages: Ref<VisuImage[]> = ref<VisuImage[]>([]);
     /** Image hovered in the panel or on the graphic, highlighted in both */
     const highlightedImageUri: Ref<string | undefined> = ref<string | undefined>(undefined);
+    /** Images being loaded, so that a second click on their pin doesn't add them twice */
+    const loadingImageUris: Set<string> = new Set<string>();
     //#endregion
 
     //#region Hooks & watchers
@@ -43,6 +45,10 @@ export default function useVisuImagePanel(imagePanel: Readonly<ShallowRef<Instan
      */
     async function onGraphicImageClicked(point: DataVisuPoint): Promise<void> {
         const imageUri: string = point.image.uri;
+        if (loadingImageUris.has(imageUri)) {
+            return;
+        }
+        loadingImageUris.add(imageUri);
         try {
             if (!panelImages.value.some((image: VisuImage) => image.uri === imageUri)) {
                 panelImages.value.push(await loadImage(point.image));
@@ -53,6 +59,8 @@ export default function useVisuImagePanel(imagePanel: Readonly<ShallowRef<Instan
             imagePanel.value?.scrollToImage(imageUri);
         } catch (error) {
             $opensilex.errorHandler(error);
+        } finally {
+            loadingImageUris.delete(imageUri);
         }
     }
 

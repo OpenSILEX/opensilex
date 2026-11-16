@@ -3,18 +3,18 @@
     <!-- Clicked data point: its provenance and data, then its annotations -->
     <template v-if="data">
       <div class="dataCards">
-        <Card :label="t('DataVisuDetails.provenance')" :noFooter="true" class="detailCard">
+        <Card label="DataVisuDetails.provenance" :noFooter="true" class="detailCard">
           <template #body>
             <pre>{{ provenanceJson }}</pre>
           </template>
         </Card>
-        <Card :label="t('DataVisuDetails.data')" :noFooter="true" class="detailCard">
+        <Card label="DataVisuDetails.data" :noFooter="true" class="detailCard">
           <template #body>
             <pre>{{ dataJson }}</pre>
           </template>
         </Card>
       </div>
-      <Card :label="t('component.annotation.list-title')" :noFooter="true">
+      <Card label="component.annotation.list-title" :noFooter="true">
         <template #body>
           <AnnotationList
               ref="annotationList"
@@ -28,7 +28,7 @@
     </template>
 
     <!-- Clicked event pin -->
-    <Card v-else-if="eventDetails" :label="t('component.events.event')" :noFooter="true">
+    <Card v-else-if="eventDetails" label="component.events.event" :noFooter="true">
       <template #body>
         <TypeView :type="eventDetails.rdf_type" :typeLabel="eventDetails.rdf_type_name ?? eventDetails.rdf_type"></TypeView>
         <!-- An instant event only has an end date, displayed as its begin -->
@@ -149,7 +149,6 @@ async function loadEventDetails(): Promise<void> {
     loading.value = false;
   }
 }
-
 
 /**
  * Reloads the annotations of the data, e.g. after an annotation was created on it

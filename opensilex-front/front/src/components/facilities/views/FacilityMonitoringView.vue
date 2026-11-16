@@ -48,7 +48,7 @@
            :key="variable.uri">
         <VariableVisualizationTile
           class="tile-content"
-          :variableUri="variable"
+          :variable="variable"
           :target="uri"
           :defaultStartDate="startDate"
           :defaultEndDate="endDate"

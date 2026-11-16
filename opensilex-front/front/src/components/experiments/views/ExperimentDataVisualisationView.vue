@@ -125,9 +125,8 @@
 <script setup lang="ts">
 import {computed, ComputedRef, inject, onMounted, ref, Ref, useTemplateRef} from "vue";
 import {useI18n} from "vue-i18n";
-import {useRoute} from "vue-router";
 import {NCollapse, NCollapseItem, NForm, NFormItem, NLayout, NLayoutContent, NSpin} from "naive-ui";
-import {ExperimentsService, VariableDetailsDTO} from "opensilex-core/index";
+import {ExperimentGetDTO, ExperimentsService, VariableDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageContent from "@/components/layout/PageContent.vue";
 import Card from "@/components/common/views/Card.vue";
@@ -167,6 +166,8 @@ interface NamedScientificObject {
 
 //#region Public
 const props = defineProps<{
+  /** URI of the experiment */
+  uri: string
   /** Initial filter of the scientific objects selection modal */
   soFilter?: ScientificObjectFilter
   elementName?: string
@@ -177,7 +178,6 @@ const props = defineProps<{
 //#region Plugins & services
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const {t} = useI18n();
-const route = useRoute();
 const {getNumericVariables, loadDataSeries, loadEvents} = useDataVisualisation();
 
 const experimentsService: ExperimentsService = $opensilex.getService<ExperimentsService>("opensilex.ExperimentsService");
@@ -201,8 +201,6 @@ const {
 
 const SCIENTIFIC_OBJECTS_LIMIT: number = 15;
 const VARIABLES_LIMIT: number = 2;
-
-const uri: string = decodeURIComponent(route.params.uri as string);
 
 const filter: Ref<VisualisationFilter> = ref<VisualisationFilter>(defaultFilter());
 /** Labels of the selected scientific objects, used as series names */
@@ -288,18 +286,18 @@ function defaultFilter(): VisualisationFilter {
 /**
  * If the experiment is over, display its whole period. Otherwise only display the last 15 days.
  */
-function initDefaultDates(): void {
-  experimentsService.getExperiment(uri)
-      .then(http => {
-        const experiment = http.response.result;
-        if (experiment.end_date && new Date(experiment.end_date).getTime() < Date.now()) {
-          filter.value.start_date = experiment.start_date;
-          filter.value.end_date = experiment.end_date;
-        } else {
-          filter.value.start_date = getLastFifteenDaysStartDate();
-        }
-      })
-      .catch(error => $opensilex.errorHandler(error));
+async function initDefaultDates(): Promise<void> {
+  try {
+    const experiment: ExperimentGetDTO = (await experimentsService.getExperiment(props.uri)).response.result;
+    if (experiment.end_date && new Date(experiment.end_date).getTime() < Date.now()) {
+      filter.value.start_date = experiment.start_date;
+      filter.value.end_date = experiment.end_date;
+    } else {
+      filter.value.start_date = getLastFifteenDaysStartDate();
+    }
+  } catch (error) {
+    $opensilex.errorHandler(error);
+  }
 }
 
 function resetFilters(): void {
@@ -335,7 +333,7 @@ function buildSeriesRequests(scientificObjects: string[], variables: VariableDet
           filter: {
             start_date: f.start_date,
             end_date: f.end_date,
-            experiments: [uri],
+            experiments: [props.uri],
             targets: [soUri],
             variables: [variable.uri],
             provenances: f.provenance ? [f.provenance] : undefined

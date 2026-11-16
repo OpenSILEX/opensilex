@@ -5,7 +5,7 @@
         <Card
           ref="tilePanel"
           class="item variableTile clickableTile"
-          :label="variableUri.name"
+          :label="variable.name"
           @click="showGraphic"
         >
           <template v-slot:body>
@@ -56,7 +56,7 @@
             <Modal ref="graphicModal" modalSize="xl">
               <template #header>
                 <h4>
-                  {{ variableUri.name }}
+                  {{ variable.name }}
                 </h4>
               </template>
 
@@ -90,8 +90,8 @@
                 <DataVisuGraphic
                     :series="graphicSeries"
                     :yAxisNames="yAxisNames"
-                    :elementName="variableUri.name"
-                    :elementUri="variableUri.uri"
+                    :elementName="variable.name"
+                    :elementUri="variable.uri"
                 ></DataVisuGraphic>
               </n-spin>
 
@@ -125,6 +125,7 @@ import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {OpenSilexStore} from "@/models/Store";
 import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
 import type {DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
 import {getGraphicColor} from "@/composables/useDataVisualisation";
@@ -159,7 +160,7 @@ interface LastData {
 //#region Public
 const props = defineProps<{
   /** The variable displayed by the tile */
-  variableUri: NamedResourceDTOVariableModel
+  variable: NamedResourceDTOVariableModel
   /** URI of the facility the data was measured on */
   target: string
   /** Default period of the tile and of the graphic, ISO dates */
@@ -171,7 +172,7 @@ const props = defineProps<{
 //#region Private
 //#region Plugins & services
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
-const store = useStore();
+const store = useStore() as OpenSilexStore;
 const {t} = useI18n();
 
 const variablesService: VariablesService = $opensilex.getService<VariablesService>("opensilex.VariablesService");
@@ -191,7 +192,8 @@ const graphicEndDate: Ref<string | undefined> = ref<string | undefined>(props.de
 /** true to display the series of every provenance, and not only the calculated series */
 const isLoadAllProvToggled: Ref<boolean> = ref<boolean>(false);
 
-const variable: Ref<VariableDetailsDTO | undefined> = ref<VariableDetailsDTO | undefined>(undefined);
+/** Details of the variable, for its unit */
+const variableDetails: Ref<VariableDetailsDTO | undefined> = ref<VariableDetailsDTO | undefined>(undefined);
 /** Series of each provenance, only loaded when all the provenances are displayed */
 const dataSeries: Ref<DataSerieGetDTO[]> = ref<DataSerieGetDTO[]>([]);
 /** Series calculated from the provenance series, e.g. the median per hour */
@@ -224,10 +226,10 @@ const graphicSeries: ComputedRef<DataVisuSerie[]> = computed<DataVisuSerie[]>(()
 ]);
 
 const yAxisNames: ComputedRef<string[]> = computed<string[]>(() => {
-  if (!variable.value) {
+  if (!variableDetails.value) {
     return [];
   }
-  return [variable.value.unit?.name ? `${variable.value.name} (${variable.value.unit.name})` : variable.value.name];
+  return [variableDetails.value.unit?.name ? `${variableDetails.value.name} (${variableDetails.value.unit.name})` : variableDetails.value.name];
 });
 //#endregion
 
@@ -263,7 +265,7 @@ function withoutPageLoader<T>(request: () => Promise<T>): Promise<T> {
 
 async function loadVariableAndLastData(): Promise<void> {
   try {
-    variable.value = (await withoutPageLoader(() => variablesService.getVariable(props.variableUri.uri))).response.result;
+    variableDetails.value = (await withoutPageLoader(() => variablesService.getVariable(props.variable.uri))).response.result;
     await loadLastData();
   } catch (error) {
     // Without data, the loading overlay of the tile is removed
@@ -281,7 +283,7 @@ async function loadLastData(): Promise<void> {
   isDataLoaded.value = false;
 
   const seriesDTO: DataVariableSeriesGetDTO = (await withoutPageLoader(() => dataService.getDataSeriesByFacility(
-      props.variableUri.uri,
+      props.variable.uri,
       props.target,
       props.defaultStartDate || undefined,
       props.defaultEndDate || undefined,
@@ -312,7 +314,7 @@ async function loadAllData(): Promise<void> {
   isGraphicLoaded.value = false;
   try {
     const seriesDTO: DataVariableSeriesGetDTO = (await withoutPageLoader(() => dataService.getDataSeriesByFacility(
-        props.variableUri.uri,
+        props.variable.uri,
         props.target,
         graphicStartDate.value || undefined,
         graphicEndDate.value || undefined,
@@ -340,7 +342,7 @@ function getLastMedianData(medianSerie: DataSerieGetDTO): LastData | undefined {
   if (!latestData) {
     return undefined;
   }
-  const unitSymbol: string | undefined = variable.value?.unit?.symbol;
+  const unitSymbol: string | undefined = variableDetails.value?.unit?.symbol;
   return {
     value: Number(latestData.value).toPrecision(4) + (unitSymbol ? ` ${unitSymbol}` : ""),
     date: new Date(latestData.date).toISOString()

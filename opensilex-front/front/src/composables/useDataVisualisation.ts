@@ -15,6 +15,7 @@ import {
     VariablesService
 } from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {OpenSilexStore} from "@/models/Store";
 import type {
     DataVisuEvent,
     DataVisuPoint,
@@ -174,7 +175,7 @@ export default function useDataVisualisation() {
     //#region Plugins & services
     const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
     const {t} = useI18n();
-    const store = useStore();
+    const store = useStore() as OpenSilexStore;
 
     const dataService: DataService = $opensilex.getService<DataService>("opensilex.DataService");
     const variablesService: VariablesService = $opensilex.getService<VariablesService>("opensilex.VariablesService");
@@ -376,7 +377,6 @@ export default function useDataVisualisation() {
             event
         };
     }
-    //#endregion
 
     /**
      * Splits each series by the target of its points (e.g. the scientific object the data was measured on), when a
@@ -418,6 +418,7 @@ export default function useDataVisualisation() {
         const resources: NamedResourceDTO[] = (await ontologyService.getURILabelsList(targets)).response.result;
         return new Map(resources.map((resource: NamedResourceDTO) => [resource.uri, resource.name]));
     }
+    //#endregion
 
     return {
         getNumericVariables,

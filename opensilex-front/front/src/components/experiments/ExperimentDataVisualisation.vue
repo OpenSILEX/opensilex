@@ -1,5 +1,6 @@
 <template>
   <ExperimentDataVisualisationView
+      :uri="uri"
       :soFilter="soFilter"
       :elementName="elementName"
   ></ExperimentDataVisualisationView>

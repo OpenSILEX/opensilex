@@ -51,7 +51,7 @@
   <n-layout has-sider class="event-layout">
     <SearchFiltersSidebar
       :activeFiltersCount="activeFiltersCount"
-      :filtersCollapsed="filtersCollapsed"
+      v-model:filtersCollapsed="filtersCollapsed"
       @refresh="refresh"
       @reset="reset"
     >

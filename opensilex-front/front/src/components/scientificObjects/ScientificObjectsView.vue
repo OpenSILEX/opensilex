@@ -36,7 +36,7 @@
       <n-layout has-sider class="so-layout">
         <SearchFiltersSidebar
           :activeFiltersCount="activeFiltersCount"
-          :filtersCollapsed="searchFiltersToggle"
+          v-model:filtersCollapsed="searchFiltersToggle"
           @refresh="soList.refresh()"
           @reset="reset"
         >

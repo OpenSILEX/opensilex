@@ -68,7 +68,7 @@
   <n-layout has-sider class="project-layout">
     <SearchFiltersSidebar
       :activeFiltersCount="activeFiltersCount"
-      :filtersCollapsed="filtersCollapsed"
+      v-model:filtersCollapsed="filtersCollapsed"
       searchButtonLabelTranslationKey="component.project.search-projects"
       @refresh="applyFilters()"
       @reset="resetFilters()"

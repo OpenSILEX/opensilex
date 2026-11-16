@@ -2,7 +2,7 @@
   <n-layout has-sider class="document-layout">
     <SearchFiltersSidebar
       :activeFiltersCount="activeFiltersCount"
-      :filtersCollapsed="filtersCollapsed"
+      v-model:filtersCollapsed="filtersCollapsed"
       @refresh="applyFilters()"
       @reset="resetFilters()"
     >

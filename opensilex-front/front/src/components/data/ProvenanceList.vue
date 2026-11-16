@@ -72,7 +72,7 @@
         <!-- Sidebar / Filters -->
         <SearchFiltersSidebar
           :activeFiltersCount="activeFiltersCount"
-          :filtersCollapsed="filtersCollapsed"
+          v-model:filtersCollapsed="filtersCollapsed"
           searchButtonLabelTranslationKey="component.provenance.search-provenances"
           @refresh="applyFilters"
           @reset="resetFilters"

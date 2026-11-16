@@ -66,7 +66,7 @@
     <!-- Sidebar / Filters -->
     <SearchFiltersSidebar
       :activeFiltersCount="activeFiltersCount"
-      :filtersCollapsed="filtersCollapsed"
+      v-model:filtersCollapsed="filtersCollapsed"
       @refresh="refresh"
       @reset="resetFilters"
     >

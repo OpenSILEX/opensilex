@@ -13,7 +13,7 @@
         <n-layout has-sider class="datafiles-layout">
           <SearchFiltersSidebar
             :activeFiltersCount="activeFiltersCount"
-            :filtersCollapsed="filtersCollapsed"
+            v-model:filtersCollapsed="filtersCollapsed"
             @refresh="refresh"
             @reset="reset"
           >

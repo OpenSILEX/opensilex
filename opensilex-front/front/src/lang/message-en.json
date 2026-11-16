@@ -962,6 +962,11 @@
             }
         },
         "germplasms": {
+            "title": "Germplasm",
+            "description": "Manage Genetic Resources Information",
+            "group": {
+                "add": "Add group"
+            },
             "errors": {
                 "duplicateUri": "Duplicate URI: {uri}",
                 "duplicateLabel": "Duplicate label: {label}",
@@ -984,7 +989,7 @@
                 "update": "Update Germplasm",
                 "delete": "Delete Germplasm",
                 "selectLabel": "Select Germplasm",
-                "selected": "Selected Germplasm",
+                "selected": "Group list",
                 "export": "Export Germplasm list",
                 "export-all": "Export all",
                 "selected-all": "All Germplasm",

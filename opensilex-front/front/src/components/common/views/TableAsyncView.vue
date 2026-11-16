@@ -88,6 +88,7 @@
             :row-props="
             (row) => ({
               style: row.__isDetailsRow ? '' : 'cursor: pointer',
+              onClick: () => onRowClickedSafe(row),
             })
           "
             :checked-row-keys="checkedRowKeys"
@@ -198,10 +199,6 @@ const nThemeOverrides: GlobalThemeOverrides = {
 const routeArr = computed(() => route.path.split('/'));
 
 onMounted(() => {
-  if (props.isSelectable && props.selectMode !== 'single') {
-    props.fields.unshift({key: 'select', isSelect: true});
-  }
-
   // attendre que la table soit générée pour appeler et remplir de données
   nextTick(() => {
     if (tableRef.value) {
@@ -577,14 +574,16 @@ const naiveColumns = computed(() => {
     },
     colSpan: (row: any) => {
       if (row.__isDetailsRow) {
-        return colIndex === 0 ? props.fields.length + (props.isSelectable ? 1 : 0) : 0;
+        return colIndex === 0
+          ? props.fields.length + (props.isSelectable && props.selectMode !== 'single' ? 1 : 0)
+          : 0;
       }
       return 1;
     },
   }));
 
-  if (props.isSelectable) {
-    return [{type: 'selection'}, ...dynamicCols];
+  if (props.isSelectable && props.selectMode !== 'single') {
+    return [{ type: 'selection' }, ...dynamicCols];
   }
 
   return dynamicCols;

@@ -34,7 +34,14 @@
     </appender>
 
     
-    <root>
+    <!-- Classes listed as <debug> in the filter must also be enabled at DEBUG here, since the root level stops them before the filter -->
+    <logger name="org.opensilex.unit.test.AbstractUnitTest" level="DEBUG"/>
+    <logger name="org.opensilex.integration.test.AbstractIntegrationTest" level="DEBUG"/>
+    <logger name="org.opensilex.integration.test.AbstractSecurityIntegrationTest" level="DEBUG"/>
+    <logger name="org.apache.catalina.valves.StuckThreadDetectionValve" level="DEBUG"/>
+
+    <!-- Without a level the root logger defaults to DEBUG: every debug message would be built, then dropped by LogFilter -->
+    <root level="${opensilex.log.level}">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

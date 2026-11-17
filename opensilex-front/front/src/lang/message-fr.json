@@ -1411,7 +1411,7 @@
             "dataHelp": {
                 "exceptedFormat": "Format attendu",
                 "objectId": "Objet scientifique",
-                "title": "Générer un gabarit de données",
+                "title": "Générer un gabarit d'import de données",
                 "required": "Requis : oui",
                 "variables": "Variable(s)",
                 "variables-associated": "Variables associées à l'expérimentation",

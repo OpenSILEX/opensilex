@@ -1,9 +1,44 @@
 <template>
     <div>
+        <n-space justify="end" align="center" class="dataListCount">
+            <div v-if="paginationInfo.hasResults">
+                <strong>
+                    <span class="ml-1">
+                        {{
+                            t('component.common.list.pagination.nbEntries', {
+                                limit: paginationInfo.start,
+                                offset: paginationInfo.end,
+                                totalRow: totalCountLoaded ? n(paginationInfo.total) : '...'
+                            })
+                        }}
+                    </span>
+                </strong>
+
+                <Button
+                    :small="true"
+                    @click="loadTotalCount"
+                    label="component.common.list.pagination.showTotalCount"
+                    class="totalCountDetailButton"
+                >
+                    <template v-slot:icon>
+                        <Icon icon="fa#eye" />
+                    </template>
+                </Button>
+            </div>
+
+            <div v-else>
+                <strong>
+                    <span class="ml-1">
+                        {{ t('component.common.list.pagination.noEntries') }}
+                    </span>
+                </strong>
+            </div>
+        </n-space>
+
         <TableAsyncView
             ref="tableRef"
             :searchMethod="searchDataList"
-            :countMethod="countDataList"
+            :showCount="false"
             :fields="fields"
             defaultSortBy="date"
             :defaultSortDesc="true"
@@ -68,17 +103,21 @@ import DataProvenanceModalView from "./DataProvenanceModalView.vue"
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import Icon from "@/components/common/views/Icon.vue";
 import type HttpResponse from "opensilex-core/HttpResponse";
 import type {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {computed, inject, ref, useTemplateRef} from "vue";
 import {useStore} from "vuex";
 import {useRoute} from "vue-router";
+import {useI18n} from "vue-i18n";
 import {BatchHistoryGetDTO, ProvenanceGetDTO} from "opensilex-core/lib";
-import {NButton, NButtonGroup} from "naive-ui";
+import {NButton, NButtonGroup, NSpace} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
 const route = useRoute()
+const {t, n} = useI18n()
 
 const dataService = opensilex.getService<DataService>('opensilex.DataService')
 const ontologyService = opensilex.getService<OntologyService>('opensilex.OntologyService')
@@ -90,6 +129,11 @@ const objects = ref<{ [key: string]: string }>({})
 const objectsPath = ref<{ [key: string]: string }>({})
 const variableNames = ref<{ [key: string]: string }>({})
 const provenances = ref<{ [key: string]: string }>({})
+const currentPage = ref<number>(1)
+const currentPageSize = ref<number>(20)
+const currentPageItemCount = ref<number>(0)
+const totalCount = ref<number>()
+const totalCountLoaded = ref<boolean>(false)
 
 
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
@@ -164,11 +208,30 @@ const fields = computed(() =>
   return tableFields;
 })
 
+const paginationInfo = computed(() => {
+  const hasResults = currentPageItemCount.value > 0
+  const start = hasResults ? (currentPage.value - 1) * currentPageSize.value + 1 : 0
+  const end = hasResults ? start + currentPageItemCount.value - 1 : 0
+
+  return {
+    start,
+    end,
+    total: totalCount.value ?? 0,
+    hasResults
+  }
+})
+
    function getVariableName(variableUri: string): string {
         return variableNames.value[opensilex.getLongUri(variableUri)];
     }
 
+  function resetCountState() {
+    totalCount.value = undefined;
+    totalCountLoaded.value = false;
+  }
+
   function refresh() {
+    resetCountState();
     opensilex.updateURLParameters(filter.value);
     tableRef.value?.setPage(1);
     tableRef.value?.refresh();
@@ -216,7 +279,17 @@ function getBatch(uri: string): Promise<BatchHistoryGetDTO> {
         }
     }
 
-  function countDataList(options) {
+  async function loadTotalCount() {
+    try {
+      const http = await countDataList();
+      totalCount.value = http.response.result;
+      totalCountLoaded.value = true;
+    } catch (error) {
+      opensilex.errorHandler(error);
+    }
+  }
+
+  function countDataList() {
        let provUris = opensilex.prepareGetParameter(filter.value.provenance);
        if (provUris != undefined) {
            provUris = [provUris];
@@ -254,6 +327,9 @@ function getBatch(uri: string): Promise<BatchHistoryGetDTO> {
             provUris = [provUris];
         }
 
+        currentPage.value = options.currentPage + 1;
+        currentPageSize.value = options.pageSize;
+
         return new Promise((resolve, reject) => {
             dataService.searchDataListByTargets(
                 opensilex.prepareGetParameter(filter.value.start_date),
@@ -276,6 +352,7 @@ function getBatch(uri: string): Promise<BatchHistoryGetDTO> {
                 [].concat(filter.value.scientificObjects, filter.value.facilities, filter.value.targets) // targets & os & facilities
             )
                 .then((http) => {
+                    currentPageItemCount.value = http.response.result.length;
                     let promiseArray = [];
                     let objectsToLoad = [];
                     let variablesToLoad = [];
@@ -375,5 +452,20 @@ defineExpose({
 <style scoped lang="scss">
 .exportButton {
     margin-left: 15px;
+}
+
+.dataListCount {
+    margin-bottom: 10px;
+}
+
+.totalCountDetailButton {
+    background: none;
+    border: none;
+    color: var(--main-color-theme);
+}
+
+.totalCountDetailButton:focus {
+    color: #02c5ab;
+    background: none
 }
 </style>

@@ -1391,7 +1391,7 @@
                 "choosen-provenance": "Provenance choisie",
                 "selected-file": "Fichier sélectionné",
                 "no-selected-file": "Aucun fichier sélectionné",
-                "csv-file-placeholder": "Déposez le CSV de données ici ou sélectionner un fichier..",
+                "csv-file-placeholder": "Déposer un fichier CSV de données ici ou sélectionner un fichier...",
                 "csv-file-drop-placeholder": "Déposez le CSV de données ici ...",
                 "data-duplicated": "Données dupliquées",
                 "data-not-imported": "Données non importées. Une erreur s'est produite durant le processus d'importation",

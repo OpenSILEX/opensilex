@@ -9,6 +9,8 @@
 | 2026-09-27 | Arnaud Charleroy | BUILD-SNAPSHOT    | Data through the platform's data import, in batches        |
 | 2026-09-29 | Arnaud Charleroy | BUILD-SNAPSHOT    | Link to the guide for adding a profile                     |
 | 2026-09-29 | Arnaud Charleroy | BUILD-SNAPSHOT    | Assistant status, conversation folded when not connected   |
+| 2026-11-13 | Arnaud Charleroy | BUILD-SNAPSHOT    | Import by description: experiment where it is missing, factor of a sheet, values of columns in the forms, typed events, diagram of the steps |
+| 2026-11-11 | Arnaud Charleroy | BUILD-SNAPSHOT    | Import by description: described files, CSV and several files, order of declarations, creation without the assistant, templates (CSVW, RML), export by template |
 
 > ⚠️ _WARNING_ : This document is incomplete ! You can help by expanding it. ⚠️
 >
@@ -59,6 +61,7 @@
     * [`service` — the language model and the tool loop](#service--the-language-model-and-the-tool-loop)
     * [`create` — proposing, then writing](#create--proposing-then-writing)
       * [Insertion is all or nothing](#insertion-is-all-or-nothing)
+    * [Import by description — a file no template reads](#import-by-description--a-file-no-template-reads)
     * [`api` — the REST surface](#api--the-rest-surface)
     * [Front end](#front-end)
     * [Tests](#tests)
@@ -207,7 +210,8 @@ reports the module as unavailable instead of failing at the first request.
 | `mapping`      | column → business entity, and expected type versus observed type    |
 | `service`      | the language model connector, the tool loop, the session, the prompt |
 | `create`       | what a creation requires, and the creation itself                    |
-| `export`       | the other direction: an experiment of the instance written as STAR  |
+| `export`       | the other direction: an experiment of the instance written as STAR, or in the shape of a template |
+| `template`     | what a user said of a file, kept for the next one; CSVW and RML     |
 | `api`          | the REST surface and its DTOs                                       |
 | `exception`    | `WorkbookReadException`                                             |
 
@@ -1309,6 +1313,124 @@ rather than dropped in silence.
 
 The front end offers it as a third tab of the first screen, *Export as STAR*: the platform's
 `ExperimentSelector`, and the platform's `downloadFilefromService`, which carries the token.
+
+### Import by description — a file no template reads
+
+A file nobody wrote a profile for used to be read by the generic profile, which imports nothing.
+The `custom` profile (`profile/custom`, `UserDefinedProfile`) reads it as the user describes it, so
+that any file is importable **without a template and without the language model**: the
+description is what the module knows, and a conversation opened on it asks the model nothing.
+
+**What the user says.** For each sheet, what its rows are (`SheetKind`: objects, observations,
+both, factor levels, facilities, ignored) and, for each column, what it is (`DescribedRole`). The
+two enums are the single place a role lives: which kinds accept it, which require it, whether a sheet
+has one at most, and what it becomes in the object sheets panel. A new role is an entry there and two
+translations; nothing else switches on the role. Only the choice is stored (`SheetDescription`, kept
+in `SavedSession` as `file_description`): a default — the header dictionary of the platform, a
+numeric column read as a variable — is worked out when the sheet is read, never stored, so a better
+default reaches the descriptions already made. Problems (`DescriptionRules`) are reported with
+translation keys under `AiImport.report.anomaly.custom`, and a sheet with a problem is **not read**:
+the module refuses rather than guesses.
+
+**One object, several sheets.** An object is its name across the whole workbook
+(`ObjectMerger`). A plan sheet that gives the block and the treatment and a sheet of plant material
+that gives the variety describe one object, created once, with both. Each piece takes the first value
+that is not empty; two different values for the same piece refuse the object. Observations
+(`DataReader`) attach to an object, or to a facility for a weather sheet, each in the date system of
+its own file.
+
+**CSV, and several files.** `SheetSource` is one reader per format, listed in `SheetSources`, which is
+also the list the upload checks: `WorkbookReader` for workbooks and `CsvReader` for CSV and TSV. A
+CSV is one sheet named after the file, read with the platform's own CSV settings (separator, quotes
+and line endings detected), UTF-8 or else Windows-1252, said in the report. `HeaderRows` finds the
+header the same way for both. A conversation holds up to ten files (`SessionFile`, added and removed
+by `SessionFileAPI`), each stored under its own identifier; `WorkbookAssembler` puts their sheets
+together, a sheet whose name is taken being called after its file. A conversation stored before this
+existed has its one file under the conversation itself, and is stored again the new way when resumed.
+
+**The order of the declarations.** An experiment comes before its factors, a factor before its levels,
+the objects and the data after what they name. `ImportStep` is the one table of that order; it is read
+by the guided path of the screen (`GET /ai-import/sessions/{id}/steps`, evaluated by `StepEvaluator`),
+and by the creations: those that wait are refused, with the step to do first, until it is done.
+The data check their own prerequisites row by row, with counts, which the table could not give.
+
+**The experiment.** A sheet of kind experiments has a row per experiment: its name, and the fields of the
+platform's experiment form — alternative name, objective, description, dates — plus the projects and the
+facilities named on the row, suggested in the form once the report finds them. A sheet that names
+experiments and nothing they hold is guessed to be one. Otherwise one experiment serves the whole file:
+`ExperimentNaming` says which sheets need one — objects, observations, factor levels, events — and the
+experiment card, under the sheets, offers to choose it or to create it with the platform's form, as long
+as no sheet is validated as a sheet of experiments. Once an experiment is chosen the factors can be
+declared at once with the platform's factor form, one factor at a time, then a form of the user's own.
+
+**The factor of a sheet of levels.** When no column names the factor, the user names it for the sheet
+(`SheetDescription.factor`): every row is then a level of that one factor. It is not carried by the
+templates, since it is data of the file. Other columns give the level's name and description and the
+factor's description; the factor form is opened with them. The code stays the level's name, since it is
+what the objects carry; the level's name goes, with its description, into the level's description. A
+sheet of levels that is not read is named to the user instead of opening an empty factor form.
+
+**Values of columns in the forms.** A role can feed a field of the form that creates something
+(`FormTarget`, carried by the role table): the description, objective and dates of the experiment or
+project named by the row, the description of a facility, of a level, of an event. `FieldValues` puts the
+columns of a field together, joined with a semicolon, each value carrying the name of its column when
+several columns feed the field; a date field takes the first valid date. What the file says reaches
+the report as the `details` of the item and is suggested in the creation form ahead of anything the module
+worked out.
+
+**Events.** A sheet of kind events has rows that are events of the type the user chose, with the properties
+of that type read from the ontology, on a date, to an object or a facility (`EventReader`). They are written
+through the platform's event logic, with the type and the relations validated by it, and are a step of the
+order of declarations. They are not exported by template.
+
+**Dynamic properties.** The type of the rows of an object or facility sheet and the property each
+column is written to are chosen from the ontology of the instance (`TypeProperties`, given the class
+the types descend from): a type or a property added in the vocabulary screens is usable at once, and
+no list of properties is written in the code.
+
+**Creating without the assistant.** `POST /ai-import/drafts` makes the draft the assistant would have
+proposed, from the files alone (`ProposalBuilder`). The factors go to the platform's own factor form,
+one factor at a time (`GET .../drafts/factors`): a factor the experiment lacks is created with its
+levels, one that lacks levels is edited with them added, since the platform adds a level by updating its
+factor. A facility is created with the platform's form, given its type and its properties together
+(`GET .../drafts/facilities`). Nothing is written until the user confirms.
+
+**Templates.** What the user said is kept as a `FileTemplate` (the module's own model, kept by
+`FileTemplateStore`) unless they say otherwise, and proposed for the next sheet whose headers look
+like it (`FileTemplateMatcher`, accents and case ignored). A proposal is only shown: the user applies
+or ignores it. A template is private until its author shares it; only the author changes or deletes it.
+It leaves as CSVW (`csvw/`), which the module reads back and refuses with the reason when the document
+is not its own, and as RML (`rml/`), which it only writes, for tools that run it; the IRI templates of
+its subjects are indicative, since the platform makes the real URIs. The ontology link of each role is
+one table, `RoleOntology`, built from the platform's vocabularies.
+
+**Export by template.** `TemplateWorkbookBuilder` writes an experiment in the shape of a template, a
+sheet for each sheet of it, each column filled by its role; the readme sheet says what was left out.
+It and the STAR export are two `WorkbookExport`, reading the same `ExperimentSnapshot`.
+
+| Endpoint | Does |
+|----------|------|
+| `GET /ai-import/sessions/{id}/sheet_descriptions` | how the files are read, with the rows, the choices and the proposals |
+| `POST /ai-import/sheet_descriptions` | applies a description, all or nothing, and works the report out again |
+| `GET /ai-import/sessions/{id}/sheet_descriptions/type_properties` | the properties of a type, by kind of sheet |
+| `GET /ai-import/sessions/{id}/sheet_descriptions/csvw` | the description as CSVW |
+| `GET`, `POST`, `DELETE /ai-import/sessions/{id}/files` | the files of a conversation |
+| `GET /ai-import/sessions/{id}/steps` | where each step of the import stands |
+| `POST /ai-import/drafts` | a creation drafted without the assistant |
+| `GET /ai-import/sessions/{id}/drafts/factors` | each factor, planned against the experiment |
+| `GET /ai-import/sessions/{id}/drafts/facilities` | the facilities a sheet describes |
+| `GET`, `PUT /ai-import/templates`, `DELETE /ai-import/templates/{id}` | the user's templates |
+| `GET /ai-import/templates/{id}/csvw`, `/rml`, `/export` | a template as CSVW or RML, an experiment in its shape |
+| `POST /ai-import/templates/import` | a CSVW document becomes a template of the user |
+
+The status of the declarations can be read as a list or as a Mermaid diagram drawn from the same steps and
+their dependencies; the diagram library is loaded when the diagram is first shown, but is part of the
+module's bundle.
+
+The front end adds an **Advanced import** tab to the first screen, with the user's templates, and the
+panels `AdvancedImportPanel`, `SessionFilesPanel`, `SheetDescriptionPanel`, `SheetPreviewTable`,
+`ImportStepsPanel`, `CreationDraftZone`, `FactorDeclarationZone` and `FileTemplateList`. The **Export**
+tab offers STAR or one of the templates.
 
 ### `api` — the REST surface
 

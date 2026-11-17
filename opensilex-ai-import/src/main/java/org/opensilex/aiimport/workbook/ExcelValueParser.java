@@ -5,6 +5,10 @@
 package org.opensilex.aiimport.workbook;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +62,10 @@ public class ExcelValueParser {
      */
     private static final List<String> DATE_COLUMN_HINTS = Collections.unmodifiableList(
             Arrays.asList("date", "_date", "datetime", "_datetime"));
+
+    // Strict, so that 31/02/2026 is no date rather than the last day of February.
+    private static final DateTimeFormatter DAY_FIRST =
+            DateTimeFormatter.ofPattern("d/M/uuuu").withResolverStyle(ResolverStyle.STRICT);
 
     private ExcelValueParser() {
     }
@@ -160,5 +168,55 @@ public class ExcelValueParser {
     public static LocalDate serialToDate(double serial, boolean date1904) {
         LocalDate epoch = date1904 ? EXCEL_1904_EPOCH : EXCEL_1900_EPOCH;
         return epoch.plus((long) Math.floor(serial), ChronoUnit.DAYS);
+    }
+
+    /**
+     * Reads a cell of a column the user declared to hold dates, whatever its header says.
+     * <p>
+     * {@link #parse(String, String, boolean)} only takes a bare number for a date when the header
+     * looks like one, which is the right guess for a column nobody described and the wrong one for
+     * a column named {@code jour}. Here the column is known to be dates: a plausible serial is one,
+     * as is an ISO date, an ISO date and time, or a {@code dd/MM/yyyy} date.
+     *
+     * @return the date, or {@code null} when the cell holds none
+     */
+    public static LocalDate parseDate(String raw, boolean date1904) {
+        String cleaned = clean(raw);
+        if (isMissing(cleaned)) {
+            return null;
+        }
+        Double number = parseNumber(cleaned);
+        if (number != null) {
+            return isPlausibleDateSerial(number) ? serialToDate(number, date1904) : null;
+        }
+        LocalDate date = isoDate(cleaned);
+        if (date == null) {
+            date = isoDateTime(cleaned);
+        }
+        return date != null ? date : dayFirstDate(cleaned);
+    }
+
+    private static LocalDate isoDate(String text) {
+        try {
+            return LocalDate.parse(text);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    private static LocalDate isoDateTime(String text) {
+        try {
+            return LocalDateTime.parse(text.replace(' ', 'T')).toLocalDate();
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    private static LocalDate dayFirstDate(String text) {
+        try {
+            return LocalDate.parse(text, DAY_FIRST);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 }

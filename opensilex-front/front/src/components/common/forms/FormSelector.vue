@@ -27,6 +27,7 @@
             :showCount="showCount"
             :actionHandler="actionHandler"
             :disableParentNodes="disableParentNodes"
+            :collapsed="collapsed"
             :itemLoadingMethod="itemLoadingMethod || undefined"
             class="select-main"
             :totalCount="updateTotalCount"
@@ -111,6 +112,8 @@ const props = defineProps<{
   defaultSelectedValue?: boolean
   /** If true then only nodes with 0 children can be selected*/
   disableParentNodes?: boolean
+  /** If true, the tree of options opens folded */
+  collapsed?: boolean
 }>()
 
 const emit = defineEmits<{

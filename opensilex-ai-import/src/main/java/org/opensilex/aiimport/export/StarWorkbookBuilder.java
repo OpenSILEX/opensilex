@@ -66,7 +66,7 @@ import java.util.TreeSet;
  *
  * @author Arnaud Charleroy
  */
-public class StarWorkbookBuilder {
+public class StarWorkbookBuilder implements WorkbookExport {
 
     public static final String README_SHEET = "readme";
     public static final String FIELD_SHEET = StarSheets.FIELD_PREFIX;
@@ -128,6 +128,7 @@ public class StarWorkbookBuilder {
     /**
      * @return the workbook, as the bytes of an {@code .xlsx} file
      */
+    @Override
     public byte[] build(ExperimentSnapshot snapshot) throws IOException {
         try (SXSSFWorkbook book = new SXSSFWorkbook(ROW_WINDOW)) {
             workbook = book;

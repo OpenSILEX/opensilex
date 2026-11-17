@@ -49,7 +49,13 @@ Four profiles are shipped, in [`profile/`](../java/org/opensilex/aiimport/profil
 | `vitis-explorer` | `VitisExplorerProfile`  | Grapevine observation template, one sheet per stage |
 | `star`           | `StarProfile`           | STAR agronomic trial model, one entity per sheet    |
 | `miappe`         | `MiappeProfile`         | MIAPPE v1.1 checklist spreadsheet                   |
+| `custom`         | `UserDefinedProfile`    | A file the user describes themselves — never detected |
 | `generic`        | `GenericTabularProfile` | Anything else — the fallback                        |
+
+A file that comes once does not need a profile: the **Advanced import** tab lets the user say what each
+sheet and column is, and keeps it as a template for the next file of the same shape — see
+[`ARCHITECTURE.md`](ARCHITECTURE.md#import-by-description--a-file-no-template-reads). A profile is
+worth writing when a family of files is recurring and its conventions are worth teaching the module.
 
 The STAR profile is split over a few classes in
 [`profile/star/`](../java/org/opensilex/aiimport/profile/star), a good layout to copy:

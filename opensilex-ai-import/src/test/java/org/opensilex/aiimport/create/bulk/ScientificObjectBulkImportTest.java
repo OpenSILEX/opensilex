@@ -14,6 +14,9 @@ import org.opensilex.aiimport.create.objects.TypeProperties;
 import org.opensilex.aiimport.create.rows.RowError;
 import org.opensilex.aiimport.profile.ObjectRow;
 import org.opensilex.aiimport.profile.ObjectTargets;
+import org.opensilex.aiimport.profile.custom.CustomWorkbooks;
+import org.opensilex.aiimport.profile.custom.ObjectMerger;
+import org.opensilex.aiimport.profile.custom.UserDefinedProfile;
 import org.opensilex.aiimport.profile.star.StarProfile;
 import org.opensilex.aiimport.resolve.ResolutionReport;
 import org.opensilex.aiimport.resolve.ResolutionStatus;
@@ -119,6 +122,8 @@ public class ScientificObjectBulkImportTest {
                                 URI.create("http://www.w3.org/2001/XMLSchema#string"), false, false),
                         new TypeProperties.TypeProperty(URI.create(ObjectTargets.PARENT), "is part of", true,
                                 URI.create("http://www.opensilex.org/vocabulary/oeso#ScientificObject"), false, false),
+                        new TypeProperties.TypeProperty(URI.create(ObjectTargets.GERMPLASM), "has germplasm", true,
+                                URI.create("http://www.opensilex.org/vocabulary/oeso#Germplasm"), false, false),
                         new TypeProperties.TypeProperty(URI.create(PLANT_COUNT), "plant count", false,
                                 URI.create("http://www.w3.org/2001/XMLSchema#integer"), false, false));
             }
@@ -383,6 +388,113 @@ public class ScientificObjectBulkImportTest {
         assertEquals(ObjectTargets.NONE, plots.getMapping().get("plot_n"));
         assertEquals("the type is asked, never guessed", null, plots.getType());
         assertTrue(plots.isIncluded());
+    }
+
+    //#endregion
+
+    //#region objects the user described
+
+    /**
+     * A session about a workbook the user described: no template, the profile reads what it was told.
+     */
+    private AiImportSession described(WorkbookStructure workbook) {
+        AiImportSession session = new AiImportSession("described", URI.create("http://opensilex.test/id/account/a"));
+        session.setWorkbook(workbook).setProfileId(UserDefinedProfile.ID);
+        ResolutionReport report = new ResolutionReport();
+        for (ObjectRow row : ScientificObjectBulkImport.rowsOf(session)) {
+            found(report.getGermplasm(), row.getGermplasm());
+        }
+        session.setReport(report);
+        return session;
+    }
+
+    @Test
+    public void anObjectTheFileContradictsItselfAboutIsRefusedOnItsOwnRowsAndTheOthersStay() throws Exception {
+        AiImportSession session = described(CustomWorkbooks.workbook(
+                CustomWorkbooks.sheet("plan", List.of("plot_id", "variete"),
+                        CustomWorkbooks.row("P01", "Syrah"), CustomWorkbooks.row("P02", "Merlot")),
+                CustomWorkbooks.sheet("materiel", List.of("plot_id", "variete"),
+                        CustomWorkbooks.row("P01", "Grenache"))));
+
+        GeneratedCsv csv = importer(Set.of()).generate(session, values());
+
+        assertEquals("P02 is the only object that is written", 1, csv.getDataLineCount());
+        assertEquals(1, csv.getModuleErrors().size());
+        RowError error = csv.getModuleErrors().get(0);
+        assertEquals(RowError.Kind.INVALID_ROW, error.getKind());
+        assertEquals("plan", error.getSheet());
+        assertEquals("the row of the sheet the object is attached to", 2, error.getRow());
+        assertEquals("P01", error.getValue());
+        assertEquals("variete", error.getColumn());
+    }
+
+    @Test
+    public void anObjectWithALevelOfEachOfTwoFactorsGetsTwoColumnsOfLevels() throws Exception {
+        AiImportSession session = described(CustomWorkbooks.workbook(
+                CustomWorkbooks.sheet("plan", List.of("plot_id", "traitement", "modalite_irrigation"),
+                        CustomWorkbooks.row("P01", "T1", "Sec"), CustomWorkbooks.row("P02", "T2", "Arrosé"))));
+
+        GeneratedCsv csv = importer(Set.of("T1", "T2", "Sec", "Arrosé")).generate(session, values());
+
+        assertTrue(csv.getModuleErrors().toString(), csv.getModuleErrors().isEmpty());
+        String[] lines = csv.render().split("\n");
+        assertEquals("the importer reads a repeated column as a list: one per factor", 2,
+                lines[0].split(java.util.regex.Pattern.quote(ObjectTargets.FACTOR_LEVEL), -1).length - 1);
+        assertTrue(lines[2], lines[2].contains("http://opensilex.test/id/level/T1"));
+        assertTrue(lines[2], lines[2].contains("http://opensilex.test/id/level/Sec"));
+        assertTrue(lines[3], lines[3].contains("http://opensilex.test/id/level/T2"));
+        assertTrue(lines[3], lines[3].contains("http://opensilex.test/id/level/Arrosé"));
+    }
+
+    @Test
+    public void twoFactorsThatShareTheNameOfALevelAreToldApartByTheHeaderOfItsColumn() throws Exception {
+        AiImportSession session = described(CustomWorkbooks.workbook(
+                CustomWorkbooks.sheet("plan", List.of("plot_id", "traitement", "modalite_irrigation"),
+                        CustomWorkbooks.row("P01", "T1", "T1"))));
+        ScientificObjectBulkImport importer = new ScientificObjectBulkImport(null, null, null, null) {
+            @Override
+            protected Map<String, URI> factorLevels(URI experiment) {
+                Map<String, URI> levels = new HashMap<>();
+                levels.put("t1", URI.create("http://opensilex.test/id/level/copper-T1"));
+                levels.put("traitement|t1", URI.create("http://opensilex.test/id/level/copper-T1"));
+                levels.put("modalite_irrigation|t1", URI.create("http://opensilex.test/id/level/water-T1"));
+                return levels;
+            }
+
+            @Override
+            protected String experimentStart(URI experiment) {
+                return "2024-03-01";
+            }
+
+            @Override
+            protected TypeProperties typeProperties() {
+                return plotProperties();
+            }
+
+            @Override
+            protected ObjectValueResolver valueResolver() {
+                return new ObjectValueResolver(null);
+            }
+        };
+
+        GeneratedCsv csv = importer.generate(session, values());
+
+        assertTrue(csv.getModuleErrors().toString(), csv.getModuleErrors().isEmpty());
+        String line = csv.render().split("\n")[2];
+        assertTrue(line, line.indexOf("copper-T1") > 0 && line.indexOf("water-T1") > line.indexOf("copper-T1"));
+    }
+
+    @Test
+    public void theSheetsOfAnObjectDescribedByTwoSheetsAreShownUnderTheOneItIsAttachedTo() {
+        AiImportSession session = described(CustomWorkbooks.planAndMaterial());
+
+        List<ObjectSheet> sheets = ObjectSheets.of(session);
+
+        assertEquals(List.of("plan", "materiel"),
+                sheets.stream().map(ObjectSheet::getName).collect(Collectors.toList()));
+        ObjectSheet plan = sheets.get(0);
+        assertEquals(ObjectTargets.GERMPLASM, plan.getMapping().get("materiel" + ObjectMerger.QUALIFIER + "variete"));
+        assertEquals("a type nobody chose is never suggested", null, plan.getType());
     }
 
     //#endregion

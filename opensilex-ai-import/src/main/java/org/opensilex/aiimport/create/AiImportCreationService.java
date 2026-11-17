@@ -10,18 +10,26 @@ import org.opensilex.aiimport.profile.DataPoint;
 import org.opensilex.aiimport.create.bulk.DataBulkImport;
 import org.opensilex.aiimport.create.bulk.ScientificObjectBulkImport;
 import org.opensilex.aiimport.create.objects.ObjectSheet;
+import org.opensilex.aiimport.create.steps.ExperimentFactors;
+import org.opensilex.aiimport.create.steps.ImportStep;
+import org.opensilex.aiimport.create.steps.StepEvaluator;
+import org.opensilex.aiimport.create.steps.StepState;
+import org.opensilex.aiimport.create.steps.StepStatus;
 import org.opensilex.aiimport.create.objects.ObjectSheets;
 import org.opensilex.aiimport.profile.EventCandidate;
 import org.opensilex.aiimport.profile.FactorLevelCandidate;
-import org.opensilex.aiimport.profile.ImportProfileRegistry;
 import org.opensilex.aiimport.profile.ObjectRow;
 import org.opensilex.aiimport.resolve.ResolutionReport;
+import org.opensilex.aiimport.resolve.ReportCategory;
+import org.opensilex.aiimport.profile.custom.FieldValues;
 import org.opensilex.aiimport.resolve.ResolutionStatus;
 import org.opensilex.aiimport.resolve.ResolvedItem;
 import org.opensilex.aiimport.service.AiImportSession;
+import org.opensilex.aiimport.service.SessionProfile;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.event.bll.EventLogic;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.api.FactorAPI;
@@ -29,6 +37,7 @@ import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectDAO;
@@ -44,6 +53,7 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +62,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -136,7 +148,35 @@ public class AiImportCreationService {
 
     //#region what each creation would take
 
+    /**
+     * What this creation takes, with the steps it has to wait for: a creation whose step is
+     * declared to wait — see {@link ImportStep} — is refused until what it depends on is done, and
+     * the card says which.
+     */
     public CreationRequirements requirementsFor(CreationTarget target, AiImportSession session) {
+        CreationRequirements requirements = requirementsOf(target, session);
+        Optional<ImportStep> own = ImportStep.of(target).filter(ImportStep::blocksCreation);
+        if (own.isPresent() && !own.get().dependsOn().isEmpty()) {
+            stepsOf(session).stream()
+                    .filter(state -> state.step() == own.get() && state.status() == StepStatus.BLOCKED)
+                    .forEach(state -> state.blockedBy().forEach(step -> requirements.block(step.blockKey())));
+        }
+        return requirements;
+    }
+
+    /**
+     * Where each step of the import stands: what the files name, against what the instance has.
+     */
+    public List<StepState> stepsOf(AiImportSession session) {
+        ExperimentFactors existing = session.getReport() == null
+                ? ExperimentFactors.NONE
+                : facts(session).firstFoundUri(session.getReport().getExperiments())
+                .map(uri -> ExperimentFactors.read(sparql, uri, currentUser == null ? "en" : currentUser.getLanguage()))
+                .orElse(ExperimentFactors.NONE);
+        return new StepEvaluator(session, existing).evaluate();
+    }
+
+    private CreationRequirements requirementsOf(CreationTarget target, AiImportSession session) {
         switch (target) {
             case PROJECT:
                 return projectRequirements(session);
@@ -156,6 +196,42 @@ public class AiImportCreationService {
         }
     }
 
+    /**
+     * What the file's columns say of the first experiment or project it names that the instance
+     * lacks: the one the form is opened for.
+     */
+    private Map<String, String> detailsOfFirstMissing(List<ResolvedItem> items) {
+        if (items == null) {
+            return Map.of();
+        }
+        return items.stream().filter(item -> item.getStatus() == ResolutionStatus.MISSING)
+                .map(ResolvedItem::getDetails).findFirst().orElse(Map.of());
+    }
+
+    /**
+     * The URIs of the resources a column names, joined as a list field carries them: only those the
+     * report found, since a name the instance lacks has no URI yet.
+     */
+    private Optional<String> linkedUris(AiImportSession session, String names, ReportCategory category) {
+        if (names == null || session.getReport() == null) {
+            return Optional.empty();
+        }
+        Map<String, URI> found = facts(session).resolvedUris(category);
+        String uris = Arrays.stream(names.split(FieldValues.SEPARATOR))
+                .map(name -> found.get(name.trim().toLowerCase()))
+                .filter(Objects::nonNull).map(URI::toString).distinct().collect(Collectors.joining(","));
+        return uris.isEmpty() ? Optional.empty() : Optional.of(uris);
+    }
+
+    /**
+     * Suggests what a column of the file says for the field, ahead of anything the module worked out
+     * itself: the person who wrote the column knows better than a guess from the observations.
+     */
+    private static RequiredField fileField(RequiredField field, Map<String, String> fromFile) {
+        String value = fromFile.get(field.getName());
+        return value == null ? field : field.suggest(value, "AiImport.proposal.from.fileColumns");
+    }
+
     private CreationRequirements projectRequirements(AiImportSession session) {
         CreationRequirements requirements = new CreationRequirements(CreationTarget.PROJECT);
 
@@ -164,24 +240,27 @@ public class AiImportCreationService {
                 .ifPresent(value -> name.suggest(value, "AiImport.proposal.from.projectColumn"));
         requirements.field(name);
 
-        requirements.field(new RequiredField("shortname", "AiImport.proposal.field.shortname", "text", false));
+        Map<String, String> fromFile = detailsOfFirstMissing(session.getReport() == null
+                ? null : session.getReport().getProjects());
+        requirements.field(fileField(new RequiredField("shortname", "AiImport.proposal.field.shortname", "text",
+                false), fromFile));
 
         RequiredField startDate = new RequiredField("start_date", "AiImport.proposal.field.startDate",
                 "date", true);
         facts(session).earliestObservation().ifPresent(date ->
                 startDate.suggest(date.toString(), "AiImport.proposal.from.earliestObservation"));
-        requirements.field(startDate);
+        requirements.field(fileField(startDate, fromFile));
 
         RequiredField endDate = new RequiredField("end_date", "AiImport.proposal.field.endDate",
                 "date", false);
         facts(session).latestObservation().ifPresent(date ->
                 endDate.suggest(date.toString(), "AiImport.proposal.from.latestObservation"));
-        requirements.field(endDate);
+        requirements.field(fileField(endDate, fromFile));
 
-        requirements.field(new RequiredField("objective", "AiImport.proposal.field.objective",
-                RequiredField.KIND_LONG_TEXT, false));
-        requirements.field(new RequiredField("description", "AiImport.proposal.field.description",
-                RequiredField.KIND_LONG_TEXT, false));
+        requirements.field(fileField(new RequiredField("objective", "AiImport.proposal.field.objective",
+                RequiredField.KIND_LONG_TEXT, false), fromFile));
+        requirements.field(fileField(new RequiredField("description", "AiImport.proposal.field.description",
+                RequiredField.KIND_LONG_TEXT, false), fromFile));
 
         return requirements;
     }
@@ -194,27 +273,36 @@ public class AiImportCreationService {
                 .ifPresent(value -> name.suggest(value, "AiImport.proposal.from.trialColumn"));
         requirements.field(name);
 
-        // Required by the experiment model, and nothing in a data entry file says what it was.
-        requirements.field(new RequiredField("objective", "AiImport.proposal.field.objective",
-                RequiredField.KIND_LONG_TEXT, true));
+        Map<String, String> fromFile = detailsOfFirstMissing(session.getReport() == null
+                ? null : session.getReport().getExperiments());
+
+        // Required by the experiment model: a data entry file seldom says what it was, so the field
+        // is asked unless a column says it.
+        requirements.field(fileField(new RequiredField("objective", "AiImport.proposal.field.objective",
+                RequiredField.KIND_LONG_TEXT, true), fromFile));
 
         RequiredField startDate = new RequiredField("start_date", "AiImport.proposal.field.startDate",
                 "date", true);
         facts(session).earliestObservation().ifPresent(date ->
                 startDate.suggest(date.toString(), "AiImport.proposal.from.earliestObservation"));
-        requirements.field(startDate);
+        requirements.field(fileField(startDate, fromFile));
 
         RequiredField endDate = new RequiredField("end_date", "AiImport.proposal.field.endDate",
                 "date", false);
         facts(session).latestObservation().ifPresent(date ->
                 endDate.suggest(date.toString(), "AiImport.proposal.from.latestObservation"));
-        requirements.field(endDate);
+        requirements.field(fileField(endDate, fromFile));
 
-        requirements.field(new RequiredField("projects", "AiImport.proposal.field.projects",
+        RequiredField projects = new RequiredField("projects", "AiImport.proposal.field.projects",
                 RequiredField.KIND_URI_LIST, false)
-                .setResource(RequiredField.RESOURCE_PROJECT));
-        requirements.field(new RequiredField("description", "AiImport.proposal.field.description",
-                RequiredField.KIND_LONG_TEXT, false));
+                .setResource(RequiredField.RESOURCE_PROJECT);
+        linkedUris(session, fromFile.get(FieldValues.PROJECTS), ReportCategory.PROJECTS)
+                .ifPresent(uris -> projects.suggest(uris, "AiImport.proposal.from.fileColumns"));
+        requirements.field(projects);
+        requirements.field(fileField(new RequiredField("alternative_name", "AiImport.proposal.field.alternativeName",
+                "text", false), fromFile));
+        requirements.field(fileField(new RequiredField("description", "AiImport.proposal.field.description",
+                RequiredField.KIND_LONG_TEXT, false), fromFile));
 
         RequiredField organizations = new RequiredField(EXPERIMENT_ORGANIZATIONS,
                 "AiImport.proposal.field.organizations", RequiredField.KIND_URI_LIST, false)
@@ -228,6 +316,10 @@ public class AiImportCreationService {
             foundUris(session.getReport().getFacilities()).ifPresent(uris ->
                     facilities.suggest(uris, "AiImport.proposal.from.resolvedFacilities"));
         }
+        // The facilities the sheet of experiments names on the experiment's row say more than every
+        // facility of the file.
+        linkedUris(session, fromFile.get(FieldValues.FACILITIES), ReportCategory.FACILITIES)
+                .ifPresent(uris -> facilities.suggest(uris, "AiImport.proposal.from.fileColumns"));
         requirements.field(organizations);
         requirements.field(facilities);
 
@@ -353,9 +445,6 @@ public class AiImportCreationService {
                 session.getReport() == null ? null : session.getReport().getExperiments());
         resolved.ifPresent(uri -> experiment.suggest(uri.toString(), "AiImport.proposal.from.resolvedExperiment"));
         requirements.field(experiment);
-        if (!resolved.isPresent()) {
-            requirements.warn("AiImport.proposal.warn.experimentFirst");
-        }
 
         boolean named = levels.stream().allMatch(level -> level.factor() != null);
         requirements.field(new RequiredField(FACTOR_NAME, "AiImport.proposal.field.factorName",
@@ -384,7 +473,7 @@ public class AiImportCreationService {
         if (session.getWorkbook() == null) {
             return List.of();
         }
-        return new ImportProfileRegistry().getById(session.getProfileId())
+        return SessionProfile.of(session)
                 .map(profile -> profile.extractFactorLevels(session.getWorkbook()))
                 .orElse(List.of());
     }
@@ -662,6 +751,8 @@ public class AiImportCreationService {
      */
     public int createEvents(AiImportSession session, Map<String, String> values) throws Exception {
         List<EventModel> models = new ArrayList<>();
+        EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
+        Map<URI, ClassModel> classesByType = new HashMap<>();
         for (EventCandidate candidate : session.getEvents()) {
             List<URI> targets = facts(session).resolveTargets(candidate);
             if (targets.isEmpty()) {
@@ -672,8 +763,15 @@ public class AiImportCreationService {
                 continue;
             }
             EventModel model = new EventModel();
-            model.setType(URI.create(Oeev.Event.getURI()));
+            // The type the user chose for the sheet, with the properties that type has; a plain event
+            // when the file gives none.
+            URI type = candidate.getType() != null ? candidate.getType() : URI.create(Oeev.Event.getURI());
+            model.setType(type);
             model.setTargets(targets);
+            List<RDFObjectRelationDTO> relations = new ArrayList<>();
+            candidate.getProperties().forEach((property, value) ->
+                    relations.add(new RDFObjectRelationDTO(property, value, false)));
+            logic.setEventRelations(model, relations, type, classesByType);
             model.setDescription(candidate.toEventDescription());
             model.setIsInstant(true);
 
@@ -688,7 +786,7 @@ public class AiImportCreationService {
         if (models.isEmpty()) {
             return 0;
         }
-        new EventLogic<>(sparql, nosql, currentUser, EventModel.class).create(models, false);
+        logic.create(models, false);
         return models.size();
     }
 

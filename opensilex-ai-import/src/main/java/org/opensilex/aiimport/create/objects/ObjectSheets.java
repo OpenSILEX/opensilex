@@ -6,12 +6,13 @@ package org.opensilex.aiimport.create.objects;
 
 import org.opensilex.aiimport.create.objects.TypeProperties.TypeProperty;
 import org.opensilex.aiimport.profile.ImportProfile;
-import org.opensilex.aiimport.profile.ImportProfileRegistry;
 import org.opensilex.aiimport.profile.ObjectRow;
 import org.opensilex.aiimport.profile.ObjectSheetDefaults;
 import org.opensilex.aiimport.profile.ObjectTargets;
+import org.opensilex.aiimport.profile.custom.ObjectMerger;
 import org.opensilex.aiimport.report.ReportMessage;
 import org.opensilex.aiimport.service.AiImportSession;
+import org.opensilex.aiimport.service.SessionProfile;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.net.URI;
@@ -49,7 +50,7 @@ public final class ObjectSheets {
         if (session.getWorkbook() == null) {
             return Collections.emptyList();
         }
-        Optional<ImportProfile> found = new ImportProfileRegistry().getById(session.getProfileId());
+        Optional<ImportProfile> found = SessionProfile.of(session);
         if (!found.isPresent()) {
             return Collections.emptyList();
         }
@@ -127,7 +128,7 @@ public final class ObjectSheets {
                 return;
             }
             boolean single = property == null ? !ObjectTargets.FACTOR_LEVEL.equals(target) : !property.list();
-            if (single && columns.size() > 1) {
+            if (single && mostFromOneSheet(columns) > 1) {
                 String named = property == null ? target : property.name();
                 problems.add(ReportMessage.of(PROBLEM + "singleValued",
                                 "Columns " + String.join(", ", columns) + " are all mapped to " + named
@@ -137,6 +138,21 @@ public final class ObjectSheets {
             }
         });
         return problems;
+    }
+
+    /**
+     * Two columns of one sheet feeding a property that holds one value contradict each other; a
+     * column of each of two sheets that describe the same object do not — the header of a column
+     * brought from another sheet carries that sheet's name, and the first that says something wins.
+     *
+     * @return the most columns the property is fed by from one and the same sheet
+     */
+    private static long mostFromOneSheet(List<String> columns) {
+        Map<String, Long> bySheet = columns.stream().collect(java.util.stream.Collectors.groupingBy(
+                column -> column.contains(ObjectMerger.QUALIFIER)
+                        ? column.substring(0, column.indexOf(ObjectMerger.QUALIFIER)) : "",
+                java.util.stream.Collectors.counting()));
+        return bySheet.values().stream().mapToLong(Long::longValue).max().orElse(0);
     }
 
     private static TypeProperty find(Map<String, TypeProperty> byUri, String target) {

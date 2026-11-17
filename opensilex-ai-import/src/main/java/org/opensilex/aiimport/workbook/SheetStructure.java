@@ -25,6 +25,19 @@ public class SheetStructure {
     private boolean tabular = true;
 
     /**
+     * Whether the sheet comes from a workbook in the 1904 date system, which the same serial number
+     * reads four years apart from the 1900 one. Known per sheet because a conversation can hold
+     * workbooks saved in either.
+     */
+    private boolean date1904;
+
+    /**
+     * The charset a CSV file had to be read in because it was not UTF-8, or {@code null}: what the
+     * user is told, since an accent read in the wrong charset is a different letter.
+     */
+    private String charset;
+
+    /**
      * Free text of a sheet that carries prose rather than a table, such as a ReadMe. Only filled
      * for sheets detected as non-tabular.
      */
@@ -73,6 +86,33 @@ public class SheetStructure {
     public SheetStructure setTabular(boolean tabular) {
         this.tabular = tabular;
         return this;
+    }
+
+    public boolean isDate1904() {
+        return date1904;
+    }
+
+    public SheetStructure setDate1904(boolean date1904) {
+        this.date1904 = date1904;
+        return this;
+    }
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public SheetStructure setCharset(String charset) {
+        this.charset = charset;
+        return this;
+    }
+
+    /**
+     * @return this sheet under another name, sharing its rows: for a sheet whose name another file
+     * already uses
+     */
+    public SheetStructure renamed(String newName) {
+        return new SheetStructure().setName(newName).setIndex(index).setHeaders(headers).setRows(rows)
+                .setTabular(tabular).setText(text).setDate1904(date1904).setCharset(charset);
     }
 
     public String getText() {

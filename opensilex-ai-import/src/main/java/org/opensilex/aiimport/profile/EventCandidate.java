@@ -5,7 +5,10 @@
 package org.opensilex.aiimport.profile;
 
 import java.time.LocalDate;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 
 /**
@@ -33,6 +36,13 @@ public class EventCandidate {
      * What the file called it, e.g. "Observation" or "Traitement phytosanitaire".
      */
     private String typeLabel;
+
+    /**
+     * The type of the event the user chose, or {@code null} for a plain event, and the value of each
+     * property of that type the file gives it, by the property's URI.
+     */
+    private URI type;
+    private final Map<URI, String> properties = new LinkedHashMap<>();
 
     private String description;
 
@@ -62,6 +72,19 @@ public class EventCandidate {
     public EventCandidate setRowNumber(int rowNumber) {
         this.rowNumber = rowNumber;
         return this;
+    }
+
+    public URI getType() {
+        return type;
+    }
+
+    public EventCandidate setType(URI type) {
+        this.type = type;
+        return this;
+    }
+
+    public Map<URI, String> getProperties() {
+        return properties;
     }
 
     public String getTypeLabel() {

@@ -16,6 +16,7 @@ import org.opensilex.aiimport.mapping.MappingService;
 import org.opensilex.aiimport.profile.ExtractedImportPlan;
 import org.opensilex.aiimport.profile.ImportProfile;
 import org.opensilex.aiimport.profile.ImportProfileRegistry;
+import org.opensilex.aiimport.profile.custom.UserDefinedProfile;
 import org.opensilex.aiimport.resolve.ResolutionReport;
 import org.opensilex.aiimport.resolve.ResolutionService;
 import org.opensilex.aiimport.resolve.SharedResourceVariableLookup;
@@ -23,7 +24,7 @@ import org.opensilex.aiimport.service.dto.ChatMessage;
 import org.opensilex.aiimport.service.dto.ToolCall;
 import org.opensilex.aiimport.service.tools.AiTool;
 import org.opensilex.aiimport.service.tools.ToolContext;
-import org.opensilex.aiimport.workbook.WorkbookReader;
+import org.opensilex.aiimport.workbook.SheetSources;
 import org.opensilex.aiimport.workbook.WorkbookStructure;
 import org.opensilex.core.CoreModule;
 import org.opensilex.fs.service.FileStorageService;
@@ -123,15 +124,20 @@ public class AiImportChatService {
      */
     public void start(AiImportSession session, File file, String originalFileName,
                       String requestedProfileId) throws WorkbookReadException {
-        WorkbookStructure workbook = new WorkbookReader().read(file, originalFileName);
+        WorkbookStructure workbook = SheetSources.read(file, originalFileName);
+        session.getFiles().add(SessionFile.of(originalFileName, workbook));
+        session.setFileName(originalFileName).assemble();
         ImportProfile profile = selectProfile(workbook, requestedProfileId);
 
-        session.setFileName(originalFileName)
-                .setWorkbook(workbook)
-                .setProfileId(profile.getId());
+        session.setProfileId(profile.getId());
 
-        analyse(session, profile);
+        analyse(session, SessionProfile.bind(session, profile).orElse(profile));
 
+        // A file the user is about to describe has nothing to analyse yet: the assistant is asked
+        // nothing until they have said what it is, and costs no token before then.
+        if (UserDefinedProfile.ID.equals(profile.getId())) {
+            return;
+        }
         session.getHistory().add(ChatMessage.user(OPENING_INSTRUCTION));
 
         AiImportMessage opening = AiImportMessage.assistant(null);
@@ -149,12 +155,21 @@ public class AiImportChatService {
      */
     public void restore(AiImportSession session, File file, String originalFileName,
                         String profileId) throws WorkbookReadException {
-        WorkbookStructure workbook = new WorkbookReader().read(file, originalFileName);
-        ImportProfile profile = selectProfile(workbook, profileId);
-        session.setFileName(originalFileName)
-                .setWorkbook(workbook)
-                .setProfileId(profile.getId());
-        analyse(session, profile);
+        session.getFiles().clear();
+        session.getFiles().add(SessionFile.of(originalFileName, SheetSources.read(file, originalFileName)));
+        session.setFileName(originalFileName);
+        restore(session, profileId);
+    }
+
+    /**
+     * Rebuilds a stored session whose files have been read and put in it: the sheets are put
+     * together again and the report is worked out from them.
+     */
+    public void restore(AiImportSession session, String profileId) {
+        session.assemble();
+        ImportProfile profile = selectProfile(session.getWorkbook(), profileId);
+        session.setProfileId(profile.getId());
+        analyse(session, SessionProfile.bind(session, profile).orElse(profile));
     }
 
     /**
@@ -162,7 +177,7 @@ public class AiImportChatService {
      * after the user has created what was missing.
      */
     public void revalidate(AiImportSession session) {
-        ImportProfile profile = profiles.getById(session.getProfileId())
+        ImportProfile profile = SessionProfile.of(session)
                 .orElseGet(() -> profiles.select(session.getWorkbook()));
         analyse(session, profile);
     }

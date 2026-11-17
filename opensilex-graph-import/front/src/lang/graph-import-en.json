@@ -1,0 +1,412 @@
+{
+    "GraphImport": {
+        "menu": "Experimental import",
+        "title": "Experimental import assistant",
+        "description": "Bring a workbook or CSV files whose columns are properties of the ontology. Each sheet is read as a graph: a row is a resource, a column one of its properties. Nothing is written to the instance.",
+        "menuDescription": "Read a workbook as a graph of the ontology. Nothing is written.",
+        "steps": {
+            "upload": "Bring the files",
+            "understand": "Understand the columns",
+            "preview": "Preview",
+            "create": "Create"
+        },
+        "upload": {
+            "choose": "Choose a file",
+            "drop": "or drop a workbook (xlsx, xls) or a CSV file here"
+        },
+        "stored": {
+            "title": "Imports in progress",
+            "none": "No import in progress.",
+            "resume": "Resume",
+            "delete": "Delete",
+            "updated": "Changed on {date}",
+            "expires": "kept until {date}"
+        },
+        "session": {
+            "close": "Back to the imports",
+            "saved": "This import is saved as it goes: you can leave it and resume it later."
+        },
+        "files": {
+            "title": "Files",
+            "add": "Add a file",
+            "remove": "Remove"
+        },
+        "sheets": {
+            "title": "Sheets ({count})",
+            "size": "{rows} rows · {columns} columns",
+            "sample": "First rows of the sheet.",
+            "text": "Text sheet"
+        },
+        "layout": {
+            "choose": "Choose the rows",
+            "readAsTable": "Read as a table",
+            "title": "Rows of the sheet {sheet}",
+            "help": "Point at the row holding the column names, then at the first row of values. Rows between them, such as a row of units, are skipped. Row numbers are the spreadsheet's.",
+            "header": "Header: row {row}",
+            "firstData": "Values from row {row}",
+            "shown": "First {shown} rows of {total}",
+            "asHeader": "Header",
+            "asFirstData": "1st value",
+            "detected": "Back to the detected rows",
+            "apply": "Apply"
+        },
+        "status": {
+            "CHOSEN": "Chosen",
+            "DECIDED": "Read in the file",
+            "SUGGESTED": "Suggested",
+            "UNDECIDED": "To decide",
+            "LEFT_OUT": "Left out"
+        },
+        "understand": {
+            "help": "For each sheet, the assistant suggests the class of its rows, the column identifying them and the property of each column, with its reasons. Expand a column to see why, accept or correct: your choices are saved and remembered for your next files.",
+            "experiment": "Experiment (to recognise its scientific objects)",
+            "loading": "Reading the sheets…",
+            "rows": "{count} rows",
+            "forget": "Back to the suggestions",
+            "class": "Class of the rows",
+            "classPlaceholder": "Choose a class",
+            "identifier": "Identifier column",
+            "identifierPlaceholder": "Choose a column",
+            "identifierTag": "identifier",
+            "why": "Why these suggestions?",
+            "column": "Column",
+            "status": "Status",
+            "property": "Property",
+            "typeColumn": "Type of each row",
+            "toDecide": "To decide",
+            "choose": "Choose",
+            "chosen": "Chosen",
+            "noCandidate": "No property stands out: choose one or leave the column aside.",
+            "otherProperty": "Other property",
+            "otherPropertyPlaceholder": "Search a property of the class",
+            "backToSuggestion": "Back to the suggestion",
+            "accept": "Accept",
+            "leaveOut": "Leave out",
+            "takeBack": "Take back",
+            "leftOut": "Left out",
+            "leftOutNote": "You left this column out: it gives no value and is not suggested again."
+        },
+        "report": {
+            "evidence": {
+                "header": "The header is the property {property}.",
+                "alias": "You chose this property for \"{header}\" before.",
+                "label": "The header is the label \"{label}\".",
+                "commonWord": "\"{header}\" usually holds: {label}.",
+                "closeLabel": "The header is close to the label \"{label}\".",
+                "valuesRead": "{count} of {total} values read as {datatype}.",
+                "valuesNotRead": "Only {count} of {total} values read as {datatype}.",
+                "instances": "{count} of {total} values name an existing {class}.",
+                "sheetIdentifiers": "{count} of {total} values are identifiers of the sheet {sheet}.",
+                "identifierHeader": "\"{header}\" usually identifies the rows.",
+                "identifierUris": "The values are URIs.",
+                "uniqueValues": "Every row has its own value.",
+                "uniqueButIncomplete": "No value repeats, but some rows have none.",
+                "firstColumn": "It is the first column.",
+                "typeColumn": "The type column gives {class}.",
+                "sheetName": "The sheet {sheet} is named after {class}.",
+                "headerCoverage": "{count} of {total} headers are properties of {class}.",
+                "existingRows": "{count} of {total} identifiers name an existing {class}."
+            },
+            "note": {
+                "unknownPrefix": "The prefix \"{prefix}\" is unknown.",
+                "notAccepted": "{class} does not accept the property {property}.",
+                "unresolvedTypes": "These types are not classes: {values}.",
+                "duplicateSingle": "Another column gives {property}, which holds one value only: choose one.",
+                "notATable": "This sheet is not a table.",
+                "noExperiment": "Choose an experiment to recognise its scientific objects."
+            },
+            "literal": {
+                "notANumber": "\"{value}\" is not a number.",
+                "twoSeparators": "\"{value}\" has both a comma and a dot: which one separates the decimals is unclear.",
+                "notAnInteger": "\"{value}\" is not a whole number.",
+                "notABoolean": "\"{value}\" is neither yes nor no.",
+                "notADate": "\"{value}\" is not a date.",
+                "ambiguousDate": "\"{value}\" may be {dayFirst} or {monthFirst}: choose the order of the column.",
+                "missingTime": "\"{value}\" has a date but no time.",
+                "missingZone": "\"{value}\" has no time zone: choose the zone of the column.",
+                "notAUri": "\"{value}\" is not a URI.",
+                "invalid": "\"{value}\" is not a valid {datatype}."
+            },
+            "graph": {
+                "sheetLeftOut": "The sheet {sheet} is left out until the class of its rows is chosen.",
+                "sheetsLeftOut": "{count} sheets are left out until the class of their rows is chosen: {sheets}.",
+                "noIdentifier": "The sheet {sheet} has no identifier column: each of its rows is a resource of its own, which no other sheet can complete.",
+                "emptyIdentifiers": "{count} rows of the sheet {sheet} have no identifier: each is a resource of its own.",
+                "columnsLeftOut": "Columns of the sheet {sheet} left out until their property is chosen: {headers}.",
+                "propertyNotAccepted": "The column {header} of the sheet {sheet} is left out: the class of its rows does not accept its property.",
+                "unresolvedTypes": "{count} rows of the sheet {sheet} have a type that names no known class: they take the class of the sheet."
+            },
+            "problem": {
+                "linkUnfound": "\"{value}\" names nothing known: no row of the file, no instance you may see.",
+                "linkAmbiguous": "\"{value}\" names {count} existing instances: which one is meant is unclear.",
+                "linkWrongClass": "\"{value}\" is a row of the file of class {classes}, where {expected} is expected.",
+                "classConflict": "The sheets give this resource unrelated classes: {classes}.",
+                "tooManyValues": "{count} different values for {property}, which takes at most {max}.",
+                "requiredMissing": "{property} needs at least {min} value(s), the file gives {count}: required unless the resource already exists."
+            },
+            "preview": {
+                "ambiguousMatch": "\"{name}\" names {count} existing resources of its class: which one the file completes is unclear.",
+                "classMismatch": "The existing resource {uri} is of class {classes}, where the file says {expected}.",
+                "fileClasses": "The sheets give this resource unrelated classes: {classes}."
+            },
+            "creation": {
+                "toFix": "The file must be corrected for this resource first.",
+                "completing": "This resource exists already: completing it is not supported yet.",
+                "conflict": "This resource is in conflict with what the instance holds.",
+                "targetFirst": "\"{name}\" must be created first, at the step {step}.",
+                "targetBlocked": "\"{name}\" cannot be created, so neither can this.",
+                "targetNotCreated": "\"{name}\" is to be created and no step creates it.",
+                "unwritable": "The assistant cannot write {property} yet.",
+                "noExperiment": "A factor belongs to an experiment: choose the experiment of the import, or give the factor one.",
+                "existingFactor": "The factor of this level exists already: adding a level to it is not supported yet.",
+                "unreadable": "The value {value} of {property} cannot be read.",
+                "refused": "The platform refused it: {detail}",
+                "forbidden": "You may not create these resources.",
+                "pointedByBlocked": "\"{name}\", created with it, cannot be created yet: it waits for it.",
+                "noExperimentForObjects": "Scientific objects are created in an experiment: choose the experiment of the import.",
+                "tooMany": "This step would create {count} resources; at most {most} are created at once. Split the file.",
+                "sameName": "Two resources of this step are named \"{name}\".",
+                "noMoment": "An event needs a date: its beginning or its end.",
+                "noTarget": "An event concerns at least one resource: give it one.",
+                "noProvenance": "Data need a provenance: choose the provenance of the import's data at the step Understand.",
+                "batchRefused": "The platform refused the batch {batch} of {batches}: {detail}"
+            },
+            "measure": {
+                "targetUnfound": "\"{name}\" is no scientific object of the file or of the experiment.",
+                "targetAmbiguous": "\"{name}\" names several scientific objects: {count}.",
+                "noDate": "This row gives no date: its values give no datum.",
+                "variableUnfound": "\"{name}\" names no variable you may see.",
+                "duplicate": "Another cell gives a value of the same variable, for the same target, at the same date."
+            }
+        },
+        "check": {
+            "title": "Graph check",
+            "loading": "Checking…",
+            "figures": "{nodes} resources, {values} values including {links} links",
+            "errors": "{count} error(s)",
+            "warnings": "{count} warning(s)",
+            "none": "No problem",
+            "cut": "{shown} of {total} problems listed; the figures count them all.",
+            "problemsColumn": "Problems",
+            "rowProblems": "Problems of the rows ({count})",
+            "times": "× {count}",
+            "row": "Row of values {row}",
+            "cell": "Row of values {row} · {column}",
+            "place": "{sheet}, row of values {row}, {column}",
+            "alsoIn": "Also: {places}",
+            "didYouMean": "Did you mean:",
+            "inFile": "row of the file",
+            "existing": "existing",
+            "more": "… and {count} more",
+            "moreNotes": "{count} more remarks"
+        },
+        "dates": {
+            "title": "Reading the dates",
+            "order": "Order of day and month",
+            "detected": "From the values ({order})",
+            "DAY_FIRST": "day then month (03/04 = 3 April)",
+            "MONTH_FIRST": "month then day (03/04 = 4 March)",
+            "UNDECIDED": "undecided",
+            "zone": "Zone of times written without one",
+            "noZone": "None: refuse these times"
+        },
+        "preview": {
+            "help": "What the import would do to the instance, compared with what it holds within your rights. Nothing is written. Scientific objects are looked up only in the experiment chosen at the Understand step: without one, they all read as created.",
+            "loading": "Comparing the import with the instance…",
+            "afresh": "Compare again",
+            "turtle": "Export as Turtle",
+            "problems": "The check of the graph finds {count} problem(s): the Understand step shows them column by column.",
+            "sheets": "Sheet:",
+            "counts": {
+                "all": "All ({count})",
+                "CREATED": "Created ({count})",
+                "COMPLETED": "Completed ({count})",
+                "UNCHANGED": "Unchanged ({count})",
+                "CONFLICT": "In conflict ({count})",
+                "toFix": "To correct ({count})"
+            },
+            "state": {
+                "CREATED": "created",
+                "COMPLETED": "completed",
+                "UNCHANGED": "unchanged",
+                "CONFLICT": "in conflict"
+            },
+            "value": {
+                "NEW": "new",
+                "PRESENT": "already there",
+                "CONFLICT": "would replace",
+                "AMBIGUOUS": "unclear",
+                "UNUSABLE": "no value"
+            },
+            "cell": {
+                "NEW": "The resource would gain this value.",
+                "PRESENT": "The resource holds this value already.",
+                "CONFLICT": "This value would replace one the resource holds.",
+                "AMBIGUOUS": "A row of the file and an existing resource share this name: which one is meant is unclear.",
+                "ERROR": "The file must be corrected here.",
+                "IDENTIFIER": "Identifies the row.",
+                "TYPE": "Gives the class of the row.",
+                "IGNORED": "Left out: the column's property is not chosen."
+            },
+            "grid": {
+                "resource": "Resource",
+                "toFix": "to correct",
+                "noResource": "sheet left out",
+                "leftOut": "left out",
+                "legend": "Blue: new value · grey: already there · red: conflict or to correct · orange: unclear link · italic: left out. Click a row to see its resource."
+            },
+            "map": {
+                "title": "Map of the sheets",
+                "list": "List",
+                "diagram": "Diagram",
+                "diagramFailed": "The diagram cannot be drawn here: the list shows the same links.",
+                "noClass": "class not chosen",
+                "box": "{class} · {rows} rows",
+                "sheet": "{class}, {rows} rows, {resources} resources",
+                "existing": "Existing {class}",
+                "same": "{count} shared resource(s)",
+                "links": "{property}: {count} link(s)",
+                "between": "{from} → {to}: {what}",
+                "toExisting": "{from} → existing {to}: {what}"
+            },
+            "node": {
+                "existing": "Existing resource:",
+                "missing": "Required and given neither by the file nor by the instance: {properties}.",
+                "rows": "Comes from: {rows}",
+                "place": "{sheet}, value row {row}",
+                "values": "Values",
+                "none": "The file gives it no value.",
+                "target": "Points to",
+                "held": "The resource holds: {values}",
+                "problems": "Problems of the file"
+            }
+        },
+        "understandGraph": {
+            "viewLabel": "Sheet display",
+            "table": "Table",
+            "graph": "Graph",
+            "canvasLabel": "Graph of the sheets and their columns",
+            "busy": "Saving…",
+            "toDecide": "To decide: {count}",
+            "problems": "Problems: {count}",
+            "zoomIn": "Zoom in",
+            "zoomOut": "Zoom out",
+            "fit": "Show all",
+            "showLeftOut": "Show the columns left out",
+            "legend": {
+                "title": "Legend",
+                "sheet": "Sheet; solid ring = class chosen, dashes = suggested, grey = to choose",
+                "existing": "Resources that already exist in the instance",
+                "value": "Column of values",
+                "undecided": "Column to decide: drag it onto a sheet or click it",
+                "chosen": "Link chosen by you or read in the file",
+                "suggested": "Suggested link: ✓ to accept it",
+                "error": "Link or column with problems",
+                "shared": "Sheets describing the same resources",
+                "gestures": "Click an element to see its details. Drag a column onto a sheet or onto existing resources to make it a link. Drag a sheet to move it, the background to pan, the wheel to zoom. Delete leaves the selected column out, Escape cancels.",
+                "declared": "Sheet the assistant added for what you declared"
+            },
+            "unresolved": "not found: {count}",
+            "acceptSuggestion": "Accept \"{property}\"",
+            "dragLink": "Drag to link the column elsewhere",
+            "noClass": "class?",
+            "key": "key: {column}",
+            "existing": "existing",
+            "bundle": "value columns: {count}",
+            "sharedLabel": "shared resources: {count}",
+            "inspectorHelp": "Click a sheet, a column or a link to see its details and change it.",
+            "pending": {
+                "title": "Link \"{column}\" to {target}",
+                "help": "Several properties can make this link: choose one. The best suggested comes first."
+            },
+            "cancel": "Cancel",
+            "columnOf": "Column {index} of sheet {sheet}",
+            "dropped": "Link to {target} saved. This is where its cells land:",
+            "landsOnRows": "rows of sheet {sheet}: {count}",
+            "landsOnExisting": "existing resources ({class}): {count}",
+            "typeColumnHelp": "This column gives the type of each row: it cannot be changed here.",
+            "backToSheet": "Back to sheet {sheet}",
+            "bundleHelp": "This sheet has many columns of values: they are grouped to keep the graph readable. Click a column below, or unfold them all.",
+            "unfold": "Unfold the columns",
+            "classChangeWarning": "Changing the class gives every column of the sheet back to the suggestions.",
+            "acceptAll": "Accept the sheet's suggestions",
+            "columns": "Columns",
+            "existingHelp": "The cells of these columns name resources of this class that already exist in the instance.",
+            "sharedTitle": "Shared resources",
+            "sharedHelp": "{count} identifiers are both in {from} and in {to}: they are the same resources, and their values add up. This link comes from the identifiers; it cannot be changed here.",
+            "leftOutDone": "Column \"{column}\" left out.",
+            "undo": "Undo"
+        },
+        "missing": {
+            "title": "Required, no column",
+            "help": "The class of the sheet requires these properties and no column gives them. Give a value for all rows, or let another sheet give them.",
+            "required": "required",
+            "given": "Value given: {value}",
+            "givenTag": "value given",
+            "remove": "Remove",
+            "linkPlaceholder": "Name or URI of what the property points to",
+            "valuePlaceholder": "Value for all rows",
+            "give": "Give",
+            "unresolved": "\"{value}\" names nothing known.",
+            "declare": "Declare \"{name}\" as {class}"
+        },
+        "declared": {
+            "tag": "Declared in the assistant",
+            "title": "{class} · {name}",
+            "help": "Describe here what no file describes. Nothing is written to the instance: the resource will be created at the creation step, with the rest.",
+            "addValue": "Add a value",
+            "save": "Save",
+            "forget": "Delete",
+            "edit": "Edit",
+            "nameRequired": "The name is required: it is what the rows of the files point to.",
+            "valuePlaceholder": "Value",
+            "category": "Category"
+        },
+        "creation": {
+            "help": "What the import would create in the instance, step by step, in the order they must run. \"Check\" runs the platform's checks without writing; \"Create\" writes all the ready resources of the step, or none. What was just created then reads as already there: running a step again creates nothing twice.",
+            "disabled": "Creation is off on this instance (graph-import.creationEnabled): the step only shows what it would create.",
+            "refresh": "Read the instance again",
+            "loading": "Working out what would be created…",
+            "counts": "ready: {ready} · blocked: {blocked} · already there: {done}",
+            "after": "after: {steps}",
+            "check": "Check",
+            "run": "Create ({count})",
+            "notAllowed": "Your profile does not let you create these resources.",
+            "readyTitle": "Ready to create: {count}",
+            "blockedTitle": "Blocked: {count}",
+            "created": "Resources created: {count}",
+            "checked": "Nothing stops the creation.",
+            "unsupported": "Not creatable by the assistant yet",
+            "history": "Already created",
+            "record": "{step}: {count}, on {at}",
+            "steps": {
+                "experiments": "Experiments",
+                "factors": "Factors and levels",
+                "scientific-objects": "Scientific objects",
+                "events": "Events",
+                "data": "Data"
+            },
+            "status": {
+                "READY": "Ready",
+                "BLOCKED": "Blocked",
+                "DONE": "Done",
+                "EMPTY": "Nothing to create"
+            },
+            "dataRefusedHelp": "the cells refused are listed at the step Understand."
+        },
+        "measure": {
+            "title": "Measures of the variable",
+            "none": "No variable yet: choose the one this column measures.",
+            "choose": "Variable measured by this column",
+            "of": "Measures of {variable}",
+            "provenance": "Provenance of the data",
+            "counts": {
+                "title": "Data",
+                "ready": "Ready: {count}",
+                "waiting": "Waiting for their target: {count}",
+                "notAvailable": "Not available (NA): {count}",
+                "refused": "Refused: {count}"
+            }
+        }
+    }
+}

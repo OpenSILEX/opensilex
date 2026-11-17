@@ -32,54 +32,51 @@ import java.util.List;
  *
  * @author Arnaud Charleroy
  */
-public class WorkbookReader {
+public class WorkbookReader implements SheetSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkbookReader.class);
 
     private static final DateTimeFormatter ISO_DATE = DateTimeFormatter.ISO_LOCAL_DATE;
 
-    /**
-     * A sheet whose first rows hold at most this many filled columns is treated as prose rather
-     * than as a table.
-     */
-    private static final int MIN_TABULAR_COLUMNS = 2;
-
-    /**
-     * Longest a cell may be and still pass for a column header. Headers are labels, even versioned
-     * ones such as {@code Nouvelle_Abreviation_FR_maj_03_2023}; the lines of a ReadMe are
-     * sentences. Without this bound a paragraph followed by a date-formatted cell reads as a header
-     * row, and the instructions the template author wrote are lost.
-     */
-    private static final int MAX_HEADER_LENGTH = 80;
+    private static final List<String> EXTENSIONS = List.of("xlsx", "xlsm", "xls");
 
     /**
      * Beyond this many rows we stop reading a sheet. A field workbook holds hundreds of rows, not
      * hundreds of thousands, and this bounds the memory a single upload can claim.
      */
+    public static final int DEFAULT_MAX_ROWS = 50_000;
+
     private final int maxRowsPerSheet;
 
     public WorkbookReader() {
-        this(50_000);
+        this(DEFAULT_MAX_ROWS);
     }
 
     public WorkbookReader(int maxRowsPerSheet) {
         this.maxRowsPerSheet = maxRowsPerSheet;
     }
 
+    @Override
+    public List<String> extensions() {
+        return EXTENSIONS;
+    }
+
+    @Override
     public WorkbookStructure read(File file, String originalFileName) throws WorkbookReadException {
         WorkbookStructure structure = new WorkbookStructure()
                 .setFileName(originalFileName)
                 .setFileSizeBytes(file.length());
 
         try (Workbook workbook = WorkbookFactory.create(file, null, true)) {
-            structure.setDate1904(usesThe1904DateSystem(workbook));
+            boolean date1904 = usesThe1904DateSystem(workbook);
+            structure.setDate1904(date1904);
             DataFormatter formatter = new DataFormatter();
             for (int sheetIndex = 0; sheetIndex < workbook.getNumberOfSheets(); sheetIndex++) {
                 if (workbook.isSheetHidden(sheetIndex) || workbook.isSheetVeryHidden(sheetIndex)) {
                     continue;
                 }
                 Sheet sheet = workbook.getSheetAt(sheetIndex);
-                structure.getSheets().add(readSheet(sheet, sheetIndex, formatter));
+                structure.getSheets().add(readSheet(sheet, sheetIndex, formatter, date1904));
             }
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Could not read workbook {}", originalFileName, e);
@@ -101,11 +98,7 @@ public class WorkbookReader {
         return workbook instanceof Date1904Support && ((Date1904Support) workbook).isDate1904();
     }
 
-    private SheetStructure readSheet(Sheet sheet, int sheetIndex, DataFormatter formatter) {
-        SheetStructure result = new SheetStructure()
-                .setName(sheet.getSheetName())
-                .setIndex(sheetIndex);
-
+    private SheetStructure readSheet(Sheet sheet, int sheetIndex, DataFormatter formatter, boolean date1904) {
         List<List<String>> allRows = new ArrayList<>();
         int rowCount = 0;
         for (Row row : sheet) {
@@ -115,25 +108,7 @@ public class WorkbookReader {
             }
             allRows.add(readRow(row, formatter));
         }
-        trimTrailingEmptyRows(allRows);
-
-        int headerRowIndex = findHeaderRow(allRows);
-        if (headerRowIndex < 0) {
-            // Prose sheet, such as a ReadMe: keep the text so the assistant can read the
-            // instructions the author wrote for whoever fills the file.
-            return result.setTabular(false).setText(joinAsText(allRows));
-        }
-
-        result.setHeaders(allRows.get(headerRowIndex));
-        List<List<String>> dataRows = new ArrayList<>();
-        for (int i = headerRowIndex + 1; i < allRows.size(); i++) {
-            List<String> row = allRows.get(i);
-            if (isEmpty(row)) {
-                continue;
-            }
-            dataRows.add(row);
-        }
-        return result.setRows(dataRows);
+        return HeaderRows.sheetOf(sheet.getSheetName(), sheetIndex, allRows).setDate1904(date1904);
     }
 
     private List<String> readRow(Row row, DataFormatter formatter) {
@@ -143,7 +118,7 @@ public class WorkbookReader {
             Cell cell = row.getCell(columnIndex);
             values.add(cell == null ? "" : readCell(cell, formatter));
         }
-        trimTrailingEmptyCells(values);
+        HeaderRows.trimTrailingEmptyCells(values);
         return values;
     }
 
@@ -179,65 +154,5 @@ public class WorkbookReader {
             return Long.toString((long) value);
         }
         return BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
-    }
-
-    /**
-     * The header row is the first row holding at least {@value #MIN_TABULAR_COLUMNS} non-empty
-     * cells that all look like labels: short, and not numbers. Field templates put title rows above
-     * the header, so scanning rather than assuming row 0 matters.
-     */
-    private int findHeaderRow(List<List<String>> rows) {
-        for (int i = 0; i < rows.size(); i++) {
-            if (isHeaderRow(rows.get(i))) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private boolean isHeaderRow(List<String> row) {
-        int filled = 0;
-        for (String value : row) {
-            if (value.isEmpty()) {
-                continue;
-            }
-            filled++;
-            if (value.length() > MAX_HEADER_LENGTH || ExcelValueParser.parseNumber(value) != null) {
-                return false;
-            }
-        }
-        return filled >= MIN_TABULAR_COLUMNS;
-    }
-
-    private String joinAsText(List<List<String>> rows) {
-        StringBuilder builder = new StringBuilder();
-        for (List<String> row : rows) {
-            String line = String.join(" ", row).trim();
-            if (!line.isEmpty()) {
-                builder.append(line).append('\n');
-            }
-        }
-        return builder.toString().trim();
-    }
-
-    private boolean isEmpty(List<String> row) {
-        for (String value : row) {
-            if (!value.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void trimTrailingEmptyCells(List<String> values) {
-        while (!values.isEmpty() && values.get(values.size() - 1).isEmpty()) {
-            values.remove(values.size() - 1);
-        }
-    }
-
-    private void trimTrailingEmptyRows(List<List<String>> rows) {
-        while (!rows.isEmpty() && isEmpty(rows.get(rows.size() - 1))) {
-            rows.remove(rows.size() - 1);
-        }
     }
 }

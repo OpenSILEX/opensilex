@@ -75,7 +75,10 @@
 
         <!-- LLM-assisted import module -->
         <module>opensilex-ai-import</module>
- 
+
+        <!-- Experimental import assistant: a workbook read as a graph -->
+        <module>opensilex-graph-import</module>
+
     </modules>
     
     <dependencies>
@@ -167,7 +170,14 @@
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-ai-import</artifactId>
             <version>${revision}</version>
-        </dependency> 
+        </dependency>
+
+        <!-- Experimental import assistant dependency -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-graph-import</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         
         <!--Other extension modules must be declared as dependencies-->

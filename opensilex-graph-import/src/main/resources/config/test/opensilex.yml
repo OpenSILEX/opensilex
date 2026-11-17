@@ -1,0 +1,6 @@
+# Read only under the "test" profile, which the integration tests start the instance with.
+# The assistant is disabled by default; its REST tests need it on.
+graph-import:
+    enabled: true
+    # The creation step writes only when this is on; its REST tests need it.
+    creationEnabled: true

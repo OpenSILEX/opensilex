@@ -11,17 +11,21 @@ import org.opensilex.aiimport.profile.DataPoint;
 import org.opensilex.aiimport.profile.EventCandidate;
 import org.opensilex.aiimport.resolve.ConfirmedMatches;
 import org.opensilex.aiimport.profile.ExtractedImportPlan;
+import org.opensilex.aiimport.profile.custom.FileDescription;
 import org.opensilex.aiimport.resolve.ResolutionReport;
 import org.opensilex.aiimport.service.dto.ChatMessage;
+import org.opensilex.aiimport.workbook.WorkbookAssembler;
 import org.opensilex.aiimport.workbook.WorkbookStructure;
 
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * One conversation about one uploaded file, held in memory for the lifetime configured on the
@@ -43,8 +47,29 @@ public class AiImportSession {
 
     private final Instant createdAt;
 
+    /**
+     * The most files a conversation can hold: every one is read into memory and kept with the
+     * conversation.
+     */
+    public static final int MAX_FILES = 10;
+
     private String fileName;
     private String profileId;
+
+    /**
+     * The template this conversation keeps up to date, or {@code null}: what the user says of the
+     * files is remembered under it for the next import.
+     */
+    private String templateId;
+
+    /**
+     * The files of the conversation in the order they were added. The first names the conversation.
+     */
+    private final List<SessionFile> files = new ArrayList<>();
+
+    /**
+     * The sheets of every file, put together: what everything but the files themselves works on.
+     */
     private WorkbookStructure workbook;
     private ExtractedImportPlan plan;
     private ResolutionReport report;
@@ -68,6 +93,12 @@ public class AiImportSession {
      * revalidation for the same reason the confirmations do.
      */
     private final Map<String, ObjectSheetPlan> objectPlans = new LinkedHashMap<>();
+
+    /**
+     * What the user said of each sheet and column of an import they described themselves. Survives
+     * revalidation and resumption: it is the whole of what the profile {@code custom} knows.
+     */
+    private final FileDescription description = new FileDescription();
 
     private List<DataPoint> dataPoints = new ArrayList<>();
 
@@ -155,6 +186,40 @@ public class AiImportSession {
         return this;
     }
 
+    public String getTemplateId() {
+        return templateId;
+    }
+
+    public AiImportSession setTemplateId(String templateId) {
+        this.templateId = templateId;
+        return this;
+    }
+
+    public List<SessionFile> getFiles() {
+        return files;
+    }
+
+    /**
+     * Puts the sheets of the files together again, after one was added or removed.
+     */
+    public AiImportSession assemble() {
+        workbook = WorkbookAssembler.assemble(files.stream().map(SessionFile::getStructure)
+                .collect(Collectors.toList()));
+        return this;
+    }
+
+    /**
+     * Forgets what the user said of sheets that are no longer there, so that it does not apply to a
+     * different sheet that comes to carry the same name.
+     */
+    public AiImportSession forgetSheets(Collection<String> sheetNames) {
+        sheetNames.forEach(name -> {
+            description.getSheets().remove(name);
+            objectPlans.remove(name);
+        });
+        return this;
+    }
+
     public WorkbookStructure getWorkbook() {
         return workbook;
     }
@@ -197,6 +262,14 @@ public class AiImportSession {
 
     public Map<String, ObjectSheetPlan> getObjectPlans() {
         return objectPlans;
+    }
+
+    /**
+     * What the user said of the files of this conversation, which the profile {@code custom} reads.
+     * Empty for a conversation about a file the module recognised.
+     */
+    public FileDescription getDescription() {
+        return description;
     }
 
     public List<EventCandidate> getEvents() {

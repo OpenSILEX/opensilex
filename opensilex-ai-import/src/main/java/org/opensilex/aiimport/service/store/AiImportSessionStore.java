@@ -4,6 +4,7 @@
 //******************************************************************************
 package org.opensilex.aiimport.service.store;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
@@ -84,10 +85,25 @@ public class AiImportSessionStore {
     //#region writing
 
     /**
-     * Stores the uploaded workbook, once, when the conversation opens.
+     * Stores the uploaded workbook, once, when the conversation opens. This is where a conversation
+     * kept its only file before it could hold several; see {@link #saveFile(String, String, File)}.
      */
     public void saveFile(String sessionId, File file) throws IOException {
         fs.writeFile(FS_PREFIX, filePath(sessionId), file);
+    }
+
+    /**
+     * Stores a file of the conversation under the identifier the server gave it.
+     */
+    public void saveFile(String sessionId, String fileId, File file) throws IOException {
+        fs.writeFile(FS_PREFIX, filePath(sessionId, fileId), file);
+    }
+
+    /**
+     * Deletes the stored copy of a file the user took out of the conversation.
+     */
+    public void deleteFile(String sessionId, String fileId) {
+        deleteQuietly(filePath(sessionId, fileId), sessionId);
     }
 
     /**
@@ -113,11 +129,11 @@ public class AiImportSessionStore {
      * @return false when there was no such session for this owner
      */
     public boolean delete(String sessionId, URI owner) {
-        long deleted = collection().deleteOne(ownedBy(sessionId, owner)).getDeletedCount();
-        if (deleted > 0) {
-            deleteFile(sessionId);
+        Document document = collection().findOneAndDelete(ownedBy(sessionId, owner));
+        if (document != null) {
+            deleteFiles(sessionId, document);
         }
-        return deleted > 0;
+        return document != null;
     }
 
     //#endregion
@@ -167,6 +183,14 @@ public class AiImportSessionStore {
         return fs.readFileAsByteArray(FS_PREFIX, filePath(sessionId));
     }
 
+    /**
+     * A file of a session. Only called after {@link #load} has checked the owner, with an
+     * identifier the snapshot gave.
+     */
+    public byte[] readFile(String sessionId, String fileId) throws IOException {
+        return fs.readFileAsByteArray(FS_PREFIX, filePath(sessionId, fileId));
+    }
+
     //#endregion
 
     //#region expiry
@@ -183,8 +207,10 @@ public class AiImportSessionStore {
             expiredIds.add(document.getString(ID));
         }
         for (String sessionId : expiredIds) {
-            collection().deleteOne(Filters.eq(ID, sessionId));
-            deleteFile(sessionId);
+            Document document = collection().findOneAndDelete(Filters.eq(ID, sessionId));
+            if (document != null) {
+                deleteFiles(sessionId, document);
+            }
         }
         if (!expiredIds.isEmpty()) {
             LOGGER.info("Deleted {} import conversation(s) inactive for more than {} days",
@@ -229,14 +255,36 @@ public class AiImportSessionStore {
         return Paths.get("sessions", sessionId, "workbook.xlsx");
     }
 
-    private void deleteFile(String sessionId) {
+    /**
+     * Built the same way, from two identifiers the server generated.
+     */
+    private Path filePath(String sessionId, String fileId) {
+        return Paths.get("sessions", sessionId, "files", fileId);
+    }
+
+    /**
+     * Deletes every stored file of a session that is gone: the one it kept before it could hold
+     * several, and each file its snapshot lists.
+     */
+    private void deleteFiles(String sessionId, Document document) {
+        deleteQuietly(filePath(sessionId), sessionId);
         try {
-            if (fs.exist(FS_PREFIX, filePath(sessionId))) {
-                fs.delete(FS_PREFIX, filePath(sessionId));
+            for (JsonNode file : mapper.readTree(document.getString(SNAPSHOT)).path("files")) {
+                deleteQuietly(filePath(sessionId, file.path("id").asText()), sessionId);
+            }
+        } catch (IOException | RuntimeException e) {
+            LOGGER.warn("Could not list the files of import conversation {}", sessionId, e);
+        }
+    }
+
+    private void deleteQuietly(Path path, String sessionId) {
+        try {
+            if (fs.exist(FS_PREFIX, path)) {
+                fs.delete(FS_PREFIX, path);
             }
         } catch (IOException e) {
             // The document is gone, so nothing will offer this file again; a leftover is only disk.
-            LOGGER.warn("Could not delete the workbook of import conversation {}", sessionId, e);
+            LOGGER.warn("Could not delete a stored file of import conversation {}", sessionId, e);
         }
     }
 

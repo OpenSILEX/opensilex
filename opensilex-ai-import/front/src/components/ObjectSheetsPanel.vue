@@ -10,7 +10,7 @@
       <h5 class="card-title">{{ $t('AiImport.objects.title') }}</h5>
       <p class="card-text text-body-secondary small">{{ $t('AiImport.objects.hint') }}</p>
 
-      <nav class="tabs mb-2">
+      <nav class="tabs ai-import-tabs mb-2">
         <button
           v-for="sheet in sheets"
           :key="sheet.sheet"
@@ -142,7 +142,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'create', payload: { target: string; value: string }): void
+  (e: 'create', payload: { target: string; value: string; values?: { [field: string]: string } }): void
 }>()
 
 const $opensilex: any = inject('$opensilex')
@@ -265,7 +265,12 @@ async function validate() {
 }
 
 function create() {
-  emit('create', { target: 'SCIENTIFIC_OBJECTS', value: '' })
+  // The experiment chosen here is the one the objects are created in, not the one the report found.
+  emit('create', {
+    target: 'SCIENTIFIC_OBJECTS',
+    value: '',
+    values: experimentUri.value ? { experiment: experimentUri.value } : undefined
+  })
 }
 
 /**
@@ -336,6 +341,22 @@ onMounted(load)
 </script>
 
 <style scoped>
+/*
+ * Many sheets must stay visible: the tabs wrap onto a second line rather than run past the frame,
+ * whatever the theme does to `.tabs` (which only sets how a single row looks).
+ */
+.ai-import-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: visible;
+  white-space: normal;
+  row-gap: 0.25rem;
+}
+
+.ai-import-tabs .tab {
+  flex: 0 0 auto;
+}
+
 .ai-import-objects__header {
   display: flex;
   flex-direction: column;

@@ -111,7 +111,8 @@ public class ResolutionService {
         List<ExperimentModel> resolvedExperiments = resolveExperiments(plan, report);
         // Before the plots: they are looked up inside the experiment, however it was recognised.
         resolvedExperiments.addAll(applyLearnedExperiments(report));
-        resolveEach(report, ReportCategory.PROJECTS, plan.getProjectNames(), ResolvedItem::new,
+        resolveEach(report, ReportCategory.PROJECTS, plan.getProjectNames(),
+                name -> new ResolvedItem(name).setDetails(plan.getProjectDetails().get(name)),
                 lookups::projectsNamed, "project",
                 ReportMessage.of(HINT + "projectMissing",
                         "No project carries this name. Ask the user which project the trial "
@@ -211,7 +212,7 @@ public class ResolutionService {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
 
         for (String name : plan.getExperimentNames()) {
-            ResolvedItem item = new ResolvedItem(name);
+            ResolvedItem item = new ResolvedItem(name).setDetails(plan.getExperimentDetails().get(name));
             report.getExperiments().add(item);
             if (confirmed.resolve(ReportCategory.EXPERIMENTS, item)) {
                 // The plots are looked up inside the experiment, so it has to be loaded as well.

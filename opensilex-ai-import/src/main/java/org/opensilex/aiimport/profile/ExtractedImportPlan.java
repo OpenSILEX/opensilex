@@ -56,6 +56,13 @@ public class ExtractedImportPlan {
      * is planted — by facility name.
      */
     private final Map<String, Map<String, String>> facilityDetails = new LinkedHashMap<>();
+
+    /**
+     * What the file says of each experiment and each project it names besides its name — its
+     * description, its objective, its dates — by name, for the form that creates it.
+     */
+    private final Map<String, Map<String, String>> experimentDetails = new LinkedHashMap<>();
+    private final Map<String, Map<String, String>> projectDetails = new LinkedHashMap<>();
     private List<VariableCandidate> variables = new ArrayList<>();
 
     /**
@@ -116,6 +123,14 @@ public class ExtractedImportPlan {
 
     public Map<String, Map<String, String>> getFacilityDetails() {
         return facilityDetails;
+    }
+
+    public Map<String, Map<String, String>> getExperimentDetails() {
+        return experimentDetails;
+    }
+
+    public Map<String, Map<String, String>> getProjectDetails() {
+        return projectDetails;
     }
 
     public List<VariableCandidate> getVariables() {

@@ -1,0 +1,9 @@
+menu:
+  - id: graph-import
+    label: GraphImport.menu
+    route:
+      path: /graph-import
+      component: opensilex-graph-import-GraphImportView
+      icon: bi#bi-diagram-3
+      title: GraphImport.menu
+      description: GraphImport.menuDescription

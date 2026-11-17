@@ -15,11 +15,19 @@ package org.opensilex.aiimport.profile;
  *                    a STAR workbook has one factor and does not name it
  * @param code        the treatment's code, as the object sheets write it
  * @param name        its short name, or {@code null}
- * @param description what the file says about it, or {@code null}
+ * @param description       what the file says about it, or {@code null}
+ * @param factorDescription what the file says of its factor, or {@code null}
  * @author Arnaud Charleroy
  */
 public record FactorLevelCandidate(String sheet, int row, String factor, String code, String name,
-                                   String description) {
+                                   String description, String factorDescription) {
+
+    /**
+     * A level whose file says nothing of its factor beyond its name.
+     */
+    public FactorLevelCandidate(String sheet, int row, String factor, String code, String name, String description) {
+        this(sheet, row, factor, code, name, description, null);
+    }
 
     /**
      * The level's description: the short name, then what the file says of it.

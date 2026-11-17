@@ -5,7 +5,7 @@
     "title": "Assistant d'import",
     "upload": {
       "title": "Déposez votre fichier de saisie",
-      "hint": "Classeur .xlsx, .xlsm ou .xls. Seuls les en-têtes, un échantillon de lignes et le texte des onglets de consignes sont transmis au modèle de langue — jamais le fichier entier.",
+      "hint": "Classeur .xlsx, .xlsm ou .xls, ou fichier .csv ou .tsv. Seuls les en-têtes, un échantillon de lignes et le texte des onglets de consignes sont transmis au modèle de langue — jamais le fichier entier.",
       "choose": "Choisir un fichier",
       "drop": "ou glissez-le ici",
       "profile": "Format du fichier",
@@ -14,7 +14,7 @@
       "analysing": "Lecture du fichier et vérification de la base…",
       "noWrite": "Cette page n'écrit rien en base. Elle produit un rapport.",
       "tooLarge": "Fichier trop volumineux.",
-      "wrongType": "Seuls les classeurs .xlsx, .xlsm et .xls sont acceptés."
+      "wrongType": "Seuls les classeurs .xlsx, .xlsm, .xls et les fichiers .csv, .tsv sont acceptés."
     },
     "chat": {
       "title": "Conversation",
@@ -89,8 +89,6 @@
       "create": "Créer",
       "createTitle": "Créer depuis cette ligne, nom pré-rempli",
       "createVariableTitle": "Ouvrir le formulaire de variable, nom et identifiant pré-remplis. Entité, caractéristique, méthode et unité se choisissent parmi celles de l'instance, ou se créent depuis ce formulaire.",
-      "askCreate_EXPERIMENT": "Crée l'expérimentation « {value} ».",
-      "askCreate_PROJECT": "Crée le projet « {value} ».",
       "facilities": "Installations",
       "warning": {
         "projectLookupFailed": "Le projet « {name} » n'a pas pu être recherché.",
@@ -155,6 +153,27 @@
         "miappe": {
           "mandatoryFieldsEmpty": "Section « {section} » : les champs obligatoires {fields} sont vides.",
           "blankSections": "{count} des {total} sections MIAPPE sont encore des gabarits vierges, sans valeur sous l'en-tête."
+        },
+        "custom": {
+          "noExperiment": "Aucune colonne ne nomme l'expérimentation et aucune n'a été choisie : les objets, les modalités et les observations ne peuvent pas être vérifiés tant qu'elle ne l'est pas.",
+          "noTarget": "La feuille « {sheet} » contient des observations mais aucune colonne ne dit sur quoi elles ont été faites. Décrivez une colonne comme l'identifiant de l'objet ou comme l'installation.",
+          "roleNotForKind": "La colonne « {column} » de la feuille « {sheet} » est décrite comme {role}, ce qu'une feuille de type {kind} ne peut pas avoir. Changez la colonne ou le type de la feuille.",
+          "missing_OBJECT": "La feuille « {sheet} » est décrite comme {kind} mais aucune colonne n'est décrite comme l'identifiant de l'objet.",
+          "missing_DATE": "La feuille « {sheet} » est décrite comme {kind} mais aucune colonne n'est décrite comme la date de l'observation.",
+          "missing_VARIABLE": "La feuille « {sheet} » est décrite comme {kind} mais aucune colonne n'est décrite comme une variable mesurée.",
+          "missing_FACTOR": "La feuille « {sheet} » est décrite comme {kind} mais aucune colonne n'est décrite comme le facteur, et aucun facteur n'est nommé pour la feuille.",
+          "missing_FACTOR_LEVEL": "La feuille « {sheet} » est décrite comme {kind} mais aucune colonne n'est décrite comme la modalité.",
+          "missing_LOCATION": "La feuille « {sheet} » est décrite comme {kind} mais aucune colonne n'est décrite comme le nom de l'installation.",
+          "several_OBJECT": "La feuille « {sheet} » a {count} colonnes décrites comme l'identifiant de l'objet, une seule est permise.",
+          "several_DATE": "La feuille « {sheet} » a {count} colonnes décrites comme la date de l'observation, une seule est permise.",
+          "several_FACTOR": "La feuille « {sheet} » a {count} colonnes décrites comme le facteur, une seule est permise.",
+          "several_LOCATION": "La feuille « {sheet} » a {count} colonnes décrites comme l'installation, une seule est permise.",
+          "conflictingObject": "L'objet « {object} » est décrit avec deux valeurs différentes : « {value} » (feuille « {sheet} », ligne {row}, colonne « {column} ») et « {otherValue} » (feuille « {otherSheet} », ligne {otherRow}, colonne « {otherColumn} »). Faites dire une seule chose au fichier.",
+          "moreConflictingObjects": "{count} autres objets sont décrits avec deux valeurs différentes.",
+          "rowsWithoutTarget": "{count} ligne(s) de la feuille « {sheet} » ont été écartées : ni objet ni installation auxquels les rattacher (lignes {rows}).",
+          "rowsWithoutDate": "{count} ligne(s) de la feuille « {sheet} » ont été écartées : aucune date lisible (lignes {rows}).",
+          "missing_TRIAL": "La feuille « {sheet} » est décrite comme {kind} mais aucune colonne n'est décrite comme l'expérimentation.",
+          "several_FACTOR_LEVEL_NAME": "La feuille « {sheet} » a {count} colonnes décrites comme le nom de la modalité, une seule est permise."
         }
       },
       "persons": "Personnes",
@@ -179,8 +198,6 @@
       "createProjectTitle": "Ouvrir le formulaire de projet, prérempli avec ce que dit le fichier : nom, acronyme, dates, objectif.",
       "createExperimentTitle": "Ouvrir le formulaire d'expérimentation, prérempli avec ce que dit le fichier : nom, dates, projets, organisations et installations trouvés. Rien n'est créé avant validation du formulaire.",
       "createFacilityTitle": "Ouvrir le formulaire d'installation, nom prérempli. Le type, l'organisation et le site se choisissent dans le formulaire.",
-      "askCreate_SCIENTIFIC_OBJECTS": "Crée les objets scientifiques des onglets du fichier, avec les types et les colonnes choisis.",
-      "askCreate_FACTORS": "Crée les facteurs de l'expérimentation à partir des modalités du fichier.",
       "organizations": "Organisations",
       "createOrganizationTitle": "Ouvrir le formulaire d'organisation, nom pré-rempli ; une unité part avec son institution comme parent si l'instance la connaît déjà.",
       "fieldRowSpacing": "écartement entre rangs : {value} m",
@@ -275,7 +292,8 @@
         "factorName": "Nom du facteur",
         "levelsSummary": "Modalités du fichier",
         "organizations": "Organisations",
-        "facilities": "Installations"
+        "facilities": "Installations",
+        "alternativeName": "Nom alternatif"
       },
       "from": {
         "projectColumn": "d'après la colonne projet du fichier",
@@ -290,7 +308,8 @@
         "objectSheet": "d'après la feuille des objets",
         "treatmentSheet": "de la feuille des modalités",
         "resolvedOrganizations": "des organisations trouvées",
-        "resolvedFacilities": "des installations trouvées"
+        "resolvedFacilities": "des installations trouvées",
+        "fileColumns": "d'après les colonnes du fichier"
       },
       "block": {
         "noDataPoints": "Aucune observation n'a pu être lue dans ce fichier.",
@@ -307,7 +326,18 @@
         "facilitiesMissing": "Des installations (parcelles, stations) nommées par le fichier sont absentes de la base.",
         "noObjectRows": "Ce fichier ne décrit pas d'objets observés, ligne par ligne, que l'on puisse créer.",
         "noFactorLevels": "Le fichier ne déclare aucune modalité.",
-        "factorsNotAllowed": "Vous n'avez pas le droit de modifier les facteurs sur cette instance."
+        "factorsNotAllowed": "Vous n'avez pas le droit de modifier les facteurs sur cette instance.",
+        "after": {
+          "PROJECTS": "Déclarez d'abord les projets.",
+          "VARIABLES": "Déclarez d'abord les variables.",
+          "FACILITIES": "Déclarez d'abord les installations.",
+          "EXPERIMENT": "Un facteur, un objet ou une observation appartient à une expérimentation : déclarez d'abord l'expérimentation.",
+          "FACTORS": "Déclarez d'abord les facteurs : une modalité appartient à un facteur.",
+          "FACTOR_LEVELS": "Les modalités nommées par les objets ne sont pas toutes déclarées : déclarez d'abord les modalités des facteurs.",
+          "OBJECTS": "Déclarez d'abord les objets.",
+          "DATA": "Déclarez d'abord les observations.",
+          "EVENTS": "Déclarez d'abord les événements."
+        }
       },
       "refused": {
         "title": "Insertion refusée : rien n'a été écrit",
@@ -330,8 +360,7 @@
         "someEventTargetsMissing": "Certains événements ne trouvent pas ce qu'ils concernent ; ceux-là seront ignorés.",
         "typeIssues": "Des cellules ne correspondent pas au type attendu par leur variable. Vérifiez-les avant d'insérer.",
         "objectsWillBeUpdated": "Certains objets existent déjà sous le même nom dans l'expérimentation : l'import les mettra à jour.",
-        "objectTypeFromFile": "Le type d'au moins un onglet vient du fichier (colonne object_type) et n'a pas encore été confirmé.",
-        "experimentFirst": "Aucune expérimentation du fichier n'existe encore : un facteur se déclare dans une expérimentation, créez-la d'abord."
+        "objectTypeFromFile": "Le type d'au moins un onglet vient du fichier (colonne object_type) et n'a pas encore été confirmé."
       },
       "target_SCIENTIFIC_OBJECTS": "Objets scientifiques",
       "appliedObjects": "{count} objet(s) scientifique(s) importé(s).",
@@ -398,14 +427,17 @@
     "home": {
       "newFile": "Nouveau fichier",
       "sessions": "Mes sessions",
-      "export": "Exporter en STAR"
+      "export": "Exporter",
+      "advanced": "Import avancé"
     },
     "export": {
-      "title": "Exporter une expérimentation au format STAR",
-      "hint": "Écrit l'expérimentation, ses installations, les modalités de ses facteurs, ses objets scientifiques — une feuille par type — et leurs observations, avec un dictionnaire décrivant chaque colonne. Le classeur se relit par le profil STAR de l'assistant. Rien n'est écrit dans l'instance.",
+      "title": "Exporter une expérimentation",
+      "hint": "Écrit l'expérimentation en classeur, au format STAR — avec ses installations, les modalités de ses facteurs, ses objets scientifiques et leurs observations, et un dictionnaire de chaque colonne — ou selon l'un de vos gabarits, que l'assistant relit avec le même gabarit. Rien n'est écrit dans l'instance.",
       "experiment": "Expérimentation",
-      "download": "Télécharger le classeur STAR",
-      "failed": "Le classeur STAR n'a pas pu être produit."
+      "download": "Télécharger le classeur",
+      "failed": "Le classeur n'a pas pu être produit.",
+      "format": "Format",
+      "formatStar": "STAR"
     },
     "objects": {
       "problem": {
@@ -437,6 +469,119 @@
       "saveFailed": "Ce choix n'a pas pu être enregistré.",
       "validateFailed": "La vérification n'a pas pu être faite.",
       "createFactors": "Créer les modalités"
+    },
+    "describe": {
+      "kind_OBJECTS": "Objets scientifiques",
+      "kind_DATA": "Observations",
+      "kind_OBJECTS_AND_DATA": "Objets et observations",
+      "kind_FACTORS": "Modalités d'un facteur",
+      "kind_FACILITIES": "Installations",
+      "kind_IGNORED": "Feuille ignorée",
+      "role_UNREAD": "Non lue",
+      "role_OBJECT": "Identifiant de l'objet",
+      "role_DATE": "Date de l'observation",
+      "role_VARIABLE": "Variable mesurée",
+      "role_GERMPLASM": "Matériel végétal",
+      "role_FACTOR_LEVEL": "Modalité (code ; dans un onglet d'objets, l'en-tête est le facteur)",
+      "role_FACTOR": "Facteur",
+      "role_PARENT_OBJECT": "Objet parent (bloc…)",
+      "role_POSITION": "Position (x ou y)",
+      "role_OBJECT_PROPERTY": "Propriété de l'objet",
+      "role_LOCATION": "Installation",
+      "role_TRIAL": "Expérimentation",
+      "role_PROJECT": "Projet",
+      "role_PERSON": "Personne",
+      "role_OBSERVER": "Observateur",
+      "role_COMMENT": "Commentaire",
+      "role_EXPERIMENT_DESCRIPTION": "Expérimentation : description",
+      "role_EXPERIMENT_OBJECTIVE": "Expérimentation : objectif",
+      "role_EXPERIMENT_START": "Expérimentation : date de début",
+      "role_EXPERIMENT_END": "Expérimentation : date de fin",
+      "role_PROJECT_SHORTNAME": "Projet : nom court",
+      "role_PROJECT_DESCRIPTION": "Projet : description",
+      "role_PROJECT_OBJECTIVE": "Projet : objectif",
+      "role_PROJECT_START": "Projet : date de début",
+      "role_PROJECT_END": "Projet : date de fin",
+      "kind_EVENTS": "Événements",
+      "kind_EXPERIMENTS": "Expérimentations",
+      "role_EXPERIMENT_ALTERNATIVE_NAME": "Expérimentation : nom alternatif",
+      "role_FACTOR_LEVEL_NAME": "Modalité : nom",
+      "role_FACTOR_LEVEL_DESCRIPTION": "Modalité : description",
+      "role_FACTOR_DESCRIPTION": "Facteur : description"
+    },
+    "advanced": {
+      "upload": {
+        "title": "Décrivez vous-même un fichier",
+        "hint": "Pour un fichier qu'aucun gabarit ne lit. Vous dites ce qu'est chaque onglet et chaque colonne, et rien n'est transmis au modèle de langue : l'import se fait avec les formulaires de la plateforme. D'autres fichiers peuvent être ajoutés ensuite."
+      },
+      "defaultRole": "Deviné d'après l'en-tête : choisissez pour confirmer ou changer",
+      "chooseTypeFirst": "Choisissez d'abord le type de l'onglet",
+      "noProperty": "— propriété —",
+      "files": {
+        "title": "Fichiers",
+        "add": "Ajouter un fichier",
+        "remove": "Retirer",
+        "sheets": "Onglets :",
+        "charsetTitle": "Ce fichier n'est pas en UTF-8 et a été lu dans ce jeu de caractères : vérifiez les accents."
+      },
+      "experiment": {
+        "title": "Expérimentation",
+        "hint": "L'expérimentation à laquelle appartiennent les fichiers, quand aucun onglet n'est validé comme onglet d'expérimentations. Nécessaire à un onglet d'objets, d'observations, de modalités ou d'événements ; choisie ici, ou créée avec le formulaire de la plateforme.",
+        "label": "Expérimentation des fichiers",
+        "create": "Créer une expérimentation",
+        "declareFactors": "Déclarer les facteurs"
+      },
+      "sheets": {
+        "title": "Onglets",
+        "hint": "Dites ce qu'est chaque onglet, puis ce qu'est chaque colonne. Ce que vous ne touchez pas est deviné d'après les en-têtes, et signalé comme tel.",
+        "kind": "Les lignes de cet onglet sont",
+        "kindGuessed": "deviné d'après les colonnes",
+        "type": "Type des lignes",
+        "ignored": "Cet onglet n'est pas lu.",
+        "factor": "Facteur de cet onglet",
+        "factorHint": "Aucune colonne ne nomme le facteur : chaque ligne est une modalité de celui-ci. La modalité garde son code comme nom, celui que portent les objets ; son nom et sa description vont dans sa description. Le facteur est créé avec le formulaire de facteur de la plateforme.",
+        "factorSheetRefused": "L'onglet de modalités « {sheet} » n'est pas lu : nommez son facteur, par une colonne décrite comme le facteur ou par le champ « Facteur de cet onglet »."
+      }
+    },
+    "steps": {
+      "step_PROJECTS": "Projets",
+      "step_VARIABLES": "Variables",
+      "step_FACILITIES": "Installations",
+      "step_EXPERIMENT": "Expérimentation",
+      "step_FACTORS": "Facteurs",
+      "step_FACTOR_LEVELS": "Modalités des facteurs",
+      "step_OBJECTS": "Objets scientifiques",
+      "step_DATA": "Observations",
+      "title": "Ordre des déclarations",
+      "hint": "Une expérimentation d'abord, puis ses facteurs et leurs modalités, puis les objets et les observations. Une étape attend celles dont elle dépend.",
+      "status_DONE": "Fait",
+      "status_POSSIBLE": "À faire",
+      "status_BLOCKED": "En attente",
+      "status_NOT_APPLICABLE": "Absent des fichiers",
+      "waitingFor": "En attente de :",
+      "declare": "Déclarer",
+      "count": "{done} sur {total} existent",
+      "noExperiment": "Aucune expérimentation n'est connue : déclarez ou choisissez d'abord l'expérimentation.",
+      "step_EVENTS": "Événements",
+      "viewList": "Liste",
+      "viewDiagram": "Diagramme",
+      "copyMermaid": "Copier le code Mermaid",
+      "diagramFailed": "Le diagramme n'a pas pu être dessiné : la liste montre les mêmes étapes."
+    },
+    "templates": {
+      "title": "Mes gabarits",
+      "hint": "Ce que vous dites d'un fichier est retenu ici, et proposé pour le prochain fichier de même forme. Partagez un gabarit pour que d'autres l'utilisent ; téléchargez-le en CSVW pour le conserver ou l'échanger, ou en RML pour les outils qui l'exécutent.",
+      "empty": "Aucun gabarit pour l'instant : décrivez un fichier et il sera retenu pour le suivant.",
+      "import": "Importer un gabarit (CSVW)",
+      "name": "Nom du gabarit",
+      "share": "Partager avec les autres utilisateurs",
+      "shared": "Partagé",
+      "delete": "Supprimer",
+      "remember": "Retenir pour les prochains imports",
+      "downloadDescription": "Télécharger la description (CSVW)",
+      "proposedFrom": "Proposé d'après le gabarit {name} ({author}, {date}) : {recognised} colonnes sur {total} reconnues.",
+      "apply": "Appliquer",
+      "ignore": "Ignorer"
     }
   }
 }

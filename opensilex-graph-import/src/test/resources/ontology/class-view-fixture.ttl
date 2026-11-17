@@ -1,0 +1,61 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix t: <http://test.opensilex.org/graph-import#> .
+
+# Two classes restricting the same property differently, so that a test can tell whose restriction
+# a reader returns.
+
+t:height a owl:DatatypeProperty ; rdfs:label "height"@en, "hauteur"@fr .
+t:code a owl:DatatypeProperty .
+t:pair a owl:DatatypeProperty .
+t:note a owl:DatatypeProperty .
+t:neighbour a owl:ObjectProperty .
+
+t:Parent a owl:Class ;
+    rdfs:label "Parent"@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty t:height ;
+        owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+        owl:onDataRange xsd:decimal
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty t:code ;
+        owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+        owl:onDataRange xsd:string
+    ] .
+
+t:Child a owl:Class ;
+    rdfs:label "Enfant"@fr ;
+    rdfs:subClassOf t:Parent ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty t:height ;
+        owl:maxQualifiedCardinality "3"^^xsd:nonNegativeInteger ;
+        owl:onDataRange xsd:decimal
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty t:pair ;
+        owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+        owl:onDataRange xsd:string
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty t:note ;
+        owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+        owl:onDataRange xsd:string
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty t:note ;
+        owl:maxQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+        owl:onDataRange xsd:string
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty t:neighbour ;
+        owl:minCardinality "1"^^xsd:nonNegativeInteger
+    ] .

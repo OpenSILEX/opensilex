@@ -12,12 +12,12 @@ import org.opensilex.aiimport.create.objects.TypeProperties;
 import org.opensilex.aiimport.create.objects.TypeProperties.TypeProperty;
 import org.opensilex.aiimport.create.rows.PlatformValidationAdapter;
 import org.opensilex.aiimport.create.rows.RowError;
-import org.opensilex.aiimport.profile.ImportProfileRegistry;
 import org.opensilex.aiimport.profile.ObjectRow;
 import org.opensilex.aiimport.profile.ObjectTargets;
 import org.opensilex.aiimport.report.ReportMessage;
 import org.opensilex.aiimport.resolve.ReportCategory;
 import org.opensilex.aiimport.service.AiImportSession;
+import org.opensilex.aiimport.service.SessionProfile;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
@@ -96,7 +96,7 @@ public class ScientificObjectBulkImport extends PlatformBulkImport<CSVValidation
      * @return the objects the workbook describes, as its profile reads them
      */
     public static List<ObjectRow> rowsOf(AiImportSession session) {
-        return new ImportProfileRegistry().getById(session.getProfileId())
+        return SessionProfile.of(session)
                 .map(profile -> profile.extractObjectRows(session.getWorkbook()))
                 .orElse(List.of());
     }
@@ -127,6 +127,14 @@ public class ScientificObjectBulkImport extends PlatformBulkImport<CSVValidation
 
         List<String> header = new ArrayList<>(Arrays.asList("uri", "type", ObjectTargets.NAME,
                 ObjectTargets.GERMPLASM, ObjectTargets.FACTOR_LEVEL, Oeso.isHosted.getURI()));
+        // An object can have a level of each factor of the experiment: the importer reads a repeated
+        // column as a list, so a sheet with a column of levels per factor gets as many columns.
+        int levelColumns = layouts.stream()
+                .mapToInt(layout -> Math.max(1, layout.sheet.columnsMappedTo(ObjectTargets.FACTOR_LEVEL).size()))
+                .max().orElse(1);
+        for (int i = 1; i < levelColumns; i++) {
+            header.add(ObjectTargets.FACTOR_LEVEL);
+        }
         Map<String, List<Integer>> extraColumns = extraColumns(layouts, header);
         boolean positioned = layouts.stream().anyMatch(Layout::hasPositions);
         int moveStart = header.size();
@@ -152,18 +160,30 @@ public class ScientificObjectBulkImport extends PlatformBulkImport<CSVValidation
                 }
             });
             for (ObjectRow row : sheet.getRows()) {
+                if (refuse(row, csv)) {
+                    continue;
+                }
                 String[] line = new String[header.size()];
                 Arrays.fill(line, "");
                 line[1] = layout.type.toString();
                 line[2] = row.getName();
                 line[3] = resolve(row, layout.value(row, ObjectTargets.GERMPLASM, row.getGermplasm()),
                         germplasm, "germplasm", csv);
-                line[4] = resolve(row, layout.value(row, ObjectTargets.FACTOR_LEVEL, row.getFactorLevel()),
-                        levels, "factorLevel", csv);
+                List<String> levelSources = sheet.columnsMappedTo(ObjectTargets.FACTOR_LEVEL);
+                for (int i = 0; i < Math.max(1, levelSources.size()); i++) {
+                    // The first column is the one every object has; the others follow the six that
+                    // are fixed, in the order of the sheet.
+                    int position = i == 0 ? 4 : 5 + i;
+                    line[position] = levelSources.isEmpty()
+                            ? resolve(row, row.getFactorLevel(), levels, "factorLevel", csv)
+                            : level(row, levelSources.get(i), levels, csv);
+                }
                 line[5] = resolve(row, row.getFacility(), facilities, "facility", csv);
 
                 for (Map.Entry<String, List<Integer>> extra : extraColumns.entrySet()) {
-                    List<String> columns = sheet.columnsMappedTo(extra.getKey());
+                    List<String> columns = layout.holdsOneValue(extra.getKey())
+                            ? firstFilled(sheet.columnsMappedTo(extra.getKey()), row)
+                            : sheet.columnsMappedTo(extra.getKey());
                     for (int i = 0; i < columns.size(); i++) {
                         line[extra.getValue().get(i)] = propertyValue(row, columns.get(i), extra.getKey(),
                                 layout, experiment, sheetOfName, resolver, csv);
@@ -234,6 +254,9 @@ public class ScientificObjectBulkImport extends PlatformBulkImport<CSVValidation
             Map<String, Integer> counts = new LinkedHashMap<>();
             layout.sheet.getMapping().values().stream().filter(ScientificObjectBulkImport::isExtra)
                     .forEach(target -> counts.merge(target, 1, Integer::sum));
+            // A property that holds one value gets one column, however many columns of the sheet
+            // feed it: they come from different sheets describing the same object.
+            counts.replaceAll((target, count) -> layout.holdsOneValue(target) ? 1 : count);
             counts.forEach((target, count) -> occurrences.merge(target, count, Math::max));
         }
         Map<String, List<Integer>> positions = new LinkedHashMap<>();
@@ -244,6 +267,18 @@ public class ScientificObjectBulkImport extends PlatformBulkImport<CSVValidation
             }
         });
         return positions;
+    }
+
+    /**
+     * @return the first of the columns the row has a value in, or the first when it has none
+     */
+    private static List<String> firstFilled(List<String> columns, ObjectRow row) {
+        for (String column : columns) {
+            if (row.cell(column) != null) {
+                return List.of(column);
+            }
+        }
+        return columns.isEmpty() ? columns : List.of(columns.get(0));
     }
 
     private static boolean isExtra(String target) {
@@ -350,13 +385,60 @@ public class ScientificObjectBulkImport extends PlatformBulkImport<CSVValidation
          */
         private String value(ObjectRow row, String target, String fallback) {
             List<String> columns = sheet.columnsMappedTo(target);
-            return columns.isEmpty() ? fallback : row.cell(columns.get(0));
+            if (columns.isEmpty()) {
+                return fallback;
+            }
+            // Several columns can feed one target when several sheets describe the same object:
+            // the first that says something is the value.
+            for (String column : columns) {
+                if (row.cell(column) != null) {
+                    return row.cell(column);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * @return whether the property takes one value, and so one column — a property the type
+         * does not list is taken to hold a list, as it was before
+         */
+        private boolean holdsOneValue(String target) {
+            TypeProperty property = property(target);
+            return property != null && !property.list();
         }
 
         private boolean hasPositions() {
             return sheet.getRows().stream().anyMatch(row ->
                     value(row, ObjectTargets.X, row.getX()) != null || value(row, ObjectTargets.Y, row.getY()) != null);
         }
+    }
+
+    /**
+     * An object the profile found contradictory is not written: each of its problems is told on its
+     * own row of the workbook, and the file has to say one thing before the object is created.
+     *
+     * @return whether the row was refused
+     */
+    private static boolean refuse(ObjectRow row, GeneratedCsv csv) {
+        for (ReportMessage problem : row.getProblems()) {
+            csv.getModuleErrors().add(new RowError(row.getSheet(), row.getRow(), problem.getParams().get("column"),
+                    row.getName(), RowError.Kind.INVALID_ROW, problem));
+        }
+        return !row.getProblems().isEmpty();
+    }
+
+    /**
+     * The level a column of levels names. The header of such a column is the factor, so the level is
+     * first looked up under that factor — two factors can both have a level {@code T1} — and by its
+     * name alone when the header names no factor of the experiment.
+     */
+    private String level(ObjectRow row, String column, Map<String, URI> levels, GeneratedCsv csv) {
+        String value = row.cell(column);
+        if (value == null) {
+            return "";
+        }
+        URI ofThatFactor = levels.get((column + "|" + value).toLowerCase(Locale.ROOT));
+        return ofThatFactor != null ? ofThatFactor.toString() : resolve(row, value, levels, "factorLevel", csv);
     }
 
     /**
@@ -391,6 +473,8 @@ public class ScientificObjectBulkImport extends PlatformBulkImport<CSVValidation
             for (FactorLevelModel level : factor.getFactorLevels()) {
                 if (level.getName() != null) {
                     byName.put(level.getName().toLowerCase(), level.getUri());
+                    // Also under its factor, for the sheets whose column header names the factor.
+                    byName.put((factor.getName() + "|" + level.getName()).toLowerCase(Locale.ROOT), level.getUri());
                 }
             }
         }

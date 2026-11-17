@@ -120,4 +120,39 @@ public class ExcelValueParserTest {
                 ExcelValueParser.looksLikeDateColumn("datetime"));
         assertTrue(ExcelValueParser.looksLikeDateColumn("observation_datetime"));
     }
+
+    //#region a column the user declared to hold dates
+
+    @Test
+    public void aSerialNumberIsADateWhateverTheHeaderOfItsColumn() {
+        assertEquals(LocalDate.of(2026, 6, 12), ExcelValueParser.parseDate("46185", false));
+        assertEquals("the same serial in the other date system", LocalDate.of(2030, 6, 13),
+                ExcelValueParser.parseDate("46185", true));
+    }
+
+    @Test
+    public void aNumberThatCannotBeADateIsNone() {
+        assertNull(ExcelValueParser.parseDate("84", false));
+        assertNull("a serial before the plausible range", ExcelValueParser.parseDate("100", false));
+    }
+
+    @Test
+    public void anIsoDateAnIsoDateTimeAndADayFirstDateAreDates() {
+        assertEquals(LocalDate.of(2026, 7, 12), ExcelValueParser.parseDate("2026-07-12", false));
+        assertEquals(LocalDate.of(2026, 7, 12), ExcelValueParser.parseDate("2026-07-12T08:30:00", false));
+        assertEquals(LocalDate.of(2026, 7, 12), ExcelValueParser.parseDate("2026-07-12 08:30", false));
+        assertEquals(LocalDate.of(2026, 7, 12), ExcelValueParser.parseDate("12/07/2026", false));
+        assertEquals(LocalDate.of(2026, 7, 2), ExcelValueParser.parseDate("2/7/2026", false));
+    }
+
+    @Test
+    public void textThatIsNoDateAndMissingValuesAreNone() {
+        assertNull(ExcelValueParser.parseDate("demain", false));
+        assertNull(ExcelValueParser.parseDate("31/02/2026", false));
+        assertNull(ExcelValueParser.parseDate("NA", false));
+        assertNull(ExcelValueParser.parseDate("", false));
+        assertNull(ExcelValueParser.parseDate(null, false));
+    }
+
+    //#endregion
 }

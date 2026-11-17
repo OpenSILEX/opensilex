@@ -12,6 +12,9 @@
       <button type="button" :class="['tab', { active: homeTab === 'upload' }]" @click="homeTab = 'upload'">
         {{ $t('AiImport.home.newFile') }}
       </button>
+      <button type="button" :class="['tab', { active: homeTab === 'advanced' }]" @click="homeTab = 'advanced'">
+        {{ $t('AiImport.home.advanced') }}
+      </button>
       <button type="button" :class="['tab', { active: homeTab === 'sessions' }]" @click="homeTab = 'sessions'">
         {{ $t('AiImport.home.sessions') }}
         <span class="tabBadge">{{ savedSessions.length }}</span>
@@ -22,10 +25,14 @@
     </nav>
 
     <!-- Step one: pick a file. Kept on screen until a session opens, so a failed upload can be retried. -->
-    <div v-if="!session && homeTab === 'upload'" class="card">
+    <div v-if="!session && (homeTab === 'upload' || homeTab === 'advanced')" class="card">
       <div class="card-body">
-        <h5 class="card-title">{{ $t('AiImport.upload.title') }}</h5>
-        <p class="card-text text-body-secondary small">{{ $t('AiImport.upload.hint') }}</p>
+        <h5 class="card-title">
+          {{ homeTab === 'advanced' ? $t('AiImport.advanced.upload.title') : $t('AiImport.upload.title') }}
+        </h5>
+        <p class="card-text text-body-secondary small">
+          {{ homeTab === 'advanced' ? $t('AiImport.advanced.upload.hint') : $t('AiImport.upload.hint') }}
+        </p>
 
         <div
           class="ai-import-drop mb-3"
@@ -38,7 +45,7 @@
             ref="fileInput"
             type="file"
             class="d-none"
-            accept=".xlsx,.xlsm,.xls"
+            :accept="acceptAttribute"
             @change="onFileChosen"
           />
           <div class="ai-import-drop__row">
@@ -51,7 +58,7 @@
         </div>
 
         <div class="row g-2 align-items-end">
-          <div class="col-md-4">
+          <div v-if="homeTab === 'upload'" class="col-md-4">
             <label class="form-label small mb-1" for="ai-import-profile">
               {{ $t('AiImport.upload.profile') }}
             </label>
@@ -82,6 +89,8 @@
         </p>
       </div>
     </div>
+
+    <opensilex-ai-import-FileTemplateList v-if="!session && homeTab === 'advanced'" class="mt-3" />
 
     <!--
       Conversations stored as they went, most recent first. Resuming one reads its file again and
@@ -146,6 +155,15 @@
         <h5 class="card-title">{{ $t('AiImport.export.title') }}</h5>
         <p class="card-text text-body-secondary small">{{ $t('AiImport.export.hint') }}</p>
         <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label small mb-1" for="ai-import-export-format">{{ $t('AiImport.export.format') }}</label>
+            <select id="ai-import-export-format" v-model="exportFormat" class="form-select form-select-sm">
+              <option :value="STAR_FORMAT">{{ $t('AiImport.export.formatStar') }}</option>
+              <option v-for="template in exportTemplates" :key="template.id" :value="template.id">
+                {{ template.name }}
+              </option>
+            </select>
+          </div>
           <div class="col-md-6">
             <opensilex-ExperimentSelector
               v-model:experiments="exportExperiment"
@@ -155,7 +173,7 @@
           </div>
           <div class="col-md-auto">
             <n-button type="primary" size="small" :disabled="!exportExperiment" :loading="exporting"
-                      @click="exportStar">
+                      @click="exportWorkbook">
               {{ $t('AiImport.export.download') }}
             </n-button>
           </div>
@@ -204,6 +222,30 @@
         />
       </div>
       <div :class="[chatOpen ? 'col-xl-6' : 'col-12', 'd-flex flex-column gap-3']">
+        <!--
+          A file no template reads is described by the user: its files, its experiment, and what each
+          sheet and column is. The panel says when the report is to be read again.
+        -->
+        <opensilex-ai-import-AdvancedImportPanel
+          v-if="isDescribed"
+          :session-id="session.session_id"
+          ref="advancedPanel"
+          :files="session.files ?? []"
+          :report-stamp="reportStamp"
+          @changed="onDescriptionChanged"
+          @files-changed="onFilesChanged"
+          @create-experiment="onCreateFileExperiment"
+          @declare-factors="openFactors"
+        />
+
+        <!-- The order the declarations are made in, and what each is waiting for. -->
+        <opensilex-ai-import-ImportStepsPanel
+          v-if="session.report"
+          :session-id="session.session_id"
+          :report-stamp="reportStamp"
+          @declare="onDeclare"
+        />
+
         <opensilex-ai-import-ResolutionReportPanel
           v-if="session.report"
           :report="session.report"
@@ -223,6 +265,21 @@
           a component created by mistake is a permanent entry in this instance's referential, which
           is reason enough not to invent a second form for it.
         -->
+        <!--
+          Creating without the assistant: the card of a creation drafted from the files, and the
+          platform's factor form opened with each factor the files name.
+        -->
+        <opensilex-ai-import-CreationDraftZone
+          ref="draftZone"
+          :session-id="session.session_id"
+          @applied="onCreated"
+        />
+        <opensilex-ai-import-FactorDeclarationZone
+          ref="factorZone"
+          :session-id="session.session_id"
+          @declared="revalidate"
+        />
+
         <opensilex-VariableForm
           ref="variableForm"
           createTitle="component.variable.add"
@@ -294,7 +351,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, useTemplateRef } from 'vue'
+import { ACCEPTED_EXTENSIONS } from '../opensilexPlugin'
+import { creationOf } from '../stepActions'
+import type { CreationProposalDTO, FacilityDraftDTO, ImportStepDTO } from '../lib'
+import { useCreationDraft } from '../useCreationDraft'
+import { useFileTemplates } from '../useFileTemplates'
 
 /**
  * The import assistant page.
@@ -304,7 +366,7 @@ import { computed, inject, onMounted, ref } from 'vue'
  */
 const $opensilex: any = inject('$opensilex')
 
-const ACCEPTED_EXTENSIONS = ['xlsx', 'xlsm', 'xls']
+const acceptAttribute = ACCEPTED_EXTENSIONS.map((extension) => '.' + extension).join(',')
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const file = ref<File | null>(null)
@@ -394,6 +456,20 @@ const CATEGORY_OF_TARGET: { [target: string]: string } = {
   ORGANIZATION: 'organizations'
 }
 const facilityPrefill = ref<string | null>(null)
+const facilityDraft = ref<FacilityDraftDTO | undefined>(undefined)
+const draftZone = useTemplateRef<{
+  open(target: string, values?: { [field: string]: string }): Promise<void>
+  show(proposal: CreationProposalDTO): void
+}>('draftZone')
+/**
+ * Set while the experiment form is open for the files themselves, rather than for a name of the report.
+ */
+const creatingFileExperiment = ref(false)
+const advancedPanel = useTemplateRef<{
+  chooseExperiment(uri: string): Promise<void>
+  warnRefusedFactorSheets(): boolean
+}>('advancedPanel')
+const factorZone = useTemplateRef<{ open(experiment: string): Promise<void> }>('factorZone')
 const uploadError = ref<string | null>(null)
 
 /**
@@ -405,7 +481,7 @@ const resuming = ref<string | null>(null)
 /**
  * The tab of the first screen: a new file, the stored conversations, or an export.
  */
-const homeTab = ref<'upload' | 'sessions' | 'export'>('upload')
+const homeTab = ref<'upload' | 'advanced' | 'sessions' | 'export'>('upload')
 
 /**
  * The experiment to write as a STAR workbook.
@@ -415,6 +491,13 @@ const exporting = ref(false)
 const exportError = ref<string | null>(null)
 
 const STAR_EXPORT_PATH = '/ai-import/star'
+const STAR_FORMAT = 'star'
+
+/**
+ * The shape the experiment is written in: STAR, or one of the templates the user may use.
+ */
+const exportFormat = ref(STAR_FORMAT)
+const { templates: exportTemplates, load: loadExportTemplates } = useFileTemplates($opensilex)
 
 /**
  * The experiment the report found for this file, offered first where objects are created in it.
@@ -433,7 +516,7 @@ function service() {
  * the language. The file is named after the experiment's URI, the only name at hand here; the
  * server names it after the experiment itself in its header.
  */
-async function exportStar() {
+async function exportWorkbook() {
   if (!exportExperiment.value) {
     return
   }
@@ -441,8 +524,18 @@ async function exportStar() {
   exportError.value = null
   try {
     const uri = exportExperiment.value
-    const name = 'STAR_' + uri.substring(Math.max(uri.lastIndexOf('/'), uri.lastIndexOf('#'), uri.lastIndexOf(':')) + 1)
-    await $opensilex.downloadFilefromService(STAR_EXPORT_PATH, name, 'xlsx', { experiment: uri })
+    const shortName = uri.substring(Math.max(uri.lastIndexOf('/'), uri.lastIndexOf('#'), uri.lastIndexOf(':')) + 1)
+    if (exportFormat.value === STAR_FORMAT) {
+      await $opensilex.downloadFilefromService(STAR_EXPORT_PATH, 'STAR_' + shortName, 'xlsx', { experiment: uri })
+    } else {
+      const template = exportTemplates.value.find((candidate) => candidate.id === exportFormat.value)
+      await $opensilex.downloadFilefromService(
+        '/ai-import/templates/' + encodeURIComponent(exportFormat.value) + '/export',
+        (template?.name ?? 'template') + '_' + shortName,
+        'xlsx',
+        { experiment: uri }
+      )
+    }
   } catch (error) {
     // The helper has already shown the platform's error; this says which action it was.
     exportError.value = $opensilex.$i18n.t('AiImport.export.failed')
@@ -453,6 +546,7 @@ async function exportStar() {
 
 onMounted(async () => {
   loadSavedSessions()
+  loadExportTemplates()
   try {
     const http = await service().getProfiles()
     profiles.value = http.response.result
@@ -489,6 +583,14 @@ function select(chosen: File | null) {
   file.value = chosen
 }
 
+/**
+ * The family the file is opened as: the advanced tab always opens it as described by the user,
+ * the first tab lets the module detect it unless one was chosen.
+ */
+function startProfile(): string {
+  return homeTab.value === 'advanced' ? 'custom' : profileId.value
+}
+
 async function startSession() {
   if (!file.value) {
     return
@@ -500,7 +602,7 @@ async function startSession() {
     const response = await $opensilex.uploadFileToService(
       '/ai-import/sessions',
       { file: file.value },
-      profileId.value ? { profile: profileId.value } : null
+      startProfile() ? { profile: startProfile() } : null
     )
     openSession(response.result ?? response)
   } catch (error) {
@@ -565,13 +667,30 @@ async function leaveSession() {
  */
 function openSession(opened: any) {
   session.value = opened
+  if (isDescribed.value && !chatChosen.value) {
+    // Nothing is asked of the model for a file the user describes: the description comes first.
+    chatOpen.value = false
+  }
   proposalsById.value = {}
   for (const proposal of opened?.proposals ?? []) {
     rememberProposal(proposal)
   }
   rememberProposal(opened?.pending_proposal)
+  showPendingDraft(opened)
   stampReport()
   checkAssistant()
+}
+
+/**
+ * A draft the conversation was left with that no message carries — one made from the files, without
+ * the assistant — is shown on its own, so that resuming the conversation finds it again.
+ */
+function showPendingDraft(opened: any) {
+  const pending = opened?.pending_proposal
+  const carried = (opened?.messages ?? []).some((message: any) => message.proposal_id === pending?.id)
+  if (pending && pending.status === 'PENDING' && !carried) {
+    nextTick(() => draftZone.value?.show(pending))
+  }
 }
 
 function formatDate(value: string | null): string {
@@ -697,7 +816,7 @@ async function updateReport(call: () => Promise<any>) {
  * An experiment has no creation form in this front, so its click becomes a question to the
  * assistant, whose draft is confirmed on the proposal card.
  */
-function requestCreation(payload: { target: string; value: string }) {
+function requestCreation(payload: { target: string; value: string; values?: { [field: string]: string } }) {
   pendingRow.value = CATEGORY_OF_TARGET[payload.target]
     ? { category: CATEGORY_OF_TARGET[payload.target], value: payload.value }
     : null
@@ -725,9 +844,37 @@ function requestCreation(payload: { target: string; value: string }) {
     openOrganizationForm(payload.value)
     return
   }
-  const what = $opensilex.$i18n.t('AiImport.report.askCreate_' + payload.target,
-    { value: payload.value })
-  ask(what)
+  if (payload.target === 'FACTORS') {
+    openFactors()
+    return
+  }
+  // Everything else is drafted from the files, without the assistant: its card asks what they leave out.
+  draftZone.value?.open(payload.target, payload.values)
+}
+
+/**
+ * Opens the platform's experiment form to create the experiment the files belong to, with what the
+ * files suggest; the one created becomes the files' own.
+ */
+function onCreateFileExperiment() {
+  creatingFileExperiment.value = true
+  openExperimentForm('')
+}
+
+/**
+ * Declares the factors of the files in an experiment — the one chosen for the files, else the one
+ * they name — with the platform's factor form.
+ */
+function openFactors(experiment?: string) {
+  const uri = experiment ?? resolvedExperiment.value
+  if (advancedPanel.value?.warnRefusedFactorSheets()) {
+    return
+  }
+  if (!uri) {
+    $opensilex.showErrorToast($opensilex.$i18n.t('AiImport.steps.noExperiment'))
+    return
+  }
+  factorZone.value?.open(uri)
 }
 
 /**
@@ -864,8 +1011,11 @@ function prefillExperiment(form: any) {
  * Opens the platform's facility wizard with the name the file gives. The type, the organisation
  * and the site are the user's to choose: the file does not say them.
  */
-function openFacilityForm(name: string) {
+async function openFacilityForm(name: string) {
   facilityPrefill.value = name
+  // What a sheet of facilities says of this one — its type and the value of its properties — read
+  // before the form opens, so the form is given them together.
+  facilityDraft.value = await useCreationDraft($opensilex, () => session.value.session_id).facilityDraftOf(name)
   facilityForm.value?.showCreateForm()
 }
 
@@ -894,10 +1044,20 @@ function prefillFacility(form: any) {
   const described = [
     details.row_spacing ? $opensilex.$i18n.t('AiImport.report.fieldRowSpacing', { value: details.row_spacing }) : null,
     details.plant_spacing ? $opensilex.$i18n.t('AiImport.report.fieldPlantSpacing', { value: details.plant_spacing }) : null,
-    details.insee ? $opensilex.$i18n.t('AiImport.report.fieldInsee', { value: details.insee }) : null
+    details.insee ? $opensilex.$i18n.t('AiImport.report.fieldInsee', { value: details.insee }) : null,
+    // What the columns described as comments say of the facility, joined by the server.
+    details.description ?? null
   ].filter((part) => !!part)
   if (described.length) {
     form.description = described.join(' ; ')
+  }
+  // The form keeps the properties only of a facility whose type it is given: both or neither.
+  if (facilityDraft.value?.rdf_type) {
+    form.rdf_type = facilityDraft.value.rdf_type
+    form.relations = (facilityDraft.value.relations ?? []).map((relation) => ({
+      property: relation.property,
+      value: relation.value
+    }))
   }
   const organizations = (session.value?.report?.organizations ?? [])
     .filter((candidate: any) => candidate.status === 'FOUND' && candidate.matches?.length)
@@ -968,6 +1128,12 @@ async function onCreatedInForm(payload: any) {
   const row = pendingRow.value
   pendingRow.value = null
   const uri = payload?.uri ?? payload?.response?.result
+  if (creatingFileExperiment.value && typeof uri === 'string') {
+    // The experiment was created for the files, not for a name of the report: it becomes theirs.
+    creatingFileExperiment.value = false
+    await advancedPanel.value?.chooseExperiment(uri)
+    return
+  }
   if (!row || typeof uri !== 'string') {
     await revalidate()
     return
@@ -1024,6 +1190,45 @@ async function onCreated(payload: { target: string; report: any }) {
  * The mapping quotes the matched variable and its expected type, so it goes stale the moment a
  * variable is created.
  */
+/**
+ * Whether the user describes this conversation's files themselves — a file no template reads.
+ */
+const isDescribed = computed(() => ['custom', 'generic'].includes(session.value?.profile_id))
+
+/**
+ * The description or the files changed: the server worked the report out again, and the sheets
+ * and the mapping with it.
+ */
+async function onDescriptionChanged() {
+  if (!session.value) {
+    return
+  }
+  try {
+    const http = await service().getSession(session.value.session_id)
+    const fresh = http.response.result
+    session.value.profile_id = fresh.profile_id
+    session.value.files = fresh.files
+    session.value.structure = fresh.structure
+    session.value.report = fresh.report
+    session.value.mapping = fresh.mapping
+    stampReport()
+  } catch (error) {
+    $opensilex.errorHandler(error)
+  }
+}
+
+/**
+ * The user declares a step of the path: the page opens what declares it, with the first name the
+ * report finds missing for it.
+ */
+function onDeclare(step: ImportStepDTO) {
+  requestCreation(creationOf(step, session.value?.report))
+}
+
+function onFilesChanged(files: unknown[]) {
+  session.value.files = files
+}
+
 async function refreshMapping() {
   try {
     const http = await service().getMapping(session.value.session_id)

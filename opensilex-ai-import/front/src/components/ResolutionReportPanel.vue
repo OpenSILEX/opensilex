@@ -391,16 +391,29 @@ const warnings = computed(() => {
     : (props.report.warnings ?? [])
 })
 
+/**
+ * The categories in the order things are declared in the platform: an organisation first, which
+ * hosts the facilities; the project, then the experiment that names them; the people and the
+ * variables; then the plant material, and last the scientific objects, which carry it and need the
+ * experiment. Read from top to bottom, the report is the order in which to create what is missing.
+ */
 const categories = computed(() => [
   {
-    key: 'experiments',
-    label: 'AiImport.report.experiments',
-    items: props.report.experiments ?? [],
-    link: (uri: string) => `#/experiment/details/${encodeURIComponent(uri)}`,
-    // Only the categories with a way to create them from here: a platform form (project, facility,
-    // variable, person) or a draft on the proposal card (experiment). Germplasm and scientific
-    // objects are created elsewhere, and a button that opens an empty form would be a false promise.
-    creates: 'EXPERIMENT'
+    key: 'organizations',
+    label: 'AiImport.report.organizations',
+    items: props.report.organizations ?? [],
+    link: null,
+    // Only the categories with a way to create them from here: a platform form (organisation,
+    // facility, project, experiment, person, variable). Germplasm and scientific objects are
+    // created elsewhere, and a button that opens an empty form would be a false promise.
+    creates: 'ORGANIZATION'
+  },
+  {
+    key: 'facilities',
+    label: 'AiImport.report.facilities',
+    items: props.report.facilities ?? [],
+    link: (uri: string) => `#/facility/details/${encodeURIComponent(uri)}`,
+    creates: 'FACILITY'
   },
   {
     key: 'projects',
@@ -408,6 +421,20 @@ const categories = computed(() => [
     items: props.report.projects ?? [],
     link: (uri: string) => `#/project/details/${encodeURIComponent(uri)}`,
     creates: 'PROJECT'
+  },
+  {
+    key: 'experiments',
+    label: 'AiImport.report.experiments',
+    items: props.report.experiments ?? [],
+    link: (uri: string) => `#/experiment/details/${encodeURIComponent(uri)}`,
+    creates: 'EXPERIMENT'
+  },
+  {
+    key: 'persons',
+    label: 'AiImport.report.persons',
+    items: props.report.persons ?? [],
+    link: null,
+    creates: 'PERSON'
   },
   {
     key: 'variables',
@@ -429,27 +456,6 @@ const categories = computed(() => [
     items: props.report.scientific_objects ?? [],
     link: null,
     creates: null
-  },
-  {
-    key: 'facilities',
-    label: 'AiImport.report.facilities',
-    items: props.report.facilities ?? [],
-    link: (uri: string) => `#/facility/details/${encodeURIComponent(uri)}`,
-    creates: 'FACILITY'
-  },
-  {
-    key: 'persons',
-    label: 'AiImport.report.persons',
-    items: props.report.persons ?? [],
-    link: null,
-    creates: 'PERSON'
-  },
-  {
-    key: 'organizations',
-    label: 'AiImport.report.organizations',
-    items: props.report.organizations ?? [],
-    link: null,
-    creates: 'ORGANIZATION'
   }
 ])
 

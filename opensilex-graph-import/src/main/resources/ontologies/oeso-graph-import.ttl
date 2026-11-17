@@ -1,0 +1,105 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix oeso: <http://www.opensilex.org/vocabulary/oeso#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+
+# What the experimental import assistant needs and oeso-core does not say as restrictions. The terms
+# stay in the oeso namespace, so that they can move into oeso-core without being renamed. The module
+# loads this file into its own graph when it is enabled; dropping that graph removes it.
+
+<http://www.opensilex.org/vocabulary/oeso-graph-import>
+    a owl:Ontology ;
+    rdfs:label "Additions of the experimental import assistant"@en ,
+               "Ajouts de l'assistant d'import expérimental"@fr ;
+    owl:versionInfo "4" .
+
+# oeso-core gives hasFactor no label: the screens would show its local name.
+oeso:hasFactor
+    rdfs:label "a pour facteur"@fr ,
+               "has Factor"@en .
+
+# oeso-core declares hasFactor only by its domain and range: a level belongs to exactly one factor.
+oeso:FactorLevel
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty oeso:hasFactor ;
+        owl:qualifiedCardinality "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> ;
+        owl:onClass oeso:Factor
+    ] .
+
+# oeso-core declares hasCategory only by its domain and range: a factor has at most one category.
+oeso:Factor
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty oeso:hasCategory ;
+        owl:maxQualifiedCardinality "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> ;
+        owl:onClass oeso:FactorCategory
+    ] .
+
+# A datum, as the platform holds it in its data store (not in the triplestore): one value of one
+# variable, measured on one target at one date, with its provenance. The properties mirror the platform's
+# DataModel, so that a sheet of data can be read as rows of this class.
+oeso:Data
+    a owl:Class ;
+    rdfs:label "Data"@en , "Donnée"@fr ;
+    rdfs:comment "A value of a variable measured on a target at a date. The platform stores data outside the triplestore; this class describes them for the import assistant."@en ;
+    rdfs:seeAlso sosa:Observation ;
+    rdfs:subClassOf
+        [ a owl:Restriction ; owl:onProperty oeso:hasVariable ;
+          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass oeso:Variable ] ,
+        [ a owl:Restriction ; owl:onProperty oeso:hasTarget ;
+          owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass oeso:ScientificObject ] ,
+        [ a owl:Restriction ; owl:onProperty oeso:hasDate ;
+          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onDataRange xsd:dateTime ] ,
+        [ a owl:Restriction ; owl:onProperty rdf:value ;
+          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onDataRange rdfs:Literal ] ,
+        [ a owl:Restriction ; owl:onProperty oeso:hasConfidence ;
+          owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onDataRange xsd:float ] ,
+        [ a owl:Restriction ; owl:onProperty oeso:hasRawData ;
+          owl:minQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onDataRange rdfs:Literal ] ,
+        [ a owl:Restriction ; owl:onProperty oeso:hasProvenance ;
+          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass oeso:Provenance ] ,
+        [ a owl:Restriction ; owl:onProperty oeso:participatesIn ;
+          owl:minQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass oeso:Experiment ] ,
+        [ a owl:Restriction ; owl:onProperty prov:wasAssociatedWith ;
+          owl:minQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass prov:Agent ] ,
+        [ a owl:Restriction ; owl:onProperty prov:used ;
+          owl:minQualifiedCardinality "0"^^xsd:nonNegativeInteger ; owl:onClass oeso:Datafile ] .
+
+oeso:hasVariable a owl:ObjectProperty ;
+    rdfs:label "has variable"@en , "a pour variable"@fr ;
+    rdfs:domain oeso:Data ; rdfs:range oeso:Variable .
+
+oeso:hasTarget a owl:ObjectProperty ;
+    rdfs:label "has target"@en , "a pour cible"@fr ;
+    rdfs:comment "What the value was measured on: a scientific object or a facility."@en ;
+    rdfs:domain oeso:Data .
+
+oeso:hasDate a owl:DatatypeProperty ;
+    rdfs:label "has date"@en , "a pour date"@fr ;
+    rdfs:domain oeso:Data ; rdfs:range xsd:dateTime .
+
+oeso:hasConfidence a owl:DatatypeProperty ;
+    rdfs:label "has confidence"@en , "a pour confiance"@fr ;
+    rdfs:comment "Between 0 and 1."@en ;
+    rdfs:domain oeso:Data ; rdfs:range xsd:float .
+
+oeso:hasRawData a owl:DatatypeProperty ;
+    rdfs:label "has raw data"@en , "a pour données brutes"@fr ;
+    rdfs:domain oeso:Data .
+
+oeso:hasProvenance a owl:ObjectProperty ;
+    rdfs:label "has provenance"@en , "a pour provenance"@fr ;
+    rdfs:domain oeso:Data ; rdfs:range oeso:Provenance .
+
+# The platform's ontology store reads the restrictions of every graph when it starts, and refuses one
+# whose property no graph declares: the two properties the core ontology does not declare are declared
+# here, without domain, as the core ontology declares prov:used.
+rdf:value a owl:DatatypeProperty ;
+    rdfs:label "value"@en , "valeur"@fr .
+
+prov:wasAssociatedWith a owl:ObjectProperty ;
+    rdfs:label "was associated with"@en , "a été associé à"@fr .

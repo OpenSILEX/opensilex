@@ -1,0 +1,412 @@
+{
+    "GraphImport": {
+        "menu": "Import expérimental",
+        "title": "Assistant d'import expérimental",
+        "description": "Apportez un classeur ou des fichiers CSV dont les colonnes sont des propriétés de l'ontologie. Chaque onglet est lu comme un graphe : une ligne est une ressource, une colonne l'une de ses propriétés. Rien n'est écrit dans l'instance.",
+        "menuDescription": "Lisez un classeur comme un graphe de l'ontologie. Rien n'est écrit.",
+        "steps": {
+            "upload": "Apporter les fichiers",
+            "understand": "Comprendre les colonnes",
+            "preview": "Aperçu",
+            "create": "Créer"
+        },
+        "upload": {
+            "choose": "Choisir un fichier",
+            "drop": "ou déposer ici un classeur (xlsx, xls) ou un fichier CSV"
+        },
+        "stored": {
+            "title": "Imports en cours",
+            "none": "Aucun import en cours.",
+            "resume": "Reprendre",
+            "delete": "Supprimer",
+            "updated": "Modifié le {date}",
+            "expires": "conservé jusqu'au {date}"
+        },
+        "session": {
+            "close": "Retour aux imports",
+            "saved": "Cet import est enregistré au fur et à mesure : vous pouvez le quitter et le reprendre plus tard."
+        },
+        "files": {
+            "title": "Fichiers",
+            "add": "Ajouter un fichier",
+            "remove": "Retirer"
+        },
+        "sheets": {
+            "title": "Onglets ({count})",
+            "size": "{rows} lignes · {columns} colonnes",
+            "sample": "Premières lignes de l'onglet.",
+            "text": "Onglet de texte"
+        },
+        "layout": {
+            "choose": "Choisir les lignes",
+            "readAsTable": "Lire comme un tableau",
+            "title": "Lignes de l'onglet {sheet}",
+            "help": "Indiquez la ligne qui porte les noms des colonnes, puis la première ligne de valeurs. Les lignes entre les deux, comme une ligne d'unités, sont ignorées. Les numéros sont ceux du tableur.",
+            "header": "En-tête : ligne {row}",
+            "firstData": "Valeurs à partir de la ligne {row}",
+            "shown": "{shown} premières lignes sur {total}",
+            "asHeader": "En-tête",
+            "asFirstData": "1re valeur",
+            "detected": "Revenir à la détection",
+            "apply": "Appliquer"
+        },
+        "status": {
+            "CHOSEN": "Choisi",
+            "DECIDED": "Lu dans le fichier",
+            "SUGGESTED": "Suggéré",
+            "UNDECIDED": "À décider",
+            "LEFT_OUT": "Laissée de côté"
+        },
+        "understand": {
+            "help": "Pour chaque onglet, l'assistant propose la classe des lignes, la colonne qui les identifie et la propriété de chaque colonne, avec ses raisons. Dépliez une colonne pour voir pourquoi, accepter ou corriger : vos choix sont enregistrés et retenus pour vos prochains fichiers.",
+            "experiment": "Expérimentation (pour reconnaître ses objets scientifiques)",
+            "loading": "Lecture des onglets…",
+            "rows": "{count} lignes",
+            "forget": "Revenir aux suggestions",
+            "class": "Classe des lignes",
+            "classPlaceholder": "Choisir une classe",
+            "identifier": "Colonne identifiante",
+            "identifierPlaceholder": "Choisir une colonne",
+            "identifierTag": "identifiant",
+            "why": "Pourquoi ces suggestions ?",
+            "column": "Colonne",
+            "status": "État",
+            "property": "Propriété",
+            "typeColumn": "Type de chaque ligne",
+            "toDecide": "À décider",
+            "choose": "Choisir",
+            "chosen": "Choisi",
+            "noCandidate": "Aucune propriété ne ressort : choisissez-en une ou laissez la colonne de côté.",
+            "otherProperty": "Autre propriété",
+            "otherPropertyPlaceholder": "Chercher une propriété de la classe",
+            "backToSuggestion": "Revenir à la suggestion",
+            "accept": "Accepter",
+            "leaveOut": "Laisser de côté",
+            "takeBack": "Reprendre",
+            "leftOut": "Laissée de côté",
+            "leftOutNote": "Vous avez laissé cette colonne de côté : elle ne donne aucune valeur et n'est plus suggérée."
+        },
+        "report": {
+            "evidence": {
+                "header": "L'en-tête est la propriété {property}.",
+                "alias": "Vous avez choisi cette propriété pour « {header} » auparavant.",
+                "label": "L'en-tête est le libellé « {label} ».",
+                "commonWord": "« {header} » désigne d'habitude : {label}.",
+                "closeLabel": "L'en-tête est proche du libellé « {label} ».",
+                "valuesRead": "{count} valeurs sur {total} se lisent comme {datatype}.",
+                "valuesNotRead": "Seules {count} valeurs sur {total} se lisent comme {datatype}.",
+                "instances": "{count} valeurs sur {total} nomment un(e) {class} existant(e).",
+                "sheetIdentifiers": "{count} valeurs sur {total} sont des identifiants de l'onglet {sheet}.",
+                "identifierHeader": "« {header} » identifie d'habitude les lignes.",
+                "identifierUris": "Les valeurs sont des URI.",
+                "uniqueValues": "Chaque ligne a sa propre valeur.",
+                "uniqueButIncomplete": "Aucune valeur ne se répète, mais certaines lignes n'en ont pas.",
+                "firstColumn": "C'est la première colonne.",
+                "typeColumn": "La colonne de type indique : {class}.",
+                "sheetName": "L'onglet {sheet} porte le nom de : {class}.",
+                "headerCoverage": "{count} en-têtes sur {total} sont des propriétés de : {class}.",
+                "existingRows": "{count} identifiants sur {total} nomment un(e) {class} existant(e)."
+            },
+            "note": {
+                "unknownPrefix": "Le préfixe « {prefix} » est inconnu.",
+                "notAccepted": "{class} n'accepte pas la propriété {property}.",
+                "unresolvedTypes": "Ces types ne sont pas des classes : {values}.",
+                "duplicateSingle": "Une autre colonne donne aussi {property}, qui n'a qu'une valeur : choisissez-en une.",
+                "notATable": "Cet onglet n'est pas un tableau.",
+                "noExperiment": "Choisissez une expérimentation pour reconnaître ses objets scientifiques."
+            },
+            "literal": {
+                "notANumber": "« {value} » n'est pas un nombre.",
+                "twoSeparators": "« {value} » a une virgule et un point : on ne sait pas lequel sépare les décimales.",
+                "notAnInteger": "« {value} » n'est pas un nombre entier.",
+                "notABoolean": "« {value} » n'est ni oui ni non.",
+                "notADate": "« {value} » n'est pas une date.",
+                "ambiguousDate": "« {value} » peut être le {dayFirst} ou le {monthFirst} : choisissez l'ordre de la colonne.",
+                "missingTime": "« {value} » a une date mais pas d'heure.",
+                "missingZone": "« {value} » n'a pas de fuseau horaire : choisissez celui de la colonne.",
+                "notAUri": "« {value} » n'est pas une URI.",
+                "invalid": "« {value} » n'est pas une valeur valide de {datatype}."
+            },
+            "graph": {
+                "sheetLeftOut": "L'onglet {sheet} est laissé de côté tant que la classe de ses lignes n'est pas choisie.",
+                "sheetsLeftOut": "{count} onglets sont laissés de côté tant que la classe de leurs lignes n'est pas choisie : {sheets}.",
+                "noIdentifier": "L'onglet {sheet} n'a pas de colonne identifiante : chacune de ses lignes est une ressource à part, qu'aucun autre onglet ne peut compléter.",
+                "emptyIdentifiers": "{count} lignes de l'onglet {sheet} n'ont pas d'identifiant : chacune est une ressource à part.",
+                "columnsLeftOut": "Colonnes de l'onglet {sheet} laissées de côté tant que leur propriété n'est pas choisie : {headers}.",
+                "propertyNotAccepted": "La colonne {header} de l'onglet {sheet} est laissée de côté : la classe de ses lignes n'accepte pas sa propriété.",
+                "unresolvedTypes": "{count} lignes de l'onglet {sheet} ont un type qui ne désigne aucune classe connue : elles prennent la classe de l'onglet."
+            },
+            "problem": {
+                "linkUnfound": "« {value} » ne désigne rien de connu : ni une ligne du fichier, ni une instance que vous pouvez voir.",
+                "linkAmbiguous": "« {value} » désigne {count} instances existantes : on ne sait pas laquelle.",
+                "linkWrongClass": "« {value} » est une ligne du fichier de classe {classes}, alors qu'on attend : {expected}.",
+                "classConflict": "Les onglets donnent à cette ressource des classes sans lien entre elles : {classes}.",
+                "tooManyValues": "{count} valeurs différentes pour {property}, qui en accepte au plus {max}.",
+                "requiredMissing": "{property} demande au moins {min} valeur(s), le fichier en donne {count} : obligatoire, sauf si la ressource existe déjà."
+            },
+            "preview": {
+                "ambiguousMatch": "« {name} » désigne {count} ressources existantes de sa classe : on ne sait pas laquelle le fichier complète.",
+                "classMismatch": "La ressource existante {uri} est de classe {classes}, alors que le fichier dit {expected}.",
+                "fileClasses": "Les onglets donnent à cette ressource des classes sans lien : {classes}."
+            },
+            "creation": {
+                "toFix": "Le fichier doit d'abord être corrigé pour cette ressource.",
+                "completing": "Cette ressource existe déjà : la compléter n'est pas encore pris en charge.",
+                "conflict": "Cette ressource est en conflit avec ce que contient l'instance.",
+                "targetFirst": "« {name} » doit d'abord être créé, à l'étape {step}.",
+                "targetBlocked": "« {name} » ne peut pas être créé, donc ceci non plus.",
+                "targetNotCreated": "« {name} » est à créer et aucune étape ne le crée.",
+                "unwritable": "L'assistant ne sait pas encore écrire {property}.",
+                "noExperiment": "Un facteur appartient à une expérimentation : choisissez celle de l'import, ou donnez-en une au facteur.",
+                "existingFactor": "Le facteur de ce niveau existe déjà : lui ajouter un niveau n'est pas encore pris en charge.",
+                "unreadable": "La valeur {value} de {property} ne se lit pas.",
+                "refused": "La plateforme l'a refusé : {detail}",
+                "forbidden": "Vous ne pouvez pas créer ces ressources.",
+                "pointedByBlocked": "« {name} », qui se crée avec, ne peut pas encore l'être : elle l'attend.",
+                "noExperimentForObjects": "Les objets scientifiques se créent dans une expérimentation : choisissez celle de l'import.",
+                "tooMany": "Cette étape créerait {count} ressources ; au plus {most} sont créées à la fois. Découpez le fichier.",
+                "sameName": "Deux ressources de cette étape s'appellent « {name} ».",
+                "noMoment": "Un événement a besoin d'une date : son début ou sa fin.",
+                "noTarget": "Un événement concerne au moins une ressource : donnez-en une.",
+                "noProvenance": "Les données demandent une provenance : choisissez la provenance des données de l'import à l'étape Comprendre.",
+                "batchRefused": "La plateforme a refusé le lot {batch} sur {batches} : {detail}"
+            },
+            "measure": {
+                "targetUnfound": "« {name} » n'est ni un objet scientifique du fichier ni un de l'expérimentation.",
+                "targetAmbiguous": "« {name} » désigne plusieurs objets scientifiques : {count}.",
+                "noDate": "Cette ligne ne donne pas de date : ses valeurs ne donnent aucune donnée.",
+                "variableUnfound": "« {name} » ne désigne aucune variable que vous pouvez voir.",
+                "duplicate": "Une autre cellule donne une valeur de la même variable, pour la même cible, à la même date."
+            }
+        },
+        "check": {
+            "title": "Vérification du graphe",
+            "loading": "Vérification…",
+            "figures": "{nodes} ressources, {values} valeurs dont {links} liens",
+            "errors": "{count} erreur(s)",
+            "warnings": "{count} avertissement(s)",
+            "none": "Aucun problème",
+            "cut": "{shown} problèmes listés sur {total} ; les nombres les comptent tous.",
+            "problemsColumn": "Problèmes",
+            "rowProblems": "Problèmes des lignes ({count})",
+            "times": "× {count}",
+            "row": "Ligne de valeurs {row}",
+            "cell": "Ligne de valeurs {row} · {column}",
+            "place": "{sheet}, ligne de valeurs {row}, {column}",
+            "alsoIn": "Aussi : {places}",
+            "didYouMean": "Vouliez-vous dire :",
+            "inFile": "ligne du fichier",
+            "existing": "existant",
+            "more": "… et {count} de plus",
+            "moreNotes": "{count} autres remarques"
+        },
+        "dates": {
+            "title": "Lecture des dates",
+            "order": "Ordre du jour et du mois",
+            "detected": "D'après les valeurs ({order})",
+            "DAY_FIRST": "jour puis mois (03/04 = 3 avril)",
+            "MONTH_FIRST": "mois puis jour (03/04 = 4 mars)",
+            "UNDECIDED": "indécis",
+            "zone": "Fuseau des heures écrites sans fuseau",
+            "noZone": "Aucun : refuser ces heures"
+        },
+        "preview": {
+            "help": "Ce que l'import ferait à l'instance, comparé à ce qu'elle contient dans la limite de vos droits. Rien n'est écrit. Les objets scientifiques ne sont cherchés que dans l'expérimentation choisie à l'étape Comprendre : sans elle, ils apparaissent tous comme créés.",
+            "loading": "Comparaison de l'import avec l'instance…",
+            "afresh": "Comparer à nouveau",
+            "turtle": "Exporter en Turtle",
+            "problems": "La vérification du graphe trouve {count} problème(s) : l'étape Comprendre les montre colonne par colonne.",
+            "sheets": "Onglet :",
+            "counts": {
+                "all": "Tout ({count})",
+                "CREATED": "Créées ({count})",
+                "COMPLETED": "Complétées ({count})",
+                "UNCHANGED": "Inchangées ({count})",
+                "CONFLICT": "En conflit ({count})",
+                "toFix": "À corriger ({count})"
+            },
+            "state": {
+                "CREATED": "créée",
+                "COMPLETED": "complétée",
+                "UNCHANGED": "inchangée",
+                "CONFLICT": "en conflit"
+            },
+            "value": {
+                "NEW": "nouvelle",
+                "PRESENT": "déjà là",
+                "CONFLICT": "remplacerait",
+                "AMBIGUOUS": "incertain",
+                "UNUSABLE": "aucune valeur"
+            },
+            "cell": {
+                "NEW": "La ressource gagnerait cette valeur.",
+                "PRESENT": "La ressource a déjà cette valeur.",
+                "CONFLICT": "Cette valeur remplacerait celle que la ressource a.",
+                "AMBIGUOUS": "Une ligne du fichier et une ressource existante portent ce nom : on ne sait pas laquelle est visée.",
+                "ERROR": "Le fichier doit être corrigé ici.",
+                "IDENTIFIER": "Identifie la ligne.",
+                "TYPE": "Donne la classe de la ligne.",
+                "IGNORED": "Laissée de côté : la propriété de la colonne n'est pas choisie."
+            },
+            "grid": {
+                "resource": "Ressource",
+                "toFix": "à corriger",
+                "noResource": "onglet laissé de côté",
+                "leftOut": "laissée de côté",
+                "legend": "Bleu : valeur nouvelle · gris : déjà là · rouge : conflit ou à corriger · orange : lien incertain · italique : laissé de côté. Cliquez une ligne pour voir sa ressource."
+            },
+            "map": {
+                "title": "Carte des onglets",
+                "list": "Liste",
+                "diagram": "Diagramme",
+                "diagramFailed": "Le diagramme ne peut pas être dessiné ici : la liste montre les mêmes liens.",
+                "noClass": "classe non choisie",
+                "box": "{class} · {rows} lignes",
+                "sheet": "{class}, {rows} lignes, {resources} ressources",
+                "existing": "{class} existant(e)s",
+                "same": "{count} ressource(s) commune(s)",
+                "links": "{property} : {count} lien(s)",
+                "between": "{from} → {to} : {what}",
+                "toExisting": "{from} → {to} existant(e)s : {what}"
+            },
+            "node": {
+                "existing": "Ressource existante :",
+                "missing": "Obligatoire, et donné ni par le fichier ni par l'instance : {properties}.",
+                "rows": "Vient de : {rows}",
+                "place": "{sheet}, ligne de valeurs {row}",
+                "values": "Valeurs",
+                "none": "Le fichier ne lui donne aucune valeur.",
+                "target": "Pointe vers",
+                "held": "La ressource a : {values}",
+                "problems": "Problèmes du fichier"
+            }
+        },
+        "understandGraph": {
+            "viewLabel": "Affichage des onglets",
+            "table": "Tableau",
+            "graph": "Graphe",
+            "canvasLabel": "Graphe des onglets et de leurs colonnes",
+            "busy": "Enregistrement en cours…",
+            "toDecide": "À décider : {count}",
+            "problems": "Problèmes : {count}",
+            "zoomIn": "Zoomer",
+            "zoomOut": "Dézoomer",
+            "fit": "Tout voir",
+            "showLeftOut": "Afficher les colonnes laissées de côté",
+            "legend": {
+                "title": "Légende",
+                "sheet": "Onglet ; anneau plein = classe choisie, tirets = suggérée, gris = à choisir",
+                "existing": "Ressources qui existent déjà dans l'instance",
+                "value": "Colonne de valeurs",
+                "undecided": "Colonne à décider : glissez-la sur un onglet ou cliquez-la",
+                "chosen": "Lien choisi par vous ou lu dans le fichier",
+                "suggested": "Lien suggéré : ✓ pour l'accepter",
+                "error": "Lien ou colonne avec des problèmes",
+                "shared": "Onglets qui décrivent les mêmes ressources",
+                "gestures": "Cliquez un élément pour le détailler. Glissez une colonne sur un onglet ou sur des ressources existantes pour en faire un lien. Glissez un onglet pour le déplacer, le fond pour vous déplacer, la molette pour zoomer. Suppr laisse de côté la colonne sélectionnée, Échap annule.",
+                "declared": "Onglet ajouté par l'assistant pour ce que vous avez déclaré"
+            },
+            "unresolved": "introuvables : {count}",
+            "acceptSuggestion": "Accepter « {property} »",
+            "dragLink": "Glisser pour relier la colonne ailleurs",
+            "noClass": "classe ?",
+            "key": "clé : {column}",
+            "existing": "existantes",
+            "bundle": "colonnes de valeurs : {count}",
+            "sharedLabel": "ressources communes : {count}",
+            "inspectorHelp": "Cliquez un onglet, une colonne ou un lien pour le détailler et le modifier.",
+            "pending": {
+                "title": "Relier « {column} » à {target}",
+                "help": "Plusieurs propriétés peuvent faire ce lien : choisissez-en une. La mieux suggérée vient en premier."
+            },
+            "cancel": "Annuler",
+            "columnOf": "Colonne {index} de l'onglet {sheet}",
+            "dropped": "Lien vers {target} enregistré. Voici où arrivent ses cellules :",
+            "landsOnRows": "lignes de l'onglet {sheet} : {count}",
+            "landsOnExisting": "ressources existantes ({class}) : {count}",
+            "typeColumnHelp": "Cette colonne donne le type de chaque ligne : elle ne se modifie pas ici.",
+            "backToSheet": "Revenir à l'onglet {sheet}",
+            "bundleHelp": "Cet onglet a beaucoup de colonnes de valeurs : elles sont regroupées pour garder le graphe lisible. Cliquez une colonne ci-dessous, ou dépliez-les toutes.",
+            "unfold": "Déplier les colonnes",
+            "classChangeWarning": "Changer la classe remet toutes les colonnes de l'onglet aux suggestions.",
+            "acceptAll": "Accepter les suggestions de l'onglet",
+            "columns": "Colonnes",
+            "existingHelp": "Les cellules de ces colonnes désignent des ressources de cette classe qui existent déjà dans l'instance.",
+            "sharedTitle": "Ressources communes",
+            "sharedHelp": "{count} identifiants se trouvent à la fois dans {from} et dans {to} : ce sont les mêmes ressources, leurs valeurs s'ajoutent. Ce lien vient des identifiants, il ne se modifie pas ici.",
+            "leftOutDone": "Colonne « {column} » laissée de côté.",
+            "undo": "Annuler"
+        },
+        "missing": {
+            "title": "Obligatoire, sans colonne",
+            "help": "La classe de l'onglet demande ces propriétés et aucune colonne ne les donne. Donnez une valeur pour toutes les lignes, ou laissez un autre onglet les donner.",
+            "required": "obligatoire",
+            "given": "Valeur donnée : {value}",
+            "givenTag": "valeur donnée",
+            "remove": "Retirer",
+            "linkPlaceholder": "Nom ou URI de ce que la propriété désigne",
+            "valuePlaceholder": "Valeur pour toutes les lignes",
+            "give": "Donner",
+            "unresolved": "« {value} » ne désigne rien de connu.",
+            "declare": "Déclarer « {name} » comme {class}"
+        },
+        "declared": {
+            "tag": "Déclaré dans l'assistant",
+            "title": "{class} · {name}",
+            "help": "Ce qu'aucun fichier ne décrit, décrivez-le ici. Rien n'est écrit dans l'instance : la ressource sera créée à l'étape de création, avec le reste.",
+            "addValue": "Ajouter une valeur",
+            "save": "Enregistrer",
+            "forget": "Supprimer",
+            "edit": "Modifier",
+            "nameRequired": "Le nom est obligatoire : c'est lui que les lignes des fichiers désignent.",
+            "valuePlaceholder": "Valeur",
+            "category": "Catégorie"
+        },
+        "creation": {
+            "help": "Ce que l'import créerait dans l'instance, étape par étape, dans l'ordre où elles doivent se faire. « Vérifier » lance les contrôles de la plateforme sans rien écrire ; « Créer » écrit toutes les ressources prêtes de l'étape, ou aucune. Ce qui vient d'être créé se lit ensuite « déjà présent » : relancer une étape ne crée rien deux fois.",
+            "disabled": "La création est désactivée sur cette instance (graph-import.creationEnabled) : l'étape montre seulement ce qu'elle créerait.",
+            "refresh": "Relire l'instance",
+            "loading": "Calcul de ce qui serait créé…",
+            "counts": "prêtes : {ready} · bloquées : {blocked} · déjà présentes : {done}",
+            "after": "après : {steps}",
+            "check": "Vérifier",
+            "run": "Créer ({count})",
+            "notAllowed": "Votre profil ne vous permet pas de créer ces ressources.",
+            "readyTitle": "Prêtes à créer : {count}",
+            "blockedTitle": "Bloquées : {count}",
+            "created": "Ressources créées : {count}",
+            "checked": "Rien n'empêche la création.",
+            "unsupported": "Pas encore créables par l'assistant",
+            "history": "Déjà créé",
+            "record": "{step} : {count}, le {at}",
+            "steps": {
+                "experiments": "Expérimentations",
+                "factors": "Facteurs et niveaux",
+                "scientific-objects": "Objets scientifiques",
+                "events": "Événements",
+                "data": "Données"
+            },
+            "status": {
+                "READY": "Prête",
+                "BLOCKED": "Bloquée",
+                "DONE": "Faite",
+                "EMPTY": "Rien à créer"
+            },
+            "dataRefusedHelp": "les cellules refusées sont listées à l'étape Comprendre."
+        },
+        "measure": {
+            "title": "Mesures de la variable",
+            "none": "Pas encore de variable : choisissez celle que mesure cette colonne.",
+            "choose": "Variable mesurée par cette colonne",
+            "of": "Mesures de {variable}",
+            "provenance": "Provenance des données",
+            "counts": {
+                "title": "Données",
+                "ready": "Prêtes : {count}",
+                "waiting": "En attente de leur cible : {count}",
+                "notAvailable": "Non disponibles (NA) : {count}",
+                "refused": "Refusées : {count}"
+            }
+        }
+    }
+}

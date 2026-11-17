@@ -9,6 +9,15 @@ import MappingPanel from './components/MappingPanel.vue';
 import CreationProposalCard from './components/CreationProposalCard.vue';
 import ImportRowsGrid from './components/ImportRowsGrid.vue';
 import ObjectSheetsPanel from './components/ObjectSheetsPanel.vue';
+import FileTemplateList from './components/FileTemplateList.vue';
+import CreationDraftZone from './components/CreationDraftZone.vue';
+import FactorDeclarationZone from './components/FactorDeclarationZone.vue';
+import ImportStepsPanel from './components/ImportStepsPanel.vue';
+import AdvancedImportPanel from './components/AdvancedImportPanel.vue';
+import SessionFilesPanel from './components/SessionFilesPanel.vue';
+import SheetDescriptionPanel from './components/SheetDescriptionPanel.vue';
+import SheetPreviewTable from './components/SheetPreviewTable.vue';
+import MermaidDiagram from './components/MermaidDiagram.vue';
 
 import fr from './lang/ai-import-fr.json';
 import en from './lang/ai-import-en.json';
@@ -27,6 +36,15 @@ const components: { [key: string]: any } = {
     'opensilex-ai-import-CreationProposalCard': CreationProposalCard,
     'opensilex-ai-import-ImportRowsGrid': ImportRowsGrid,
     'opensilex-ai-import-ObjectSheetsPanel': ObjectSheetsPanel,
+    'opensilex-ai-import-FileTemplateList': FileTemplateList,
+    'opensilex-ai-import-CreationDraftZone': CreationDraftZone,
+    'opensilex-ai-import-FactorDeclarationZone': FactorDeclarationZone,
+    'opensilex-ai-import-ImportStepsPanel': ImportStepsPanel,
+    'opensilex-ai-import-AdvancedImportPanel': AdvancedImportPanel,
+    'opensilex-ai-import-SessionFilesPanel': SessionFilesPanel,
+    'opensilex-ai-import-SheetDescriptionPanel': SheetDescriptionPanel,
+    'opensilex-ai-import-SheetPreviewTable': SheetPreviewTable,
+    'opensilex-ai-import-MermaidDiagram': MermaidDiagram,
 };
 
 const messages: { [locale: string]: any } = { fr, en };

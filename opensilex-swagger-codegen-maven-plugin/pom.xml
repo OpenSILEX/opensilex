@@ -36,6 +36,7 @@
     </prerequisites>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>${java.compiler.version}</maven.compiler.release>
     </properties>
     <dependencies>
         <dependency>

@@ -15,6 +15,13 @@ import org.opensilex.aiimport.mapping.ColumnMapping;
 import org.opensilex.aiimport.mapping.MappingService;
 import org.opensilex.aiimport.mapping.TypeIssue;
 import org.opensilex.aiimport.profile.ImportProfile;
+import org.opensilex.aiimport.profile.custom.CustomWorkbooks;
+import org.opensilex.aiimport.profile.custom.DescribedRole;
+import org.opensilex.aiimport.profile.custom.FileDescription;
+import org.opensilex.aiimport.profile.custom.SheetKind;
+import org.opensilex.aiimport.create.steps.ImportStep;
+import org.opensilex.aiimport.create.steps.StepStatus;
+import org.opensilex.aiimport.profile.custom.UserDefinedProfile;
 import org.opensilex.aiimport.profile.miappe.MiappeProfile;
 import org.opensilex.aiimport.profile.star.StarProfile;
 import org.opensilex.aiimport.profile.vitis.VitisExplorerProfile;
@@ -65,6 +72,60 @@ public class TranslationKeyTest {
         collect(new MiappeProfile(), WorkbookFixture.miappe(), keys);
 
         assertFalse("no key was collected, so this test would pass on anything", keys.isEmpty());
+        assertNoneMissing(keys);
+    }
+
+    /**
+     * Every anomaly the profile of a file the user described can raise: a description that cannot be
+     * read, objects the file contradicts itself about, rows it could not place.
+     */
+    /**
+     * The path of the screen and the cards read the name of every step, and the reason a creation
+     * waits for it, from the table of steps: a new step needs both, in both languages.
+     */
+    @Test
+    public void everyStepHasItsNameAndItsBlockerInBothLanguages() {
+        Set<String> keys = new LinkedHashSet<>();
+        for (ImportStep step : ImportStep.values()) {
+            keys.add(step.labelKey());
+            keys.add(step.blockKey());
+        }
+        for (StepStatus status : StepStatus.values()) {
+            keys.add("AiImport.steps.status_" + status.name());
+        }
+
+        assertNoneMissing(keys);
+    }
+
+    @Test
+    public void everyKeyTheCustomProfileEmitsExistsInBothLanguages() throws Exception {
+        Set<String> keys = new LinkedHashSet<>();
+        WorkbookStructure workbook = CustomWorkbooks.workbook(
+                CustomWorkbooks.sheet("plan", java.util.Arrays.asList("plot_id", "variete"),
+                        CustomWorkbooks.row("P01", "Syrah")),
+                CustomWorkbooks.sheet("materiel", java.util.Arrays.asList("plot_id", "variete"),
+                        CustomWorkbooks.row("P01", "Grenache")),
+                CustomWorkbooks.sheet("mesures", java.util.Arrays.asList("plot_id", "date", "hauteur_cm"),
+                        CustomWorkbooks.row("P01", "2026-06-12", "84"), CustomWorkbooks.row("", "2026-06-12", "70"),
+                        CustomWorkbooks.row("P02", "demain", "71")),
+                CustomWorkbooks.sheet("sans_cible", java.util.Arrays.asList("date", "hauteur_cm"),
+                        CustomWorkbooks.row("2026-06-12", "84")),
+                CustomWorkbooks.sheet("deux_dates", java.util.Arrays.asList("plot_id", "date", "jour", "hauteur_cm"),
+                        CustomWorkbooks.row("P01", "2026-06-12", "2026-06-13", "84")),
+                CustomWorkbooks.sheet("deux_objets", java.util.Arrays.asList("plot_id", "plante_id"),
+                        CustomWorkbooks.row("P01", "X1")),
+                CustomWorkbooks.sheet("modalites", java.util.Arrays.asList("modalite"), CustomWorkbooks.row("T1")),
+                CustomWorkbooks.sheet("sites", java.util.Arrays.asList("remarque"), CustomWorkbooks.row("x")));
+        FileDescription description = new FileDescription();
+        description.sheet("sans_cible").setKind(SheetKind.DATA);
+        description.sheet("deux_dates").setKind(SheetKind.DATA).getRoles().put("jour", DescribedRole.DATE);
+        description.sheet("modalites").setKind(SheetKind.FACTORS);
+        description.sheet("sites").setKind(SheetKind.FACILITIES);
+
+        collect(new UserDefinedProfile(description), workbook, keys);
+        collect(new UserDefinedProfile(), CustomWorkbooks.flat(), keys);
+
+        assertTrue(keys.toString(), keys.size() >= 8);
         assertNoneMissing(keys);
     }
 

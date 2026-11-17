@@ -16,6 +16,8 @@ import org.opensilex.aiimport.mapping.ColumnMapping;
 import org.opensilex.aiimport.mapping.ColumnRole;
 import org.opensilex.aiimport.mapping.TypeIssue;
 import org.opensilex.aiimport.mapping.ValueKind;
+import org.opensilex.aiimport.profile.custom.CustomWorkbooks;
+import org.opensilex.aiimport.profile.custom.SheetKind;
 import org.opensilex.aiimport.profile.vitis.VitisExplorerProfile;
 import org.opensilex.aiimport.report.ReportMessage;
 import org.opensilex.aiimport.resolve.LearnedCorrection;
@@ -198,5 +200,41 @@ public class DtoRoundTripTest {
 
         CreationResultDTO back = MAPPER.readValue(MAPPER.writeValueAsString(dto), CreationResultDTO.class);
         assertEquals(dto.getBatches(), back.getBatches());
+    }
+
+    @Test
+    public void theDescriptionOfAFileIsSentWithItsChoicesAndItsRows() throws Exception {
+        AiImportSession session = new AiImportSession("described", URI.create("http://opensilex.test/id/account/a"));
+        session.setWorkbook(CustomWorkbooks.flat());
+        session.getDescription().setExperiment("http://opensilex.test/id/xp", "Trial");
+        session.getDescription().sheet("essai").setKind(SheetKind.OBJECTS_AND_DATA)
+                .setType(URI.create("http://opensilex.test/oeso#Plot"));
+
+        JsonNode json = MAPPER.readTree(MAPPER.writeValueAsString(FileDescriptionDTO.fromModel(session)));
+
+        assertEquals("Trial", json.get("experiment_name").asText());
+        assertFalse(json.get("available_kinds").isEmpty());
+        assertTrue(json.get("available_roles").get(0).has("accepted_by"));
+        JsonNode sheet = json.get("sheets").get(0);
+        assertTrue(sheet.get("kind_chosen").asBoolean());
+        assertEquals("http://opensilex.test/oeso#Plot", sheet.get("rdf_type").asText());
+        assertEquals(4, sheet.get("row_count").asInt());
+        assertEquals(4, sheet.get("rows").size());
+    }
+
+    @Test
+    public void whatTheUserChangesIsReadWithSnakeCaseNames() throws Exception {
+        FileDescriptionUpdateDTO update = MAPPER.readValue("{\"experiment\":\"http://opensilex.test/id/xp\","
+                + "\"sheets\":[{\"sheet\":\"essai\",\"kind\":\"FACILITIES\","
+                + "\"rdf_type\":\"http://opensilex.test/oeso#Facility\",\"roles\":{\"a\":\"LOCATION\"},"
+                + "\"properties\":{\"b\":\"http://example.org/p\"}}]}", FileDescriptionUpdateDTO.class);
+
+        SheetDescriptionUpdateDTO sheet = update.getSheets().get(0);
+        assertEquals("essai", sheet.getSheet());
+        assertEquals("FACILITIES", sheet.getKind());
+        assertEquals("http://opensilex.test/oeso#Facility", sheet.getRdfType().toString());
+        assertEquals("LOCATION", sheet.getRoles().get("a"));
+        assertEquals("http://example.org/p", sheet.getProperties().get("b"));
+        assertEquals("http://opensilex.test/id/xp", update.getExperiment().toString());
     }
 }

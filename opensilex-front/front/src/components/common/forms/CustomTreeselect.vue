@@ -58,6 +58,8 @@ const props = defineProps<{
   conversionMethod?: (dto: SelectorNamedResource) => SelectorItem
   /** If true then only nodes with 0 children can be selected*/
   disableParentNodes?: boolean
+  /** If true, the tree opens folded: only the nodes marked isDefaultExpanded are open */
+  collapsed?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -120,7 +122,7 @@ const treeSelectBindings = computed(() => ({
   value: value.value,
   'check-strategy': props.disableParentNodes ? 'child' : 'all',
   'default-expanded-keys': defaultExpandedKeys.value,   // <— optionnel
-  'default-expand-all': true
+  'default-expand-all': !props.collapsed
 }))
 
 const wrapperClass = computed(() => ({

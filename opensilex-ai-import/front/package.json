@@ -18,8 +18,9 @@
         "check:outdated": "npm outdated || cd .",
         "check:security": "npm audit || cd ."
     },
-    "devDependencies": {},
-    "dependencies": {},
+    "dependencies": {
+        "mermaid": "11.17.2"
+    },
     "browserslist": [
         "> 1%",
         "last 2 versions"

@@ -1,0 +1,25 @@
+{
+    "name": "opensilex-graph-import",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "license": "AGPL-3.0-only",
+    "main": "./dist/opensilex-graph-import.umd.min.js",
+    "module": "./dist/opensilex-graph-import.umd.min.js",
+    "exports": {
+        ".": {
+            "import": "./dist/opensilex-graph-import.umd.min.js"
+        }
+    },
+    "scripts": {
+        "serve": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts --watch",
+        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts",
+        "dev:build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts --watch",
+        "check:outdated": "npm outdated || cd .",
+        "check:security": "npm audit || cd ."
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions"
+    ]
+}

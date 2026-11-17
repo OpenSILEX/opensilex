@@ -9,6 +9,8 @@
 | 2026-09-27 | Arnaud Charleroy | BUILD-SNAPSHOT    | Data import through the template, `finish` hook           |
 | 2026-09-27 | Arnaud Charleroy | BUILD-SNAPSHOT    | Coverage rule at 90 %                                     |
 | 2026-09-29 | Arnaud Charleroy | BUILD-SNAPSHOT    | Link to the guide for adding a profile                    |
+| 2026-11-13 | Arnaud Charleroy | BUILD-SNAPSHOT    | Form targets of roles, events kind, checklists updated |
+| 2026-11-11 | Arnaud Charleroy | BUILD-SNAPSHOT    | Import by description: `SessionProfile`, template and step tables, checklists |
 
 > This document explains **how the module is built**: the coding conventions it takes from the rest
 > of OpenSILEX, and the design patterns it uses, each with where it lives, why it was chosen, and how
@@ -246,6 +248,14 @@ written. Two subclasses: `ScientificObjectBulkImport` and `DataBulkImport`.
 - **`ReportCategory`** — an enum carrying, per category, its key, whether near matching applies
   (not for scientific objects, whose names are codes) and how to reach its items in a report. The
   passes of the resolution iterate over it instead of naming each category.
+- **`SessionProfile`** — the profile of a conversation. A profile that knows a template is the same
+  for everyone; the `custom` profile knows only what its conversation's user said, so it is built
+  from that conversation. Everything that needs the profile of a session asks here instead of
+  looking an identifier up in the registry, which would hand back one that knows nothing.
+- **`SheetSource`** — one reader per file format, listed in `SheetSources`, which is also the list
+  the upload accepts.
+- **`ImportStep`** — the table of what an import declares and what each step waits for; the screen,
+  the API and the creations read it.
 - **`CandidateSource`** — the near-match step asks for a list of candidates, and the category decides
   where it comes from.
 - **Front `SELECTORS`** in `CreationProposalCard.vue` — a map from a field's resource type to the
@@ -296,6 +306,10 @@ The misspellings the instance was taught live as `skos:hiddenLabel` in the modul
 PROV-O provenance. `CorrectionStore` is the only class that reads or writes them (`remember`,
 `load`, `forget`); the rest of the module sees `LearnedCorrection` objects. Reads are re-checked
 under the current user's rights by the [gateway](#gateway--instancelookups).
+
+The templates a user keeps (`FileTemplateStore`) are held the same way, with no expiry: a few
+searchable fields beside a JSON snapshot, filtered by author, and visible to others once shared. Only the
+author deletes one.
 
 ### Builder — `ProposalBuilder`, `GeneratedCsv`
 
@@ -362,6 +376,45 @@ public entry point, and passes before and after.
 3. Its operation in `AiImportCreationService.apply`, returning a `CreationOutcome`.
 4. `AiImport.proposal.target_<TARGET>` in both language files (`TranslationKeyTest` fails otherwise),
    and its applied message in `CreationProposalCard.vue`.
+
+### Adding a role of a column
+
+1. A constant in `DescribedRole`, with the kinds that accept it and require it, whether a sheet has
+   one at most, and what it becomes in the object sheets panel.
+2. `AiImport.describe.role_<ROLE>` in both language files, and `AiImport.report.anomaly.custom.*` for
+   a new problem (`TranslationKeyTest` fails otherwise).
+3. If it fills a field of a form, its `FormTarget` (entity, field, whether it adds up), which `FieldValues` reads.
+4. If it has a meaning in the ontology, one line in `RoleOntology` (`RoleOntologyTest` checks that
+   the link exists in a vocabulary of the platform). Nothing else switches on the role.
+
+### Adding a kind of sheet
+
+1. A constant in `SheetKind`, with what its rows are, whether it holds data, and its base class.
+2. `AiImport.describe.kind_<KIND>` in both language files.
+3. How `UserDefinedProfile` reads it (a small reader of its own, such as `EventReader`), the creation it
+   feeds, and how `TemplateWorkbookBuilder` writes it or says it does not.
+
+### Making a creation reachable without the assistant
+
+1. The target is already a `CreationTarget`: `POST /ai-import/drafts` drafts any of them.
+2. A step in `ImportStep` when the creation has prerequisites, and its evaluation in `StepEvaluator`;
+   `blocksCreation` says whether its creation is refused while they are unmet.
+3. `AiImport.steps.step_<STEP>` and `AiImport.proposal.block.after.<STEP>` in both language files
+   (`TranslationKeyTest` fails otherwise), and an entry in `stepActions.ts` for what the screen opens.
+
+### Adding a source of proposals for a description
+
+1. Something that turns a sheet and the user's templates into a `FileTemplateMatcher.Match`.
+2. `FileDescriptionDTO.propose` is the one place proposals are attached to the sheets; a proposal is
+   only shown and applied by the user, never stored.
+
+### Adding an exchange or export format
+
+1. A reader or a writer in its own package under `template`, working from `FileTemplate` and
+   knowing nothing else; the ontology links come from `RoleOntology`.
+2. A download endpoint in `FileTemplateAPI`, and a test that what is written reads back, or says
+   plainly that it is write-only.
+3. For a workbook of an experiment, a `WorkbookExport` reading the `ExperimentSnapshot`.
 
 ### Adding a report category
 

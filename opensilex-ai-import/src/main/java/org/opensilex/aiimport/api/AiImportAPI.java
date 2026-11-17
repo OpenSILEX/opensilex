@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.commons.io.FilenameUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.aiimport.AiImportConfig;
@@ -95,11 +94,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -142,12 +139,6 @@ public class AiImportAPI {
     public static final String OBJECT_SHEETS_PATH = "object-sheets";
     public static final String OBJECT_SHEETS_VALIDATE_PATH = "object-sheets/validate";
     public static final String TYPE_PROPERTIES_PATH = "object-types/properties";
-
-    private static final List<String> ACCEPTED_EXTENSIONS = Arrays.asList("xlsx", "xlsm", "xls");
-
-    private static final String SESSION_NOT_FOUND =
-            "No open conversation carries this identifier. It may have expired, or belong to "
-                    + "another account.";
 
     @CurrentUser
     AccountModel currentUser;
@@ -246,9 +237,9 @@ public class AiImportAPI {
                 ? "uploaded-file"
                 : fileDetail.getFileName();
 
-        Response rejected = rejectUnsuitableFile(file, fileName);
-        if (rejected != null) {
-            return rejected;
+        Optional<Response> rejected = UploadRules.reject(access(), config, file, fileName);
+        if (rejected.isPresent()) {
+            return rejected.get();
         }
 
         AiImportSession session = sessions.create(currentUser.getUri());
@@ -258,7 +249,7 @@ public class AiImportAPI {
             sessions.remove(session.getId());
             LOGGER.warn("Could not read the uploaded file {}", fileName, e);
             return badRequest("The file could not be read as a spreadsheet.",
-                    "Check that " + fileName + " is a valid .xlsx workbook and is not password protected.");
+                    "Check that " + fileName + " is a valid workbook or CSV file and is not password protected.");
         } catch (RuntimeException e) {
             sessions.remove(session.getId());
             throw e;
@@ -266,7 +257,7 @@ public class AiImportAPI {
 
         try {
             // Stored from the start, so that closing the page never loses the conversation.
-            store().saveFile(session.getId(), file);
+            store().saveFile(session.getId(), session.getFiles().get(0).getId(), file);
         } catch (IOException | RuntimeException e) {
             LOGGER.warn("Could not store the workbook of import conversation {}", session.getId(), e);
         }
@@ -691,7 +682,7 @@ public class AiImportAPI {
     }
 
     private AiImportCreationService newCreationService() {
-        return new AiImportCreationService(sparql, nosql, fs, currentUser, coreModule);
+        return access().creation();
     }
 
     //#endregion
@@ -1161,63 +1152,24 @@ public class AiImportAPI {
 
     //#region helpers
 
+    private SessionAccess access() {
+        return new SessionAccess(sparql, nosql, fs, config, llm, sessions, coreModule, currentUser);
+    }
+
     private AiImportSessionStore store() {
-        return new AiImportSessionStore(nosql, fs, ObjectMapperContextResolver.getObjectMapper(),
-                config.savedSessionDays());
+        return access().store();
     }
 
-    /**
-     * The user's session: from the memory cache, or else resumed from storage.
-     * <p>
-     * A conversation left for longer than the cache keeps it is still the user's, so every endpoint
-     * finds it the same way and none of them has to know where it was. Resuming reads the file again
-     * and recomputes the report against the instance as it is now, without asking the assistant
-     * anything.
-     */
     private Optional<AiImportSession> findSession(String sessionId) {
-        Optional<AiImportSession> cached = sessions.get(sessionId, currentUser.getUri());
-        if (cached.isPresent()) {
-            return cached;
-        }
-        try {
-            AiImportSessionStore store = store();
-            Optional<SavedSession> saved = store.load(sessionId, currentUser.getUri());
-            if (!saved.isPresent()) {
-                return Optional.empty();
-            }
-            AiImportSession session = saved.get().toSession(currentUser.getUri());
-            File workbook = File.createTempFile("ai-import-", ".xlsx");
-            try {
-                Files.write(workbook.toPath(), store.readFile(sessionId));
-                newChatService().restore(session, workbook, session.getFileName(),
-                        session.getProfileId());
-            } finally {
-                Files.deleteIfExists(workbook.toPath());
-            }
-            sessions.put(session);
-            return Optional.of(session);
-        } catch (IOException | WorkbookReadException | RuntimeException e) {
-            // A session that cannot be rebuilt is reported as absent rather than half restored.
-            LOGGER.warn("Could not resume import conversation {}", sessionId, e);
-            return Optional.empty();
-        }
+        return access().find(sessionId);
     }
 
-    /**
-     * Stores the session after a step that changed it. A failure costs the ability to resume, not
-     * the step the user just took, so it is logged rather than returned.
-     */
     private void persist(AiImportSession session) {
-        try {
-            store().save(session);
-        } catch (IOException | RuntimeException e) {
-            LOGGER.warn("Could not store import conversation {}", session.getId(), e);
-        }
+        access().persist(session);
     }
 
     private AiImportChatService newChatService() {
-        return new AiImportChatService(sparql, nosql, fs, currentUser, config, llm,
-                ObjectMapperContextResolver.getObjectMapper(), coreModule);
+        return access().chat();
     }
 
     private AiImportSessionDTO toDto(AiImportSession session) {
@@ -1229,41 +1181,16 @@ public class AiImportAPI {
         return AiImportSessionDTO.fromModel(session, config.sampleRowsPerSheet(), requirements);
     }
 
-    /**
-     * Rejects a file before it is opened, so that a wrong upload gives a clear answer instead of a
-     * parser error, and so that an oversized one is never read into memory.
-     */
-    private Response rejectUnsuitableFile(File file, String fileName) {
-        String extension = FilenameUtils.getExtension(fileName).toLowerCase(Locale.ROOT);
-        if (!ACCEPTED_EXTENSIONS.contains(extension)) {
-            return badRequest("Only spreadsheets are accepted.",
-                    "The file " + fileName + " has the extension '" + extension + "'. Accepted "
-                            + "extensions are " + String.join(", ", ACCEPTED_EXTENSIONS) + ".");
-        }
-
-        long maxBytes = (long) config.maxFileSizeMb() * 1024L * 1024L;
-        if (file.length() > maxBytes) {
-            return badRequest("The file is too large.",
-                    "The file is " + (file.length() / (1024 * 1024)) + " MB, and the limit is "
-                            + config.maxFileSizeMb() + " MB.");
-        }
-        return null;
-    }
-
     private Response disabled() {
-        return new ErrorResponse(Response.Status.SERVICE_UNAVAILABLE,
-                "The import assistant is not enabled.",
-                "Set 'ai-import.enabled' and configure 'ai-import.llm' in the instance configuration.")
-                .getResponse();
+        return access().disabled();
     }
 
     private Response notFound() {
-        return new ErrorResponse(Response.Status.NOT_FOUND, "Unknown conversation", SESSION_NOT_FOUND)
-                .getResponse();
+        return access().notFound();
     }
 
     private Response badRequest(String title, String detail) {
-        return new ErrorResponse(Response.Status.BAD_REQUEST, title, detail).getResponse();
+        return access().badRequest(title, detail);
     }
 
     //#endregion

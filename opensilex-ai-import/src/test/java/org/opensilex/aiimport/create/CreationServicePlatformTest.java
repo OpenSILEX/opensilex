@@ -125,6 +125,14 @@ public class CreationServicePlatformTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void anEventOfTheTypeTheUserChoseIsWritten() throws Exception {
+        EventCandidate typed = spraying("Melgueil", 4)
+                .setType(java.net.URI.create("http://www.opensilex.org/vocabulary/oeev#FacilityManagement"));
+
+        assertEquals(1, service().createEvents(sessionWithEvents(typed), Map.of()));
+    }
+
+    @Test
     public void eventsWithoutAnyKnownTargetAreBlocked() throws Exception {
         AiImportSession session = sessionWithEvents(spraying("Nowhere", 5));
 
@@ -309,7 +317,7 @@ public class CreationServicePlatformTest extends AbstractMongoIntegrationTest {
     public void factorsWaitForTheirExperiment() throws Exception {
         CreationRequirements requirements = service().requirementsFor(CreationTarget.FACTORS, starSession(null));
 
-        assertTrue(requirements.getWarnings().contains("AiImport.proposal.warn.experimentFirst"));
+        assertTrue(requirements.getBlockers().contains("AiImport.proposal.block.after.EXPERIMENT"));
         try {
             Map<String, String> values = new LinkedHashMap<>();
             values.put(AiImportCreationService.FACTOR_EXPERIMENT, "http://opensilex.test/id/experiment/ghost");

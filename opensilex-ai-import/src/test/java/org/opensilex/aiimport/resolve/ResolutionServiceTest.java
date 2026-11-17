@@ -177,6 +177,20 @@ public class ResolutionServiceTest extends AbstractMongoIntegrationTest {
         assertEquals(ResolutionStatus.MISSING, only(report.getProjects()).getStatus());
     }
 
+    @Test
+    public void whatTheFileSaysOfAMissingExperimentAndProjectTravelsOnTheirItems() {
+        ExtractedImportPlan plan = plan();
+        plan.getExperimentNames().add("Blé Sud 2019");
+        plan.getProjectNames().add("Unknown project");
+        plan.getExperimentDetails().put("Blé Sud 2019", java.util.Map.of("objective", "Mesurer"));
+        plan.getProjectDetails().put("Unknown project", java.util.Map.of("shortname", "UP"));
+
+        ResolutionReport report = service().resolve(plan);
+
+        assertEquals("Mesurer", only(report.getExperiments()).getDetails().get("objective"));
+        assertEquals("UP", only(report.getProjects()).getDetails().get("shortname"));
+    }
+
     /**
      * Plots live inside an experiment: without one, nothing is looked up and the report says why.
      */

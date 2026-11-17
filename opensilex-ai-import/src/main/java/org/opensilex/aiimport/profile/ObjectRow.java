@@ -4,6 +4,9 @@
 //******************************************************************************
 package org.opensilex.aiimport.profile;
 
+import org.opensilex.aiimport.report.ReportMessage;
+
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,13 @@ public class ObjectRow {
      * column is mapped to the same target.
      */
     private final Map<String, String> cells = new LinkedHashMap<>();
+
+    /**
+     * What the profile found wrong with the object while reading it — two sheets giving it two
+     * different germplasms, say. An object with a problem is refused when objects are checked and
+     * created, until the file says one thing.
+     */
+    private final List<ReportMessage> problems = new ArrayList<>();
 
     public ObjectRow(String sheet, int row, String name) {
         this.sheet = sheet;
@@ -103,6 +113,15 @@ public class ObjectRow {
 
     public Map<String, String> getCells() {
         return cells;
+    }
+
+    public List<ReportMessage> getProblems() {
+        return problems;
+    }
+
+    public ObjectRow addProblem(ReportMessage problem) {
+        problems.add(problem);
+        return this;
     }
 
     /**

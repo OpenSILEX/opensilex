@@ -5,7 +5,7 @@
     "title": "Import assistant",
     "upload": {
       "title": "Upload your data entry file",
-      "hint": "An .xlsx, .xlsm or .xls workbook. Only the headers, a sample of rows and the text of instruction sheets are sent to the language model — never the whole file.",
+      "hint": "An .xlsx, .xlsm or .xls workbook, or a .csv or .tsv file. Only the headers, a sample of rows and the text of instruction sheets are sent to the language model — never the whole file.",
       "choose": "Choose a file",
       "drop": "or drop it here",
       "profile": "File family",
@@ -14,7 +14,7 @@
       "analysing": "Reading the file and checking the instance…",
       "noWrite": "This page writes nothing to the databases. It produces a report.",
       "tooLarge": "The file is too large.",
-      "wrongType": "Only .xlsx, .xlsm and .xls workbooks are accepted."
+      "wrongType": "Only .xlsx, .xlsm, .xls workbooks and .csv, .tsv files are accepted."
     },
     "chat": {
       "title": "Conversation",
@@ -89,8 +89,6 @@
       "create": "Create",
       "createTitle": "Create from this row, with the name filled in",
       "createVariableTitle": "Open the variable form, name and identifier prefilled. Entity, characteristic, method and unit are chosen from what the instance has, or created from that form.",
-      "askCreate_EXPERIMENT": "Create the experiment \"{value}\".",
-      "askCreate_PROJECT": "Create the project \"{value}\".",
       "facilities": "Facilities",
       "warning": {
         "projectLookupFailed": "The project '{name}' could not be looked up.",
@@ -155,6 +153,27 @@
         "miappe": {
           "mandatoryFieldsEmpty": "Section '{section}': the mandatory fields {fields} are empty.",
           "blankSections": "{count} of the {total} MIAPPE sections are still blank templates, with no values under the header."
+        },
+        "custom": {
+          "noExperiment": "No column names the experiment and none was chosen: objects, levels and observations cannot be checked until one is.",
+          "noTarget": "Sheet '{sheet}' holds observations but no column says what they were made on. Describe a column as the object identifier or as the facility.",
+          "roleNotForKind": "Column '{column}' of sheet '{sheet}' is described as {role}, which a sheet of kind {kind} cannot have. Change the column or the kind of the sheet.",
+          "missing_OBJECT": "Sheet '{sheet}' is described as {kind} but no column is described as the object identifier.",
+          "missing_DATE": "Sheet '{sheet}' is described as {kind} but no column is described as the observation date.",
+          "missing_VARIABLE": "Sheet '{sheet}' is described as {kind} but no column is described as a measured variable.",
+          "missing_FACTOR": "Sheet '{sheet}' is described as {kind} but no column is described as the factor, and no factor is named for the sheet.",
+          "missing_FACTOR_LEVEL": "Sheet '{sheet}' is described as {kind} but no column is described as the level.",
+          "missing_LOCATION": "Sheet '{sheet}' is described as {kind} but no column is described as the facility name.",
+          "several_OBJECT": "Sheet '{sheet}' has {count} columns described as the object identifier, and only one is allowed.",
+          "several_DATE": "Sheet '{sheet}' has {count} columns described as the observation date, and only one is allowed.",
+          "several_FACTOR": "Sheet '{sheet}' has {count} columns described as the factor, and only one is allowed.",
+          "several_LOCATION": "Sheet '{sheet}' has {count} columns described as the facility, and only one is allowed.",
+          "conflictingObject": "Object '{object}' is described with two different values: '{value}' (sheet '{sheet}', row {row}, column '{column}') and '{otherValue}' (sheet '{otherSheet}', row {otherRow}, column '{otherColumn}'). Make the file say one thing.",
+          "moreConflictingObjects": "{count} more objects are described with two different values.",
+          "rowsWithoutTarget": "{count} row(s) of sheet '{sheet}' were left out: no object or facility to file them against (rows {rows}).",
+          "rowsWithoutDate": "{count} row(s) of sheet '{sheet}' were left out: no readable date (rows {rows}).",
+          "missing_TRIAL": "Sheet '{sheet}' is described as {kind} but no column is described as the experiment.",
+          "several_FACTOR_LEVEL_NAME": "Sheet '{sheet}' has {count} columns described as the name of the level, and only one is allowed."
         }
       },
       "persons": "People",
@@ -179,8 +198,6 @@
       "createProjectTitle": "Open the project form, prefilled with what the file says: name, acronym, dates, objective.",
       "createExperimentTitle": "Open the experiment form, prefilled with what the file says: name, dates, and the projects, organisations and facilities found. Nothing is created until the form is submitted.",
       "createFacilityTitle": "Open the facility form, name prefilled. The type, organisation and site are chosen in the form.",
-      "askCreate_SCIENTIFIC_OBJECTS": "Create the scientific objects of the file's sheets, with the types and columns chosen.",
-      "askCreate_FACTORS": "Create the experiment's factors from the file's treatments.",
       "organizations": "Organisations",
       "createOrganizationTitle": "Open the organisation form, name filled in; a unit starts with its institution as parent when the instance already has it.",
       "fieldRowSpacing": "row spacing: {value} m",
@@ -275,7 +292,8 @@
         "factorName": "Factor name",
         "levelsSummary": "Treatments of the file",
         "organizations": "Organisations",
-        "facilities": "Facilities"
+        "facilities": "Facilities",
+        "alternativeName": "Alternative name"
       },
       "from": {
         "projectColumn": "from the project column of the file",
@@ -290,7 +308,8 @@
         "objectSheet": "from the objects sheet",
         "treatmentSheet": "from the treatment sheet",
         "resolvedOrganizations": "from the organisations found",
-        "resolvedFacilities": "from the facilities found"
+        "resolvedFacilities": "from the facilities found",
+        "fileColumns": "from the columns of the file"
       },
       "block": {
         "noDataPoints": "No observation could be read from this file.",
@@ -307,7 +326,18 @@
         "facilitiesMissing": "Facilities named by the file are absent from the instance.",
         "noObjectRows": "This file describes no observed objects, row by row, that could be created.",
         "noFactorLevels": "The file declares no treatment.",
-        "factorsNotAllowed": "You are not allowed to modify factors on this instance."
+        "factorsNotAllowed": "You are not allowed to modify factors on this instance.",
+        "after": {
+          "PROJECTS": "Declare the projects first.",
+          "VARIABLES": "Declare the variables first.",
+          "FACILITIES": "Declare the facilities first.",
+          "EXPERIMENT": "A factor, an object or an observation belongs to an experiment: declare the experiment first.",
+          "FACTORS": "Declare the factors first: a level belongs to a factor.",
+          "FACTOR_LEVELS": "The levels the objects name are not all declared: declare the factor levels first.",
+          "OBJECTS": "Declare the objects first.",
+          "DATA": "Declare the observations first.",
+          "EVENTS": "Declare the events first."
+        }
       },
       "refused": {
         "title": "Insertion refused: nothing was written",
@@ -330,8 +360,7 @@
         "someEventTargetsMissing": "Some events cannot find what they concerned; those will be skipped.",
         "typeIssues": "Some cells do not match the type their variable expects. Check them before inserting.",
         "objectsWillBeUpdated": "Some objects already exist under the same name in the experiment: the import will update them.",
-        "objectTypeFromFile": "The type of at least one sheet comes from the file (object_type column) and has not been confirmed yet.",
-        "experimentFirst": "None of the file's experiments exists yet: a factor is declared in an experiment, create it first."
+        "objectTypeFromFile": "The type of at least one sheet comes from the file (object_type column) and has not been confirmed yet."
       },
       "target_SCIENTIFIC_OBJECTS": "Scientific objects",
       "appliedObjects": "{count} scientific object(s) imported.",
@@ -398,14 +427,17 @@
     "home": {
       "newFile": "New file",
       "sessions": "My sessions",
-      "export": "Export as STAR"
+      "export": "Export",
+      "advanced": "Advanced import"
     },
     "export": {
-      "title": "Export an experiment as STAR",
-      "hint": "Writes the experiment, its facilities, its factor levels, its scientific objects — one sheet per type — and their observations, with a dictionary describing every column. The workbook reads back through the assistant's STAR profile. Nothing is written to the instance.",
+      "title": "Export an experiment",
+      "hint": "Writes the experiment as a workbook, in the STAR format — with its facilities, factor levels, scientific objects and observations, and a dictionary of every column — or in the shape of one of your templates, which the assistant reads back with the same template. Nothing is written to the instance.",
       "experiment": "Experiment",
-      "download": "Download the STAR workbook",
-      "failed": "The STAR workbook could not be produced."
+      "download": "Download the workbook",
+      "failed": "The workbook could not be produced.",
+      "format": "Format",
+      "formatStar": "STAR"
     },
     "objects": {
       "problem": {
@@ -437,6 +469,119 @@
       "saveFailed": "This choice could not be saved.",
       "validateFailed": "The check could not be made.",
       "createFactors": "Create the treatments"
+    },
+    "describe": {
+      "kind_OBJECTS": "Scientific objects",
+      "kind_DATA": "Observations",
+      "kind_OBJECTS_AND_DATA": "Objects and observations",
+      "kind_FACTORS": "Factor levels",
+      "kind_FACILITIES": "Facilities",
+      "kind_IGNORED": "Ignored sheet",
+      "role_UNREAD": "Not read",
+      "role_OBJECT": "Object identifier",
+      "role_DATE": "Observation date",
+      "role_VARIABLE": "Measured variable",
+      "role_GERMPLASM": "Plant material",
+      "role_FACTOR_LEVEL": "Level (code; in a sheet of objects, the header is the factor)",
+      "role_FACTOR": "Factor",
+      "role_PARENT_OBJECT": "Parent object (block…)",
+      "role_POSITION": "Position (x or y)",
+      "role_OBJECT_PROPERTY": "Object property",
+      "role_LOCATION": "Facility",
+      "role_TRIAL": "Experiment",
+      "role_PROJECT": "Project",
+      "role_PERSON": "Person",
+      "role_OBSERVER": "Observer",
+      "role_COMMENT": "Comment",
+      "role_EXPERIMENT_DESCRIPTION": "Experiment: description",
+      "role_EXPERIMENT_OBJECTIVE": "Experiment: objective",
+      "role_EXPERIMENT_START": "Experiment: start date",
+      "role_EXPERIMENT_END": "Experiment: end date",
+      "role_PROJECT_SHORTNAME": "Project: short name",
+      "role_PROJECT_DESCRIPTION": "Project: description",
+      "role_PROJECT_OBJECTIVE": "Project: objective",
+      "role_PROJECT_START": "Project: start date",
+      "role_PROJECT_END": "Project: end date",
+      "kind_EVENTS": "Events",
+      "kind_EXPERIMENTS": "Experiments",
+      "role_EXPERIMENT_ALTERNATIVE_NAME": "Experiment: alternative name",
+      "role_FACTOR_LEVEL_NAME": "Level: name",
+      "role_FACTOR_LEVEL_DESCRIPTION": "Level: description",
+      "role_FACTOR_DESCRIPTION": "Factor: description"
+    },
+    "advanced": {
+      "upload": {
+        "title": "Describe a file yourself",
+        "hint": "For a file no template reads. You say what each sheet and each column is, and nothing is sent to the language model: the import is done with the platform's own forms. Other files can be added afterwards."
+      },
+      "defaultRole": "Guessed from the header: choose to confirm or change it",
+      "chooseTypeFirst": "Choose the type of the sheet first",
+      "noProperty": "— property —",
+      "files": {
+        "title": "Files",
+        "add": "Add a file",
+        "remove": "Remove",
+        "sheets": "Sheets:",
+        "charsetTitle": "This file is not in UTF-8 and was read in this charset: check the accents."
+      },
+      "experiment": {
+        "title": "Experiment",
+        "hint": "The experiment the files belong to, when no sheet is validated as a sheet of experiments. Needed by a sheet of objects, observations, factor levels or events; chosen here, or created with the platform's form.",
+        "label": "Experiment of the files",
+        "create": "Create an experiment",
+        "declareFactors": "Declare the factors"
+      },
+      "sheets": {
+        "title": "Sheets",
+        "hint": "Say what each sheet is, then what each column is. What you leave alone is guessed from the headers, and said so.",
+        "kind": "The rows of this sheet are",
+        "kindGuessed": "guessed from the columns",
+        "type": "Type of the rows",
+        "ignored": "This sheet is not read.",
+        "factor": "Factor of this sheet",
+        "factorHint": "No column names the factor: every row is a level of this one. The level keeps its code as its name, which the objects carry; the name and the description of the level go in its description. The factor is created with the platform's factor form.",
+        "factorSheetRefused": "The sheet '{sheet}' of levels is not read: name its factor, with a column described as the factor or the field 'Factor of this sheet'."
+      }
+    },
+    "steps": {
+      "step_PROJECTS": "Projects",
+      "step_VARIABLES": "Variables",
+      "step_FACILITIES": "Facilities",
+      "step_EXPERIMENT": "Experiment",
+      "step_FACTORS": "Factors",
+      "step_FACTOR_LEVELS": "Factor levels",
+      "step_OBJECTS": "Scientific objects",
+      "step_DATA": "Observations",
+      "title": "Order of the declarations",
+      "hint": "An experiment comes first, then its factors and their levels, then the objects and the observations. A step waits for the ones it depends on.",
+      "status_DONE": "Done",
+      "status_POSSIBLE": "To do",
+      "status_BLOCKED": "Waiting",
+      "status_NOT_APPLICABLE": "Not in the files",
+      "waitingFor": "Waiting for:",
+      "declare": "Declare",
+      "count": "{done} of {total} exist",
+      "noExperiment": "No experiment is known yet: declare or choose the experiment first.",
+      "step_EVENTS": "Events",
+      "viewList": "List",
+      "viewDiagram": "Diagram",
+      "copyMermaid": "Copy the Mermaid code",
+      "diagramFailed": "The diagram could not be drawn: the list shows the same steps."
+    },
+    "templates": {
+      "title": "My templates",
+      "hint": "What you said of a file is kept here, and proposed for the next file of the same shape. Share a template to let others use it; download it as CSVW to keep or exchange it, or as RML for tools that run it.",
+      "empty": "No template yet: describe a file and it is kept for the next one.",
+      "import": "Import a template (CSVW)",
+      "name": "Name of the template",
+      "share": "Share with other users",
+      "shared": "Shared",
+      "delete": "Delete",
+      "remember": "Keep for the next imports",
+      "downloadDescription": "Download the description (CSVW)",
+      "proposedFrom": "Proposed from the template {name} ({author}, {date}): {recognised} of {total} columns recognised.",
+      "apply": "Apply",
+      "ignore": "Ignore"
     }
   }
 }

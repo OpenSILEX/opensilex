@@ -43,12 +43,31 @@ public class TypeProperties {
 
     private final String lang;
 
+    /**
+     * The class the types descend from, which is also the class the ontology is asked the
+     * properties of a type against: nothing here is written down per type, so a type or a property
+     * added in the vocabulary screens is usable at once.
+     */
+    private final URI base;
+
+    /**
+     * Properties of scientific objects.
+     */
     public TypeProperties(String lang) {
-        this.lang = lang;
+        this(lang, SCIENTIFIC_OBJECT);
     }
 
     /**
-     * @return whether the type is {@code oeso:ScientificObject} or one of its descendants
+     * @param base the class the types descend from — {@code oeso:ScientificObject}, or
+     *             {@code oeso:Facility}
+     */
+    public TypeProperties(String lang, URI base) {
+        this.lang = lang;
+        this.base = base;
+    }
+
+    /**
+     * @return whether the type is the base class or one of its descendants
      * <p>
      * Decided by walking up the class's parents rather than by the store's {@code classExist}
      * with an ancestor, which answers yes for any class the store knows — a facility, a germplasm —
@@ -59,9 +78,9 @@ public class TypeProperties {
             return false;
         }
         try {
-            for (ClassModel model = store().getClassModel(type, SCIENTIFIC_OBJECT, lang); model != null;
+            for (ClassModel model = store().getClassModel(type, base, lang); model != null;
                  model = model.getParent()) {
-                if (SPARQLDeserializers.compareURIs(model.getUri(), SCIENTIFIC_OBJECT)) {
+                if (SPARQLDeserializers.compareURIs(model.getUri(), base)) {
                     return true;
                 }
             }
@@ -73,14 +92,14 @@ public class TypeProperties {
 
     /**
      * @return the properties of the type, by name
-     * @throws IllegalArgumentException when the type is not a scientific-object type
+     * @throws IllegalArgumentException when the type does not descend from the base class
      */
     public List<TypeProperty> of(URI type) throws SPARQLException {
         if (!isObjectType(type)) {
-            throw new IllegalArgumentException("Not a scientific object type: " + type);
+            throw new IllegalArgumentException("Not a type of " + base + ": " + type);
         }
         OntologyStore store = store();
-        ClassModel model = store.getClassModel(type, SCIENTIFIC_OBJECT, lang);
+        ClassModel model = store.getClassModel(type, base, lang);
         List<TypeProperty> properties = new ArrayList<>();
         for (OwlRestrictionModel restriction : model.getRestrictionsByProperties().values()) {
             URI property = URI.create(SPARQLDeserializers.getExpandedURI(restriction.getOnProperty()));

@@ -55,6 +55,12 @@ public class SavedSession {
     private Instant createdAt;
 
     /**
+     * The files of the conversation, in order. A snapshot made before a conversation could hold
+     * several has none: its one file is then the one stored under the conversation itself.
+     */
+    private List<SavedFile> files = new ArrayList<>();
+
+    /**
      * The conversation as the language model sees it, tool calls and results included: without
      * them, the model's next turn would answer a conversation with holes in it.
      */
@@ -77,6 +83,16 @@ public class SavedSession {
     @JsonProperty("object_plans")
     private List<SavedObjectPlan> objectPlans = new ArrayList<>();
 
+    /**
+     * What the user said of the sheets and columns of an import they described themselves. A
+     * snapshot made before this existed has none, and reads back as an empty description.
+     */
+    @JsonProperty("file_description")
+    private SavedDescription fileDescription = new SavedDescription();
+
+    @JsonProperty("template_id")
+    private String templateId;
+
     @JsonProperty("pending_proposal_id")
     private String pendingProposalId;
 
@@ -95,6 +111,7 @@ public class SavedSession {
         saved.fileName = session.getFileName();
         saved.profileId = session.getProfileId();
         saved.createdAt = session.getCreatedAt();
+        session.getFiles().forEach(file -> saved.files.add(new SavedFile(file.getId(), file.getName())));
         saved.history = new ArrayList<>(session.getHistory());
         saved.transcript = new ArrayList<>(session.getTranscript());
         for (ConfirmedMatches.Entry entry : session.getConfirmedMatches().entries()) {
@@ -106,6 +123,8 @@ public class SavedSession {
         for (ObjectSheetPlan plan : session.getObjectPlans().values()) {
             saved.objectPlans.add(SavedObjectPlan.of(plan));
         }
+        saved.fileDescription = SavedDescription.of(session.getDescription());
+        saved.templateId = session.getTemplateId();
         saved.pendingProposalId = session.getPendingProposal() == null
                 ? null
                 : session.getPendingProposal().getId();
@@ -121,7 +140,7 @@ public class SavedSession {
      */
     public AiImportSession toSession(URI owner) {
         AiImportSession session = new AiImportSession(sessionId, owner, createdAt);
-        session.setFileName(fileName).setProfileId(profileId);
+        session.setFileName(fileName).setProfileId(profileId).setTemplateId(templateId);
         session.getHistory().addAll(history);
         session.getTranscript().addAll(transcript);
         for (SavedMatch match : confirmedMatches) {
@@ -142,6 +161,9 @@ public class SavedSession {
             ObjectSheetPlan plan = saved.toPlan();
             session.getObjectPlans().put(plan.getSheet(), plan);
         }
+        if (fileDescription != null) {
+            fileDescription.restoreInto(session.getDescription());
+        }
         session.getTokenUsage().restore(promptTokens, completionTokens, llmCalls);
         return session;
     }
@@ -150,6 +172,10 @@ public class SavedSession {
 
     public String getSessionId() {
         return sessionId;
+    }
+
+    public List<SavedFile> getFiles() {
+        return files;
     }
 
     public String getFileName() {

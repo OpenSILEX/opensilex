@@ -4,6 +4,7 @@
 //******************************************************************************
 package org.opensilex.aiimport.profile;
 
+import org.opensilex.aiimport.profile.custom.UserDefinedProfile;
 import org.opensilex.aiimport.profile.miappe.MiappeProfile;
 import org.opensilex.aiimport.profile.star.StarProfile;
 import org.opensilex.aiimport.profile.vitis.VitisExplorerProfile;
@@ -35,6 +36,7 @@ public class ImportProfileRegistry {
         loaded.add(new VitisExplorerProfile());
         loaded.add(new StarProfile());
         loaded.add(new MiappeProfile());
+        loaded.add(new UserDefinedProfile());
         loaded.add(new GenericTabularProfile());
 
         try {

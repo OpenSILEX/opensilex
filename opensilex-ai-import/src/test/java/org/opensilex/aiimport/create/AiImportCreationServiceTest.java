@@ -12,6 +12,7 @@ import org.opensilex.aiimport.profile.ExtractedImportPlan;
 import org.opensilex.aiimport.profile.VariableCandidate;
 import org.opensilex.aiimport.profile.star.StarProfile;
 import org.opensilex.aiimport.profile.vitis.VitisExplorerProfile;
+import org.opensilex.aiimport.profile.custom.FieldValues;
 import org.opensilex.aiimport.resolve.ResolutionReport;
 import org.opensilex.aiimport.resolve.ResolutionStatus;
 import org.opensilex.aiimport.resolve.ResolvedItem;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -62,6 +64,72 @@ public class AiImportCreationServiceTest {
         plan = profile.extract(workbook);
         dataPoints = profile.extractDataPoints(workbook);
     }
+
+    //#region what the columns of the file say
+
+    private AiImportSession sessionWithMissing(String kind, Map<String, String> details) {
+        AiImportSession session = new AiImportSession("s", ACCOUNT);
+        ResolutionReport report = new ResolutionReport();
+        ResolvedItem item = new ResolvedItem("Essai A").setStatus(ResolutionStatus.MISSING).setDetails(details);
+        (kind.equals("experiment") ? report.getExperiments() : report.getProjects()).add(item);
+        session.setReport(report);
+        return session;
+    }
+
+    @Test
+    public void whatColumnsSayOfAnExperimentIsSuggestedAheadOfTheObservationDates() {
+        AiImportSession session = sessionWithMissing("experiment", Map.of("objective", "Mesurer",
+                "description", "Parcelle ; Vigne", "start_date", "2026-03-01"));
+        session.setDataPoints(List.of(new DataPoint().setObjectName("P01").setDate(java.time.LocalDate.of(2020, 1, 1))));
+
+        CreationRequirements requirements = service.requirementsFor(CreationTarget.EXPERIMENT, session);
+
+        assertEquals("Mesurer", suggestion(requirements, "objective"));
+        assertEquals("Parcelle ; Vigne", suggestion(requirements, "description"));
+        assertEquals("the column wins over the earliest observation", "2026-03-01",
+                suggestion(requirements, "start_date"));
+        assertEquals("AiImport.proposal.from.fileColumns", requirements.getFields().stream()
+                .filter(field -> field.getName().equals("objective")).findFirst().orElseThrow().getSuggestedFrom());
+    }
+
+    @Test
+    public void theProjectsAndFacilitiesASheetOfExperimentsNamesAreSuggestedWhenFound() {
+        AiImportSession session = sessionWithMissing("experiment", Map.of("alternative_name", "EA",
+                FieldValues.PROJECTS, "Projet X ; Projet Y", FieldValues.FACILITIES, "Nord"));
+        URI projectX = URI.create("http://opensilex.test/id/project/x");
+        session.getReport().getProjects().add(new ResolvedItem("Projet X").setStatus(ResolutionStatus.FOUND)
+                .setMatches(List.of(new ResourceReference(projectX, "Projet X"))));
+        session.getReport().getFacilities().add(new ResolvedItem("Nord").setStatus(ResolutionStatus.FOUND)
+                .setMatches(List.of(new ResourceReference(FACILITY, "Nord"))));
+        session.getReport().getFacilities().add(new ResolvedItem("Sud").setStatus(ResolutionStatus.FOUND)
+                .setMatches(List.of(new ResourceReference(URI.create("http://opensilex.test/id/facility/sud"), "Sud"))));
+
+        CreationRequirements requirements = service.requirementsFor(CreationTarget.EXPERIMENT, session);
+
+        assertEquals("EA", suggestion(requirements, "alternative_name"));
+        assertEquals("only the project found; the other has no URI yet", projectX.toString(),
+                suggestion(requirements, "projects"));
+        assertEquals("the facility of the experiment's row, not every facility of the file", FACILITY.toString(),
+                suggestion(requirements, AiImportCreationService.EXPERIMENT_FACILITIES));
+    }
+
+    @Test
+    public void whatColumnsSayOfAProjectIsSuggested() {
+        AiImportSession session = sessionWithMissing("project", Map.of("shortname", "PX", "objective", "But"));
+
+        CreationRequirements requirements = service.requirementsFor(CreationTarget.PROJECT, session);
+
+        assertEquals("PX", suggestion(requirements, "shortname"));
+        assertEquals("But", suggestion(requirements, "objective"));
+        assertNull("nothing was said", suggestion(requirements, "description"));
+    }
+
+    private static String suggestion(CreationRequirements requirements, String field) {
+        return requirements.getFields().stream().filter(candidate -> candidate.getName().equals(field))
+                .findFirst().orElseThrow().getSuggestedValue();
+    }
+
+    //#endregion
 
     //#region project
 

@@ -32,6 +32,7 @@ public class AiImportSessionDTO {
 
     @JsonProperty("file_name")
     private String fileName;
+    private List<SessionFileDTO> files = new ArrayList<>();
 
     private WorkbookStructureDTO structure;
 
@@ -69,6 +70,7 @@ public class AiImportSessionDTO {
         dto.createdAt = String.valueOf(model.getCreatedAt());
         dto.profileId = model.getProfileId();
         dto.fileName = model.getFileName();
+        dto.files = SessionFileDTO.fromModel(model);
         if (model.getWorkbook() != null) {
             dto.structure = WorkbookStructureDTO.fromModel(model.getWorkbook(), sampleRows);
         }
@@ -178,6 +180,15 @@ public class AiImportSessionDTO {
 
     public void setProposals(List<CreationProposalDTO> proposals) {
         this.proposals = proposals;
+    }
+
+    @ApiModelProperty(value = "The files of the conversation, in the order they were added")
+    public List<SessionFileDTO> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<SessionFileDTO> files) {
+        this.files = files;
     }
 
     @ApiModelProperty(example = "Vitis_2020.xlsx")

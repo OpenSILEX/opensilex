@@ -1410,10 +1410,10 @@
                 "variable-data-help": "Variable value (Real number, text or Date)",
                 "columns": "Colonnes du fichier CSV",
                 "file-rules": "Règles d'édition du CSV",
-                "objectId-help": "Nom ou l'URI de l'objet scientifique",
-                "targetId-help": "Nom ou l'URI du target (ex: object scientifique)",
-                "experiment-help": "Nom ou l'URI de l'expérimentation",
-                "device-help": "Nom ou l'URI du device",
+                "objectId-help": "Nom ou URI de l'objet scientifique",
+                "targetId-help": "Nom ou URI du target (ex: objet scientifique)",
+                "experiment-help": "Nom ou URI de l'expérimentation",
+                "device-help": "Nom ou URI du device",
                 "variable-help": "Nom de la variable 1",
                 "variables-help": "Autres noms de variables",
                 "downloadTemplate": "Télécharger le modèle de fichier CSV",
@@ -1439,7 +1439,7 @@
                 }
             },
             "dataTemplate": {
-                "annotationHelp": "Annotation (Sur l'object cible)"
+                "annotationHelp": "Annotation (Sur l'objet cible)"
             },
             "dataValidationReport": {
                 "errorLine": "Ligne",
@@ -1507,6 +1507,7 @@
             "dataTemplateForm": {
                 "help": "Le bouton est désactivé si aucune variable n'est sélectionnée",
                 "with-raw-data": "Avec colonnes 'raw data' (données brutes)",
+                "with-raw-data-help": "Ajoute une colonne \"raw_data\" à droite de chaque variable. Elle contient la liste des valeurs brutes (mesures répétées) ayant servi à calculer la valeur de la variable, séparées par des virgules (ex : 20.3,20.4,20.5).",
                 "raw-data": "Données brutes",
                 "type-list": "Liste de ",
                 "raw-data-example": "Données brutes (ex : 20.3,20.4,20.5)",
@@ -1521,10 +1522,17 @@
                     "date": "(format: AAAA-MM-JJ)",
                     "boolean": "(format: true/false)"
                 },
-                "variable-not-found-error": "Variable non trouvée. Veuillez verifier que la variable est bien importée.",
+                "variable-not-found-error": "Variable non trouvée. Veuillez vérifier que la variable est bien importée.",
                 "with-prov-used": "Avec colonnes 'prov used'",
+                "with-prov-used-help": "Ajoute une colonne \"prov_used\" (entité utilisée) pour indiquer, pour chaque ligne, l'URI du fichier de données ou de l'objet scientifique à partir duquel la donnée a été produite. Plusieurs URIs peuvent être séparées par des virgules.",
                 "prov_used": "Entité utilisée - URI d'un fichier de données",
-                "prov-used-exemple": "URI d'un fichier de données ou d'un objet scientifique"
+                "prov-used-exemple": "URI d'un fichier de données ou d'un objet scientifique",
+                "columns": {
+                    "experiment": "Expérimentation",
+                    "target": "Cible",
+                    "device": "Équipement",
+                    "object_annotation": "Annotation"
+                }
             }
         },
         "datafile": {

@@ -11,7 +11,7 @@
             <CheckboxForm
               v-for="option in (experiment == null ? options : expeOptions)"
               :key="option.value"
-              :title="option.text"
+              :title="option.label"
               :value="selectedColumns.includes(option.value)"
               @update:value="(checked) => toggleColumn(option.value, checked)"
             ></CheckboxForm>
@@ -39,6 +39,7 @@
         <CheckboxForm
           v-model:value="withRawData"
           title="component.data.dataTemplateForm.with-raw-data"
+          helpMessage="component.data.dataTemplateForm.with-raw-data-help"
         ></CheckboxForm>
         </n-form-item>
 
@@ -46,6 +47,7 @@
         <CheckboxForm
           v-model:value="withProvUsed"
           title="component.data.dataTemplateForm.with-prov-used"
+          helpMessage="component.data.dataTemplateForm.with-prov-used-help"
         ></CheckboxForm>
         </n-form-item>
 
@@ -96,15 +98,15 @@ const soColumn = "scientific_object";
 const annotationColumn = "object_annotation";
 
 const options = [
-  {text: expColumn, value: expColumn},
-  {text: targetColumn, value: targetColumn},
-  {text: deviceColumn, value: deviceColumn},
-  {text: annotationColumn, value: annotationColumn}
+  {label: "component.data.dataTemplateForm.columns.experiment", value: expColumn},
+  {label: "component.data.dataTemplateForm.columns.target", value: targetColumn},
+  {label: "component.data.dataTemplateForm.columns.device", value: deviceColumn},
+  {label: "component.data.dataTemplateForm.columns.object_annotation", value: annotationColumn}
 ];
 
 const expeOptions = [
-  {text: deviceColumn, value: deviceColumn},
-  {text: annotationColumn, value: annotationColumn}
+  {label: "component.data.dataTemplateForm.columns.device", value: deviceColumn},
+  {label: "component.data.dataTemplateForm.columns.object_annotation", value: annotationColumn}
 ];
 
 const separator = ref<string>(",");
@@ -224,7 +226,7 @@ function csvExportDataExample() {
   if (selectedColumns.value.includes(annotationColumn)) {
     line1.push(annotationColumn);
     line2.push(t("component.data.dataTemplate.annotationHelp"));
-    line3.push(t("component.data.dataHelp.column-type-help") + "String");
+    line3.push(t("component.data.dataHelp.column-type-help") + getDataTypeLabel("xsd:string"));
     line4.push("annotation-test");
   }
 
@@ -313,14 +315,14 @@ function csvExport() {
       if (selectedColumns.value.includes(annotationColumn)) {
         line1.push(annotationColumn);
         line2.push(t("component.data.dataTemplate.annotationHelp"));
-        line3.push(t("component.data.dataHelp.column-type-help") + "String");
+        line3.push(t("component.data.dataHelp.column-type-help") + getDataTypeLabel("xsd:string"));
       }
 
       //column prov_used
       if (withProvUsed.value) {
         line1.push("prov_used");
         line2.push(t("component.data.dataTemplateForm.prov_used"));
-        line3.push(t("component.data.dataHelp.column-type-help") + "String");
+        line3.push(t("component.data.dataHelp.column-type-help") + getDataTypeLabel("xsd:string"));
       }
 
       let arrData = [line1, line2, line3];

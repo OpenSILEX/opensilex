@@ -29,8 +29,8 @@
           v-if="!selectDefaultProvenance"
           ref="provenanceSelector"
           v-model:provenances="form.provenance.uri"
-          label="component.common.provenance"
-          @selectionChange="onProvenanceSelectionChange"
+          label="component.data.dataImportForm.provenance"
+          @selectionChange="loadProvenanceAndCheckUploadedData"
           @clear="reset()"
           :multiple="false"
           :actionHandler="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)
@@ -43,6 +43,7 @@
         <div v-show="visibleDetails" class="mt-2">
           <ProvenanceDetails
             :provenance="form.provenance"
+            :dataImportResult="true"
           ></ProvenanceDetails>
         </div>
       </div>
@@ -214,7 +215,6 @@ onMounted(() => {
 watch(selectDefaultProvenance, (value) => {
   if (value) {
     hasDeviceAgent.value = false;
-    visibleDetails.value = false;
   }
 });
 
@@ -247,7 +247,7 @@ function hide() {
 }
 
 function showProvenanceDetails() {
-  if (form.value.provenance != null) {
+  if (form.value.provenance?.uri) {
     visibleDetails.value = !visibleDetails.value;
   }
 }
@@ -284,16 +284,10 @@ function getProvenance(uri) {
     });
 }
 
-function onProvenanceSelectionChange(option: SelectOption | SelectOption[] | undefined) {
-  if (option && !Array.isArray(option)) {
-    loadProvenanceAndCheckUploadedData({id: option.value});
-  }
-}
-
-function loadProvenanceAndCheckUploadedData(selectedValue) {
+function loadProvenanceAndCheckUploadedData(selectedValue: SelectOption | SelectOption[] | undefined) {
   hasDeviceAgent.value = false;
-  if (selectedValue != undefined && selectedValue != null) {
-    getProvenance(selectedValue.id).then((prov) => {
+  if (selectedValue && !Array.isArray(selectedValue)) {
+    getProvenance(selectedValue.value as string).then((prov) => {
       form.value.provenance = prov;
       hasDevice(prov);
     });

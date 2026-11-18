@@ -151,7 +151,7 @@ const props = withDefaults(defineProps<{
 
 //  Injections
 const route = useRoute();
-const {t, n} = useI18n();
+const { t, n } = useI18n();
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const tableRef = ref(); // lié avec ref="tableRef" dans le template
 
@@ -421,23 +421,23 @@ function loadData() {
     return Promise.resolve(all.slice(startIdx, endIdx));
   } else {
     return props
-        .searchMethod({
-          orderBy,
-          currentPage: currentPage.value - 1,
-          pageSize: pagination.value.pageSize,
-        })
-        .then((http: HttpResponse<OpenSilexResponse<any[]>>) => {
-          totalRow.value = http.response.metadata.pagination.totalCount;
-          pageSize.value = pagination.value.pageSize;
-          pagination.value.itemCount = totalRow.value;
-          isSearching.value = false;
-          $opensilex.enableLoader();
-          return http.response.result;
-        })
-        .catch((error) => {
-          isSearching.value = false;
-          $opensilex.errorHandler(error);
-        });
+      .searchMethod({
+        orderBy,
+        currentPage: currentPage.value - 1,
+        pageSize: pagination.value.pageSize,
+      })
+      .then((http: HttpResponse<OpenSilexResponse<any[]>>) => {
+        totalRow.value = http.response.metadata.pagination.totalCount;
+        pageSize.value = pagination.value.pageSize;
+        pagination.value.itemCount = totalRow.value;
+        isSearching.value = false;
+        $opensilex.enableLoader();
+        return http.response.result;
+      })
+      .catch((error) => {
+        isSearching.value = false;
+        $opensilex.errorHandler(error);
+      });
   }
 }
 
@@ -464,11 +464,9 @@ function getPaginationInfo() {
 function getCurrentPage() {
   return pagination.value.page;
 }
-
 function getPageSize() {
   return pagination.value.pageSize;
 }
-
 function getTotalRow() {
   return totalRow.value;
 }
@@ -539,7 +537,7 @@ const naiveColumns = computed(() => {
     key: field.key,
     resizable: field.resizable ?? true,
     sorter: field.sortable
-        ? (a, b) => {
+      ? (a, b) => {
           if (a.__isDetailsRow || b.__isDetailsRow) return 0;
 
           const valA = a[field.key];
@@ -660,10 +658,10 @@ defineExpose({
 <i18n>
 
 en:
-  TableAsyncView:
-    selected: Selected Elements
+    TableAsyncView:
+        selected: Selected Elements
 fr:
-  TableAsyncView:
-    selected: Élements Sélectionnés
+    TableAsyncView:
+        selected: Élements Sélectionnés
 
 </i18n>

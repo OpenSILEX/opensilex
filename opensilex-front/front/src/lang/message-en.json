@@ -1345,13 +1345,14 @@
                 "exceptedFormat": "Expected format",
                 "objectId": "Scientific_object",
                 "title": "Generate Data template",
+                "variables": "Variable(s)",
                 "required": "Required : yes",
                 "variables-associated": "Experiment variables associated",
                 "download-template-example": "Download template example",
                 "csv-separator": "CSV separator must be",
                 "csv-decimal-separator": "Decimal separator for numeric values must be",
                 "alias": "Scientific object name",
-                "date-help": "Acquisition date of the data (format: AAAA-MM-DDTHH:mm:ssZ or AAAA-MM-DD)",
+                "date-help": "Acquisition date of the data (format: YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DD)",
                 "first-variable": "First Variable",
                 "other-variables": "Other variables, 1 per column....",
                 "column-type-help": "Column data type: ",
@@ -1462,6 +1463,7 @@
             "dataTemplateForm": {
                 "help": "The button is disabled if no variables are selected",
                 "with-raw-data": "With raw data columns",
+                "with-raw-data-help": "Adds a \"raw_data\" column to the right of each variable. It contains the list of raw values (repeated measurements) used to compute the variable value, separated by commas (e.g. 20.3,20.4,20.5).",
                 "raw-data": "Raw data",
                 "type-list": "Array of ",
                 "raw-data-example": "Raw data (e.g. 20.3,20.4,20.5)",
@@ -1478,8 +1480,15 @@
                 },
                 "variable-not-found-error": "Variable not found. Please make sure you have imported it.",
                 "with-prov-used": "With entity used columns",
+                "with-prov-used-help": "Adds a \"prov_used\" (entity used) column to give, for each row, the URI of the datafile or scientific object from which the data was produced. Several URIs can be separated by commas.",
                 "prov_used": "Entity Used - Datafile URI",
-                "prov-used-exemple": "Datafile or Scientific object URI"
+                "prov-used-exemple": "Datafile or Scientific object URI",
+                "columns": {
+                    "experiment": "Experiment",
+                    "target": "Target",
+                    "device": "Device",
+                    "object_annotation": "Annotation"
+                }
             }
         },
         "datafile": {

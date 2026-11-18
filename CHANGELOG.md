@@ -1,5 +1,6 @@
 <!-- TOC -->
 * [Changelog](#changelog)
+  * [[1.5.10]](#1510)
   * [[1.5.9]](#159)
   * [[1.5.8]](#158)
   * [[1.5.7]](#157)
@@ -145,6 +146,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.5.10]
+
+> Warning: upgrading to this new version may require manual operations.
+>
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+>
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1.
+>
+> If you are upgrading from 1.5.1 or higher, there's nothing to do.
+
+- (!1619) [ScientificObject] A Scientific Object that has a Facility location's update form will now no longer fail to show most fields. And the update operation will no longer fail.
 
 ## [1.5.9]
 

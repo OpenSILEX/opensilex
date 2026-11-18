@@ -24,16 +24,17 @@
       @onUpdate="refreshGroupList"
     />
     <div class="row">
-      <div :class="selected ? 'col-md-6' : 'col-12'">
+      <div :class="filtersCollapsed && selected ? 'col-md-6' : 'col-12'">
         <GermplasmGroupList
           ref="groupList"
+          v-model:filtersCollapsed="filtersCollapsed"
           @select="selected = $event"
           @edit="onGroupEdit"
           @delete="onGroupDelete"
         />
       </div>
 
-      <div v-if="selected" class="col-md-6">
+      <div v-if="filtersCollapsed && selected" class="col-md-6">
         <GermplasmGroupStructureDetails :selected="selected" />
         <GermplasmGroupContentList :selectedUri="selected.uri" />
       </div>
@@ -65,6 +66,7 @@ const selected = ref<GermplasmGroupGetDTO>();
 //#endregion
 
 //#region Private
+const filtersCollapsed = ref(true);
 const store = useStore();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const service = opensilex.getService<GermplasmService>('opensilex.GermplasmService');

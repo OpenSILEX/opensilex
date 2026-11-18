@@ -30,8 +30,17 @@
           labelNumberOfSelectedRow="component.germplasms.group.selected"
           iconNumberOfSelectedRow="fa#seedling"
           defaultSortBy="name"
-          @select="emit('select', $event)"
+          @select="onGroupSelected"
         >
+          <template #cell(name)="{ data }">
+            <span :style="{ fontWeight: selectedUri === data.item.uri ? 'bold' : 'normal' }">
+              {{ data.item.name }}
+              <template v-if="data.item.germplasm_count">
+                {{ t('GermplasmGroupList.germplasm', data.item.germplasm_count) }}
+              </template>
+            </span>
+          </template>
+
           <template #cell(actions)="{ data }">
             <n-button-group size="small">
               <EditButton
@@ -91,7 +100,8 @@ const service = opensilex.getService<GermplasmService>('opensilex.GermplasmServi
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
-const filtersCollapsed = ref(true);
+const filtersCollapsed = defineModel<boolean>('filtersCollapsed', { default: true });
+const selectedUri = ref<string>();
 const filter = ref({
   name: '',
   germplasm: [] as string[],
@@ -134,6 +144,12 @@ function searchGermplasmGroups(options: TableSearchOptions) {
   );
 }
 
+function onGroupSelected(group: GermplasmGroupGetDTO) {
+  filtersCollapsed.value=true
+  selectedUri.value = group.uri;
+  emit('select', group);
+}
+
 function refresh() {
   tableRef.value?.setPage(1);
   tableRef.value?.refresh();
@@ -152,3 +168,12 @@ defineExpose({
   refresh,
 });
 </script>
+
+<i18n>
+en:
+  GermplasmGroupList:
+    germplasm: "(0 germplasm) | (1 germplasm) | ({count} germplasm)"
+fr:
+  GermplasmGroupList:
+    germplasm: "(0 ressources génétiques) | (1 ressource génétique) | ({count} ressources génétiques)"
+</i18n>

@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, useTemplateRef } from 'vue';
+import { computed, inject, useTemplateRef, watch  } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GermplasmService } from 'opensilex-core/api/germplasm.service';
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
@@ -45,6 +45,11 @@ interface TableSearchOptions {
 const props = defineProps<{
   selectedUri: string;
 }>();
+
+watch(
+  () => props.selectedUri,
+  () => refresh()
+)
 
 const { t } = useI18n();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

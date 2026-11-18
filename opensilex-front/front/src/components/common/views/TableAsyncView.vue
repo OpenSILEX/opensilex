@@ -258,6 +258,14 @@ function onRowClickedSafe(row: any) {
 }
 
 function onRowClicked(item: NamedResourceDTO) {
+  // In single-selection mode, select the clicked row directly.
+  if (props.selectMode === 'single') {
+    selectedItems.value = [item];
+    numberOfSelectedRows.value = 1;
+    emit('select', item);
+    return;
+  }
+
   const idx = selectedItems.value.findIndex((it) => item.uri === it.uri);
 
   if (idx >= 0) {

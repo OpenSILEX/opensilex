@@ -708,7 +708,6 @@ function searchParents(query: string, page: number, pageSize: number) {
 }
 
 function displayScientificObjectDetailsIfNew(nodeUri: string) {
-  console.log("displayScientificObjectDetailsIfNew",nodeUri, selected.value)
   if (!selected.value || selected.value.uri != nodeUri) {
     displayScientificObjectDetails(nodeUri);
   }

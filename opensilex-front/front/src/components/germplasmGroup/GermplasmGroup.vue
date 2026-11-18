@@ -28,7 +28,8 @@
         <GermplasmGroupList
           ref="groupList"
           v-model:filtersCollapsed="filtersCollapsed"
-          @select="selected = $event"
+          :selectedUri="selected?.uri"
+          @select="onGroupSelected"
           @edit="onGroupEdit"
           @delete="onGroupDelete"
         />
@@ -44,8 +45,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, useTemplateRef } from 'vue';
+import { computed, inject, onMounted, ref, useTemplateRef } from 'vue';
 import { useStore } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { GermplasmService } from 'opensilex-core/lib';
 import type {
@@ -72,6 +74,8 @@ const filtersCollapsed = ref(true);
 //#region Private
 const { t } = useI18n();
 const store = useStore();
+const route = useRoute();
+const router = useRouter();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const service = opensilex.getService<GermplasmService>('opensilex.GermplasmService');
 const user = computed(() => store.state.user);
@@ -80,6 +84,24 @@ const helpModal = useTemplateRef<InstanceType<typeof Modal>>('helpModal');
 const groupForm = useTemplateRef<InstanceType<typeof GroupGermplasmForm>>('groupForm');
 const groupList = useTemplateRef<InstanceType<typeof GermplasmGroupList>>('groupList');
 const groupContentList = useTemplateRef<InstanceType<typeof GermplasmGroupContentList>>('groupContentList');
+
+onMounted(async () => {
+  const uri = route.query.selected;
+  if (typeof uri !== 'string') return;
+
+  try {
+    const response = await service.getGermplasmGroup(uri);
+    selected.value = response.response.result;
+    filtersCollapsed.value = true;
+  } catch (error) {
+    opensilex.errorHandler(error);
+  }
+});
+
+function onGroupSelected(group: GermplasmGroupGetDTO) {
+  selected.value = group;
+  router.replace({ query: { ...route.query, selected: group.uri } });
+}
 
 function refreshGroupList() {
   groupList.value?.refresh();

@@ -36,6 +36,7 @@ import Card from '@/components/common/views/Card.vue';
 import TableAsyncView from '@/components/common/views/TableAsyncView.vue';
 import UriLink from '@/components/common/views/UriLink.vue';
 
+//#region Public
 interface TableSearchOptions {
   orderBy?: string[];
   currentPage: number;
@@ -45,17 +46,27 @@ interface TableSearchOptions {
 const props = defineProps<{
   selectedUri: string;
 }>();
+//#endregion
 
+//#region Private
+//#region Hooks
 watch(
   () => props.selectedUri,
   () => refresh()
 )
+//#endregion
 
+//#region Plugins and services
 const { t } = useI18n();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const service = opensilex.getService<GermplasmService>('opensilex.GermplasmService');
-const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
+//#endregion
 
+//#region Template refs
+const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
+//#endregion
+
+//#region Data and computed
 const fields = computed(() => [
   {
     key: 'name',
@@ -63,7 +74,9 @@ const fields = computed(() => [
     sortable: true,
   },
 ]);
+//#endregion
 
+//#region Methods
 function searchGermplasmGroupContent(options: TableSearchOptions) {
   return service.getGermplasmGroupContent(
     props.selectedUri,
@@ -80,6 +93,8 @@ function refresh() {
 defineExpose({
   refresh,
 });
+//#endregion
+//#endregion
 </script>
 
 <i18n>

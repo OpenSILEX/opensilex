@@ -38,9 +38,15 @@ import MetadataView from '@/components/common/views/MetadataView.vue';
 import TextView from '@/components/common/views/TextView.vue';
 import UriView from '@/components/common/views/UriView.vue';
 
-const { t } = useI18n();
-
+//#region Public
 const props = defineProps<{
   selected?: GermplasmGroupGetDTO | null;
 }>();
+//#endregion
+
+//#region Private
+//#region Plugins and services
+const { t } = useI18n();
+//#endregion
+//#endregion
 </script>

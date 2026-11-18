@@ -172,5 +172,5 @@ en:
 fr:
   GermplasmGroupForm:
     add: Ajouter un groupe de ressources génétiques
-    edit: Modifier un groupe de ressources génétiques
+    edit: Éditer un groupe de ressources génétiques
 </i18n>

@@ -246,7 +246,7 @@ function hide() {
 }
 
 function showProvenanceDetails() {
-  if (form.value.provenance != null) {
+  if (form.value.provenance?.uri) {
     visibleDetails.value = !visibleDetails.value;
   }
 }

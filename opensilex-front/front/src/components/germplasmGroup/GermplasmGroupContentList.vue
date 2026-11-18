@@ -2,16 +2,16 @@
   <Card
     :label="t('GermplasmGroupView.type')"
     icon="fa#seedling"
-    :no-footer="true"
+    :noFooter="true"
   >
     <template #body>
       <TableAsyncView
         ref="tableRef"
-        :search-method="searchGermplasmGroupContent"
+        :searchMethod="searchGermplasmGroupContent"
         :fields="fields"
-        :is-selectable="false"
-        :default-page-size="5"
-        default-sort-by="name"
+        :isSelectable="false"
+        :defaultPageSize="5"
+        defaultSortBy="name"
       >
         <template #cell(name)="{ data }">
           <UriLink

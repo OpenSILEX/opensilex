@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <PageActions :return-button="false">
+    <PageActions :returnButton="false">
       <HelpButton
         class="helpButton"
         label="component.common.help-button"
@@ -15,13 +15,13 @@
       />
     </PageActions>
 
-    <Modal ref="helpModal" modal-size="xl">
+    <Modal ref="helpModal" modalSize="xl">
       <GermplasmGroupHelp />
     </Modal>
     <GroupGermplasmForm
       ref="groupForm"
-      @on-create="refreshGroupList"
-      @on-update="refreshGroupList"
+      @onCreate="refreshGroupList"
+      @onUpdate="refreshGroupList"
     />
     <div class="row">
       <div :class="selected ? 'col-md-6' : 'col-12'">
@@ -35,7 +35,7 @@
 
       <div v-if="selected" class="col-md-6">
         <GermplasmGroupStructureDetails :selected="selected" />
-        <GermplasmGroupContentList :selected-uri="selected.uri" />
+        <GermplasmGroupContentList :selectedUri="selected.uri" />
       </div>
     </div>
   </div>

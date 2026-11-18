@@ -23,8 +23,8 @@
       <MetadataView
         v-if="props.selected.publisher?.uri"
         :publisher="props.selected.publisher"
-        :publication-date="props.selected.publication_date"
-        :last-updated-date="props.selected.last_updated_date"
+        :publicationDate="props.selected.publication_date"
+        :lastUpdatedDate="props.selected.last_updated_date"
       />
     </div>
   </div>

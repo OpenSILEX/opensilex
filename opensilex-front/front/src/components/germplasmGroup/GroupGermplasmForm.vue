@@ -1,5 +1,5 @@
 <template>
-  <Modal ref="modalRef" modal-size="lg">
+  <Modal ref="modalRef" modalSize="lg">
     <template #header>
       <FormHeader :title="formTitle" icon="fa#folder" />
     </template>
@@ -14,8 +14,8 @@
         <UriForm
           v-model:uri="form.uri"
           label="component.group.group-uri"
-          help-message="component.common.uri-help-message"
-          :edit-mode="isEditMode"
+          helpMessage="component.common.uri-help-message"
+          :editMode="isEditMode"
           v-model:generated="uriGenerated"
         />
       </n-form-item>
@@ -40,9 +40,9 @@
 
       <n-form-item>
         <GermplasmSelectorWithFilter
-          v-model:germplasm-uris="form.germplasm_list"
+          v-model:germplasmUris="form.germplasm_list"
           v-model="germplasmsWithLabels"
-          :edit-mode="isEditMode"
+          :editMode="isEditMode"
         />
       </n-form-item>
     </n-form>

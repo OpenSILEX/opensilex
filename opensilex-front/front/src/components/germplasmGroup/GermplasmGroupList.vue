@@ -2,8 +2,8 @@
   <div>
     <n-layout has-sider>
       <SearchFiltersSidebar
-        v-model:filters-collapsed="filtersCollapsed"
-        :active-filters-count="activeFiltersCount"
+        v-model:filtersCollapsed="filtersCollapsed"
+        :activeFiltersCount="activeFiltersCount"
         @refresh="refresh"
         @reset="reset"
       >
@@ -16,20 +16,20 @@
         </n-form-item>
 
         <GermplasmSelectorWithFilter
-          v-model:germplasm-uris="filter.germplasm"
+          v-model:germplasmUris="filter.germplasm"
         />
       </SearchFiltersSidebar>
 
       <n-layout-content>
         <TableAsyncView
           ref="tableRef"
-          :search-method="searchGermplasmGroups"
+          :searchMethod="searchGermplasmGroups"
           :fields="fields"
-          :is-selectable="true"
-          select-mode="single"
+          :isSelectable="true"
+          selectMode="single"
           labelNumberOfSelectedRow="component.germplasms.group.selected"
           iconNumberOfSelectedRow="fa#seedling"
-          default-sort-by="name"
+          defaultSortBy="name"
           @select="emit('select', $event)"
         >
           <template #cell(actions)="{ data }">

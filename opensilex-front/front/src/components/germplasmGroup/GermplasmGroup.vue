@@ -37,6 +37,7 @@
       <div v-if="filtersCollapsed && selected" class="col-md-6">
         <GermplasmGroupStructureDetails :selected="selected" />
         <GermplasmGroupContentList ref="groupContentList" :selectedUri="selected.uri" />
+        <DocumentTabList :uri="selected.uri" :search="false" />
       </div>
     </div>
   </div>
@@ -61,6 +62,7 @@ import GermplasmGroupHelp from '@/components/germplasmGroup/GermplasmGroupHelp.v
 import GermplasmGroupList from '@/components/germplasmGroup/GermplasmGroupList.vue';
 import GermplasmGroupStructureDetails from '@/components/germplasmGroup/GermplasmGroupStructureDetails.vue';
 import GermplasmGroupContentList from '@/components/germplasmGroup/GermplasmGroupContentList.vue';
+import DocumentTabList from '../documents/DocumentTabList.vue';
 
 //#region Public
 const selected = ref<GermplasmGroupGetDTO>();

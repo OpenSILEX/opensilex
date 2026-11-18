@@ -29,7 +29,7 @@
           </template>
 
           <template #suffix>
-            <n-space :wrap="false" :size="[0, 0]">
+            <n-button-group size="small" class="btn-group btn-group-sm">
               <opensilex-EditButton
                 label="Edit"
                 :small="true"
@@ -40,7 +40,7 @@
                 :small="true"
                 @click="(e) => { e?.stopPropagation?.(); onDeleteGroup(group); }"
               />
-            </n-space>
+            </n-button-group>
           </template>
         </n-list-item>
       </n-list>
@@ -100,7 +100,7 @@ import {computed, h, inject, nextTick, onBeforeMount, onMounted, ref, resolveCom
 import {useI18n} from 'vue-i18n';
 import {NamedResourceDTO, VariablesService} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {NInput, NList, NListItem, NSpace} from 'naive-ui';
+import {NButtonGroup, NInput, NList, NListItem} from 'naive-ui';
 import GroupVariablesForm from './GroupVariablesForm.vue';
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 

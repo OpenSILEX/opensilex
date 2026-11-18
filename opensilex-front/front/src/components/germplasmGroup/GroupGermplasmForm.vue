@@ -39,9 +39,10 @@
       </n-form-item>
 
       <n-form-item>
-        <GermplasmSelector
-          v-model:germplasm="form.germplasm_list"
-          :multiple="true"
+        <GermplasmSelectorWithFilter
+          v-model:germplasm-uris="form.germplasm_list"
+          v-model="germplasmsWithLabels"
+          :edit-mode="isEditMode"
         />
       </n-form-item>
     </n-form>
@@ -60,7 +61,7 @@ import { computed, inject, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { NForm, NFormItem } from 'naive-ui';
 import { GermplasmService } from 'opensilex-core/lib';
-import type { GermplasmGroupGetDTO } from 'opensilex-core/index';
+import type { GermplasmGroupUpdateDTO } from 'opensilex-core/index';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import Modal from '@/components/common/views/Modal.vue';
 import FormHeader from '@/components/common/forms/FormHeader.vue';
@@ -68,7 +69,7 @@ import FormFooter from '@/components/common/forms/FormFooter.vue';
 import InputForm from '@/components/common/forms/InputForm.vue';
 import UriForm from '@/components/common/forms/UriForm.vue';
 import TextAreaForm from '@/components/common/forms/TextAreaForm.vue';
-import GermplasmSelector from '@/components/germplasm/GermplasmSelector.vue';
+import GermplasmSelectorWithFilter from '../germplasm/GermplasmSelectorWithFilter.vue';
 
 //#region Public
 const { t } = useI18n();
@@ -85,6 +86,7 @@ const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef');
 const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
 const uriGenerated = ref(true);
 const isEditMode = ref(false);
+const germplasmsWithLabels = ref<Array<{ uri: string; name: string }>>([]);
 const form = ref({
   uri: undefined as string | undefined,
   name: '',
@@ -110,12 +112,17 @@ function showCreateForm() {
     description: '',
     germplasm_list: [],
   };
+  germplasmsWithLabels.value = [];
   uriGenerated.value = true;
   modalRef.value?.show();
 }
 
-function showEditForm(group: GermplasmGroupGetDTO) {
+function showEditForm(
+  group: GermplasmGroupUpdateDTO,
+  germplasms: Array<{ uri: string; name: string }>,
+) {
   isEditMode.value = true;
+  germplasmsWithLabels.value = germplasms;
   form.value = {
     uri: group.uri,
     name: group.name ?? '',

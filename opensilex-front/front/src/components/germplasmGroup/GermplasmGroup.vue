@@ -18,7 +18,7 @@
     <Modal ref="helpModal" modal-size="xl">
       <GermplasmGroupHelp />
     </Modal>
-    <GermplasmGroupForm
+    <GroupGermplasmForm
       ref="groupForm"
       @on-create="refreshGroupList"
       @on-update="refreshGroupList"
@@ -28,13 +28,14 @@
         <GermplasmGroupList
           ref="groupList"
           @select="selected = $event"
-          @edit="groupForm?.showEditForm($event)"
+          @edit="onGroupEdit"
           @delete="onGroupDelete"
         />
       </div>
 
       <div v-if="selected" class="col-md-6">
         <GermplasmGroupStructureDetails :selected="selected" />
+        <GermplasmGroupContentList :selected-uri="selected.uri" />
       </div>
     </div>
   </div>
@@ -43,19 +44,21 @@
 <script setup lang="ts">
 import { computed, inject, ref, useTemplateRef } from 'vue';
 import { useStore } from 'vuex';
-import { useDialog } from 'naive-ui';
-import { useI18n } from 'vue-i18n';
 import { GermplasmService } from 'opensilex-core/lib';
-import type { GermplasmGroupGetDTO } from 'opensilex-core/index';
+import type {
+  GermplasmGroupGetDTO,
+  GermplasmGroupUpdateDTO,
+} from 'opensilex-core/index';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import PageActions from '@/components/layout/PageActions.vue';
 import Modal from '@/components/common/views/Modal.vue';
 import HelpButton from '@/components/common/buttons/HelpButton.vue';
 import CreateButton from '@/components/common/buttons/CreateButton.vue';
-import GermplasmGroupForm from '@/components/germplasmGroup/GermplasmGroupForm.vue';
+import GroupGermplasmForm from '@/components/germplasmGroup/GroupGermplasmForm.vue';
 import GermplasmGroupHelp from '@/components/germplasmGroup/GermplasmGroupHelp.vue';
 import GermplasmGroupList from '@/components/germplasmGroup/GermplasmGroupList.vue';
 import GermplasmGroupStructureDetails from '@/components/germplasmGroup/GermplasmGroupStructureDetails.vue';
+import GermplasmGroupContentList from '@/components/germplasmGroup/GermplasmGroupContentList.vue';
 
 //#region Public
 const selected = ref<GermplasmGroupGetDTO>();
@@ -63,37 +66,46 @@ const selected = ref<GermplasmGroupGetDTO>();
 
 //#region Private
 const store = useStore();
-const { t } = useI18n();
-const dialog = useDialog();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const service = opensilex.getService<GermplasmService>('opensilex.GermplasmService');
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 const helpModal = useTemplateRef<InstanceType<typeof Modal>>('helpModal');
-const groupForm = useTemplateRef<InstanceType<typeof GermplasmGroupForm>>('groupForm');
+const groupForm = useTemplateRef<InstanceType<typeof GroupGermplasmForm>>('groupForm');
 const groupList = useTemplateRef<InstanceType<typeof GermplasmGroupList>>('groupList');
 
 function refreshGroupList() {
   groupList.value?.refresh();
 }
 
-function onGroupDelete(group: GermplasmGroupGetDTO) {
-  dialog.error({
-    content: t('component.common.delete-confirmation').toString(),
-    positiveText: t('component.common.delete').toString(),
-    negativeText: t('component.common.cancel').toString(),
-    showIcon: false,
-    closable: false,
-    onPositiveClick: async () => {
-      try {
-        await service.deleteGermplasmGroup(group.uri);
-        selected.value = undefined;
-        refreshGroupList();
-      } catch (error) {
-        opensilex.errorHandler(error);
-      }
-    },
-  });
+async function onGroupEdit(group: GermplasmGroupGetDTO) {
+  try {
+    const groupResponse = await service.getGermplasmGroupWithGermplasms(group.uri);
+    const details = groupResponse.response.result;
+    const germplasms = (details.germplasm_list ?? []).filter(
+      (germplasm): germplasm is { uri: string; name: string } =>
+        Boolean(germplasm.uri && germplasm.name),
+    );
+    const form: GermplasmGroupUpdateDTO = {
+      uri: details.uri ?? group.uri,
+      name: details.name,
+      description: details.description,
+      germplasm_list: germplasms.map((germplasm) => germplasm.uri),
+    };
+    groupForm.value?.showEditForm(form, germplasms);
+  } catch (error) {
+    opensilex.errorHandler(error);
+  }
+}
+
+async function onGroupDelete(group: GermplasmGroupGetDTO) {
+  try {
+    await service.deleteGermplasmGroup(group.uri);
+    selected.value = undefined;
+    refreshGroupList();
+  } catch (error) {
+    opensilex.errorHandler(error);
+  }
 }
 //#endregion
 </script>

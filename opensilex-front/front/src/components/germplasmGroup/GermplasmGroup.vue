@@ -82,10 +82,10 @@ async function onGroupEdit(group: GermplasmGroupGetDTO) {
   try {
     const groupResponse = await service.getGermplasmGroupWithGermplasms(group.uri);
     const details = groupResponse.response.result;
-    const germplasms = (details.germplasm_list ?? []).filter(
-      (germplasm): germplasm is { uri: string; name: string } =>
-        Boolean(germplasm.uri && germplasm.name),
-    );
+    const germplasms = (details.germplasm_list ?? []).map((germplasm) => ({
+      ...germplasm,
+      uri: opensilex.getLongUri(germplasm.uri),
+    }));
     const form: GermplasmGroupUpdateDTO = {
       uri: details.uri ?? group.uri,
       name: details.name,

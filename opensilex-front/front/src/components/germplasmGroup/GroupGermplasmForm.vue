@@ -86,7 +86,7 @@ const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef');
 const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
 const uriGenerated = ref(true);
 const isEditMode = ref(false);
-const germplasmsWithLabels = ref<Array<{ uri: string; name: string }>>([]);
+const germplasmsWithLabels = ref<Array<{ uri: string; name?: string }>>([]);
 const form = ref({
   uri: undefined as string | undefined,
   name: '',
@@ -119,7 +119,7 @@ function showCreateForm() {
 
 function showEditForm(
   group: GermplasmGroupUpdateDTO,
-  germplasms: Array<{ uri: string; name: string }>,
+  germplasms: Array<{ uri: string; name?: string }>,
 ) {
   isEditMode.value = true;
   germplasmsWithLabels.value = germplasms;

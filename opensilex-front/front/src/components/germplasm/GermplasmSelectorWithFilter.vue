@@ -24,7 +24,7 @@ import GermplasmModalList from "@/components/germplasm/GermplasmModalList.vue";
 
 interface GermplasmSelection {
   uri: string;
-  name: string;
+  name?: string;
   isDisabled?: boolean;
 }
 

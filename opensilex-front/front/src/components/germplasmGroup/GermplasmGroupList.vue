@@ -15,10 +15,8 @@
           />
         </n-form-item>
 
-        <GermplasmSelector
-          v-model:germplasm="filter.germplasm"
-          :multiple="true"
-          @handlingEnterKey="refresh"
+        <GermplasmSelectorWithFilter
+          v-model:germplasm-uris="filter.germplasm"
         />
       </SearchFiltersSidebar>
 
@@ -29,8 +27,8 @@
           :fields="fields"
           :is-selectable="true"
           select-mode="single"
-          label-number-of-selected-row="component.germplasms.list.selected"
-          icon-number-of-selected-row="fa#seedling"
+          labelNumberOfSelectedRow="component.germplasms.group.selected"
+          iconNumberOfSelectedRow="fa#seedling"
           default-sort-by="name"
           @select="emit('select', $event)"
         >
@@ -68,7 +66,7 @@ import EditButton from '@/components/common/buttons/EditButton.vue';
 import DeleteButton from '@/components/common/buttons/DeleteButton.vue';
 import StringFilter from '@/components/common/filters/StringFilter.vue';
 import SearchFiltersSidebar from '@/components/common/filters/SearchFiltersSidebar.vue';
-import GermplasmSelector from '@/components/germplasm/GermplasmSelector.vue';
+import GermplasmSelectorWithFilter from '@/components/germplasm/GermplasmSelectorWithFilter.vue';
 import TableAsyncView from '@/components/common/views/TableAsyncView.vue';
 
 interface TableSearchOptions {

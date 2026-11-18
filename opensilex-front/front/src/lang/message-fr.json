@@ -947,7 +947,8 @@
            "title": "Ressources génétiques",
            "description": "Gérer les informations du matériel génétique",
             "group": {
-                "add": "Ajouter un groupe"
+                "add": "Ajouter un groupe",
+                "selected": "Liste de groupes"
             },
             "errors": {
                 "duplicateUri": "URI en double : {uri}",
@@ -971,7 +972,7 @@
                 "update": "Editer le germplasm",
                 "delete": "Supprimer le germplasm",
                 "selectLabel": "Sélection de Ressources Génétiques",
-                "selected": "Liste de groupes",
+                "selected": "Ressource(s) Génétique(s) Sélectionnée(s)",
                 "export": "Exporter la liste",
                 "export-all": "Tout exporter",
                 "selected-all": "Toutes les ressources génétiques",

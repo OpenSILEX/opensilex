@@ -43,6 +43,7 @@
         <div v-show="visibleDetails" class="mt-2">
           <ProvenanceDetails
             :provenance="form.provenance"
+            :dataImportResult="true"
           ></ProvenanceDetails>
         </div>
       </div>

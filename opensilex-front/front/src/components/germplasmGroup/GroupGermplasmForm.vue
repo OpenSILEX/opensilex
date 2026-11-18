@@ -75,7 +75,7 @@ import GermplasmSelectorWithFilter from '../germplasm/GermplasmSelectorWithFilte
 const { t } = useI18n();
 const emit = defineEmits<{
   (event: 'onCreate'): void;
-  (event: 'onUpdate'): void;
+  (event: 'onUpdate', uri: string): void;
 }>();
 //#endregion
 
@@ -142,9 +142,11 @@ async function submit() {
     await formRef.value?.validate();
     if (isEditMode.value) {
       await service.updateGermplasmGroup(form.value);
-      emit('onUpdate');
+      opensilex.showSuccessToast(form.value.name + t('component.common.success.update-success-message'));
+      emit('onUpdate', form.value.uri!);
     } else {
       await service.createGermplasmGroup(form.value);
+      opensilex.showSuccessToast(form.value.name + t('component.common.success.creation-success-message'));
       emit('onCreate');
     }
     hide();

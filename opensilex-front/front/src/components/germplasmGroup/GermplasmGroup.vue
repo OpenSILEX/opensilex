@@ -21,7 +21,7 @@
     <GroupGermplasmForm
       ref="groupForm"
       @onCreate="refreshGroupList"
-      @onUpdate="refreshGroupList"
+      @onUpdate="onGroupUpdated"
     />
     <div class="row">
       <div :class="filtersCollapsed && selected ? 'col-md-6' : 'col-12'">
@@ -36,7 +36,7 @@
 
       <div v-if="filtersCollapsed && selected" class="col-md-6">
         <GermplasmGroupStructureDetails :selected="selected" />
-        <GermplasmGroupContentList :selectedUri="selected.uri" />
+        <GermplasmGroupContentList ref="groupContentList" :selectedUri="selected.uri" />
       </div>
     </div>
   </div>
@@ -45,6 +45,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, useTemplateRef } from 'vue';
 import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n';
 import { GermplasmService } from 'opensilex-core/lib';
 import type {
   GermplasmGroupGetDTO,
@@ -63,10 +64,11 @@ import GermplasmGroupContentList from '@/components/germplasmGroup/GermplasmGrou
 
 //#region Public
 const selected = ref<GermplasmGroupGetDTO>();
+const filtersCollapsed = ref(true);
 //#endregion
 
 //#region Private
-const filtersCollapsed = ref(true);
+const { t } = useI18n();
 const store = useStore();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const service = opensilex.getService<GermplasmService>('opensilex.GermplasmService');
@@ -75,9 +77,25 @@ const credentials = computed(() => store.state.credentials);
 const helpModal = useTemplateRef<InstanceType<typeof Modal>>('helpModal');
 const groupForm = useTemplateRef<InstanceType<typeof GroupGermplasmForm>>('groupForm');
 const groupList = useTemplateRef<InstanceType<typeof GermplasmGroupList>>('groupList');
+const groupContentList = useTemplateRef<InstanceType<typeof GermplasmGroupContentList>>('groupContentList');
 
 function refreshGroupList() {
   groupList.value?.refresh();
+}
+
+async function onGroupUpdated(uri: string) {
+  refreshGroupList();
+  if (!selected.value || !opensilex.compareUris(selected.value.uri, uri)) return;
+
+  try {
+    const response = await service.getGermplasmGroup(uri);
+    if (selected.value && opensilex.compareUris(selected.value.uri, uri)) {
+      selected.value = response.response.result;
+      groupContentList.value?.refresh();
+    }
+  } catch (error) {
+    opensilex.errorHandler(error);
+  }
 }
 
 async function onGroupEdit(group: GermplasmGroupGetDTO) {
@@ -103,6 +121,7 @@ async function onGroupEdit(group: GermplasmGroupGetDTO) {
 async function onGroupDelete(group: GermplasmGroupGetDTO) {
   try {
     await service.deleteGermplasmGroup(group.uri);
+    opensilex.showSuccessToast(group.name + ' ' + t('component.common.success.delete-success-message').trim());
     selected.value = undefined;
     refreshGroupList();
   } catch (error) {

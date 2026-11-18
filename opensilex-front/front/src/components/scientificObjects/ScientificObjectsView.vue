@@ -88,7 +88,7 @@
               <!-- Germplasm -->
               <n-form-item :show-feedback="false" class="compact-form-item">
                 <GermplasmSelector
-                  :multiple="false"
+                  :multiple="true"
                   :germplasm="filter.germplasm"
                   :experiment="filter.experiment"
                   class="searchFilter"

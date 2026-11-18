@@ -8,6 +8,7 @@
     :multiple="multiple"
     :required="required"
     :placeholder="computedPlaceholder"
+    :noResultsText="t('component.germplasms.selector-with-filter.filter-search-no-result')"
     @selectionChange="(option) => emit('selectionChange', option)"
     @clear="emit('clear')"
     @handlingEnterKey="emit('handlingEnterKey')"
@@ -43,8 +44,7 @@ const props = withDefaults(defineProps<{
   multiple?: boolean
   experiment?: string
 }>(), {
-  label: 'GermplasmSelector.label',
-  placeholder: 'GermplasmSelector.placeholder',
+  label: 'component.germplasms.selector-with-filter.label',
   required: false,
   multiple: false
 })
@@ -52,7 +52,14 @@ const props = withDefaults(defineProps<{
 const germplasmService = $opensilex.getService<GermplasmService>('opensilex.GermplasmService')
 
 const computedLabel = computed(() => t(props.label))
-const computedPlaceholder = computed(() => t(props.placeholder))
+const computedPlaceholder = computed(() => {
+  if (props.placeholder) {
+    return t(props.placeholder)
+  }
+  return props.multiple
+    ? t('component.germplasms.selector-with-filter.placeholder-multiple')
+    : t('component.germplasms.selector-with-filter.placeholder')
+})
 
 /** Loads one page of results. `page` is zero-based. */
 function search(query: string, page: number, pageSize: number) {
@@ -110,15 +117,3 @@ const germplasmToSelectOption = (germplasm: GermplasmGetAllDTO): SelectOption =>
 
 <style scoped>
 </style>
-
-<i18n>
-en:
-  GermplasmSelector:
-    label: Germplasm
-    placeholder: Select a germplasm
-
-fr:
-  GermplasmSelector:
-    label: Ressources Génétiques
-    placeholder: Sélectionner une resource génétique
-</i18n>

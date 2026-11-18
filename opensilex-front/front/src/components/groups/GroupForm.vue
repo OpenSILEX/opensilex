@@ -1,7 +1,7 @@
 <template>
   <Modal ref="modalRef">
     <template #header>
-      <FormHeader :title="formTitle" icon="ik#ik-users" />
+      <FormHeader :title="formTitle" icon="bi#bi-people" />
     </template>
 
     <n-form ref="formRef" :rules="rules" :model="form" label-placement="top" :show-require-mark="true" size="large">

@@ -1349,6 +1349,11 @@
                 "success-message": "données ont été supprimées.",
                 "error-message": "Pas de données trouvées."
             },
+            "batchDetails": {
+                "title": "Description de lot",
+                "user-name": "Nom d'utilisateur",
+                "document-uri": "Uri du Document"
+            },
             "dataTable": {
                 "target-object": "Objet cible",
                 "list-data": "Date",
@@ -1375,7 +1380,7 @@
                 "choosen-provenance": "Provenance choisie",
                 "selected-file": "Fichier sélectionné",
                 "no-selected-file": "Aucun fichier sélectionné",
-                "csv-file-placeholder": "Déposer un fichier CSV de données ici ou sélectionner un fichier...",
+                "csv-file-placeholder": "Déposez le CSV de données ici ou sélectionner un fichier..",
                 "csv-file-drop-placeholder": "Déposez le CSV de données ici ...",
                 "data-duplicated": "Données dupliquées",
                 "data-not-imported": "Données non importées. Une erreur s'est produite durant le processus d'importation",
@@ -1395,7 +1400,7 @@
             "dataHelp": {
                 "exceptedFormat": "Format attendu",
                 "objectId": "Objet scientifique",
-                "title": "Générer un gabarit d'import de données",
+                "title": "Générer un gabarit de données",
                 "required": "Requis : oui",
                 "variables": "Variable(s)",
                 "variables-associated": "Variables associées à l'expérimentation",
@@ -1504,6 +1509,13 @@
                 "tooLargeDataset": "Jeu de données trop volumineux : '{sizeMax}' observations attendues, '{nbLinesToImport}' observations soumises",
                 "invalidAnnotationErrors": "La colonne cible (Target) doit être remplie pour annoter."
             },
+            "resultModalView": {
+                "title": "Rapport de l'insertion des données",
+                "data-imported": "observations ont été importées avec succès",
+                "datum-imported": "Observation importée avec succès",
+                "annotations-imported": "annotations ont été importées avec succès",
+                "annotation-imported": "Annotation importée avec succès"
+            },
             "dataTemplateForm": {
                 "help": "Le bouton est désactivé si aucune variable n'est sélectionnée",
                 "with-raw-data": "Avec colonnes 'raw data' (données brutes)",
@@ -1551,8 +1563,7 @@
             "fileName-placeholder": "Saisir un nom de fichier",
             "imagesView": "Visualisation",
             "filters": {
-                "rdfType-placeholder": "Sélectionner le type de fichier",
-                "provenance": "Provenance"
+                "rdfType-placeholder": "Sélectionner le type de fichier"
             },
             "list-title": "Fichiers de données",
             "list": {
@@ -1565,7 +1576,6 @@
                 "filename": "Nom du fichier",
                 "format": "Format",
                 "object": "Objet cible",
-                "provenance": "Provenance",
                 "rdfType": "Type",
                 "selected": "Fichiers de données selectionnés",
                 "selected-all": "Tous les fichiers",
@@ -1583,7 +1593,6 @@
                 "fileDX": "Fichier",
                 "fileDX-help": "Insérer un fichier au format JCAMP-DX, JDX, DX. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.",
                 "fileSpectraCSV-help": "Insérer un fichier de spectres au format CSV avec le séparateur tabulation. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.",
-                "provenance": "Provenance",
                 "targets": "Cible(s)",
                 "targets-help": "Liste d'URI des ressources concernées par le document",
                 "type": "Type",
@@ -1673,9 +1682,9 @@
                     "objectProperty": "Relation vers un objet",
                     "inheritedType": "Type hérité du parent",
                     "data-type": "Type de donnée",
-                    "dataProperty-help": "Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, object scientifique, évenement) ",
+                    "dataProperty-help": "Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, objet scientifique, évenement) ",
                     "object-type": "Classe d'objet",
-                    "objectProperty-help": "Propriété liant une ressource(ex: équipement, object scientifique, évenement) à une autre ressource",
+                    "objectProperty-help": "Propriété liant une ressource(ex: équipement, objet scientifique, évenement) à une autre ressource",
                     "range": "Portée",
                     "parent-help": "Parent",
                     "label": {

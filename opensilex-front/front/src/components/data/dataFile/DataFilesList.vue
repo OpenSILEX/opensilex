@@ -279,7 +279,7 @@ const fields = computed(() => {
     },
     {
       key: 'provenance',
-      label: t('component.datafile.list.provenance'),
+      label: t('component.common.provenance'),
       sortable: false
     },
     {

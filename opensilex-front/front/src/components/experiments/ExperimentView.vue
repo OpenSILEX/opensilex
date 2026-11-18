@@ -100,7 +100,7 @@ import {useRoute} from 'vue-router';
 import {useStore} from 'vuex';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse';
-import {ExperimentsService, FactorsService, ScientificObjectsService} from 'opensilex-core';
+import {DataService, ExperimentsService, FactorsService, ScientificObjectsService} from 'opensilex-core';
 import type {ExperimentGetDTO} from 'opensilex-core';
 import PageContent from "@/components/layout/PageContent.vue";
 import PageActions from "@/components/layout/PageActions.vue";
@@ -116,6 +116,7 @@ const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const service = opensilex.getService<ExperimentsService>('opensilex.ExperimentsService');
 const scientificObjectsService = opensilex.getService<ScientificObjectsService>('opensilex.ScientificObjectsService');
 const factorsService = opensilex.getService<FactorsService>('opensilex.FactorsService');
+const dataService = opensilex.getService<DataService>('opensilex.DataService');
 
 const uri = ref<string | null>(null);
 const name = ref('');
@@ -215,6 +216,7 @@ onMounted(() => {
         });
 
     loadFactorsCount();
+    loadDataCount();
   }
 });
 
@@ -224,6 +226,36 @@ function loadFactorsCount() {
       .then((http: HttpResponse<OpenSilexResponse<number>>) => {
         factors.value = http.response.result;
         factorsCountIsLoading.value = false;
+      })
+      .catch((error) => {
+        opensilex.errorHandler(error);
+      });
+}
+
+function loadDataCount() {
+  // Limit count of data for performance reasons
+  dataService
+      .countData(
+          undefined,
+          undefined,
+          undefined,
+          [uri.value],
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          1000,
+          undefined,
+          undefined
+      )
+      .then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        dataCount.value = http.response.result;
+        dataCountIsLoading.value = false;
       })
       .catch((error) => {
         opensilex.errorHandler(error);

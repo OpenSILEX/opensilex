@@ -105,6 +105,7 @@
             "select-date": "Choisissez une date",
             "next": "Suivant",
             "previous": "Précédent",
+            "provenance": "Provenance",
             "colon": " :",
             "uri-copy": "URI copiée dans le presse-papier",
             "url-copy": "URL copiée dans le presse-papier",
@@ -1349,6 +1350,11 @@
                 "success-message": "données ont été supprimées.",
                 "error-message": "Pas de données trouvées."
             },
+            "batchDetails": {
+                "title": "Description de lot",
+                "user-name": "Nom d'utilisateur",
+                "document-uri": "Uri du Document"
+            },
             "dataTable": {
                 "target-object": "Objet cible",
                 "list-data": "Date",
@@ -1375,8 +1381,8 @@
                 "choosen-provenance": "Provenance choisie",
                 "selected-file": "Fichier sélectionné",
                 "no-selected-file": "Aucun fichier sélectionné",
-                "csv-file-placeholder": "Déposez le CSV de données ici ou sélectionner un fichier..",
-                "csv-file-drop-placeholder": "Déposez le CSV de données ici ...",
+                "csv-file-placeholder": "Déposer le CSV de données ici ou sélectionner un fichier..",
+                "csv-file-drop-placeholder": "Déposer le CSV de données ici ...",
                 "data-duplicated": "Données dupliquées",
                 "data-not-imported": "Données non importées. Une erreur s'est produite durant le processus d'importation",
                 "error": "Erreur",
@@ -1411,7 +1417,7 @@
                 "columns": "Colonnes du fichier CSV",
                 "file-rules": "Règles d'édition du CSV",
                 "objectId-help": "Nom ou l'URI de l'objet scientifique",
-                "targetId-help": "Nom ou l'URI du target (ex: object scientifique)",
+                "targetId-help": "Nom ou l'URI du target (ex: objet scientifique)",
                 "experiment-help": "Nom ou l'URI de l'expérimentation",
                 "device-help": "Nom ou l'URI du device",
                 "variable-help": "Nom de la variable 1",
@@ -1439,7 +1445,7 @@
                 }
             },
             "dataTemplate": {
-                "annotationHelp": "Annotation (Sur l'object cible)"
+                "annotationHelp": "Annotation (Sur l'objet cible)"
             },
             "dataValidationReport": {
                 "errorLine": "Ligne",
@@ -1504,14 +1510,21 @@
                 "tooLargeDataset": "Jeu de données trop volumineux : '{sizeMax}' observations attendues, '{nbLinesToImport}' observations soumises",
                 "invalidAnnotationErrors": "La colonne cible (Target) doit être remplie pour annoter."
             },
+            "resultModalView": {
+                "title": "Rapport de l'insertion des données",
+                "data-imported": "observations ont été importées avec succès",
+                "datum-imported": "Observation importée avec succès",
+                "annotations-imported": "annotations ont été importées avec succès",
+                "annotation-imported": "Annotation importée avec succès"
+            },
             "dataTemplateForm": {
                 "help": "Le bouton est désactivé si aucune variable n'est sélectionnée",
                 "with-raw-data": "Avec colonnes 'raw data' (données brutes)",
                 "raw-data": "Données brutes",
                 "type-list": "Liste de ",
                 "raw-data-example": "Données brutes (ex : 20.3,20.4,20.5)",
-                "select-columns": "Sélectionnez les colonnes optionnelles dont vous avez besoin",
-                "select-variables": "Sélectionnez les variables dont vous avez besoin",
+                "select-columns": "Sélectionner les colonnes optionnelles dont vous avez besoin",
+                "select-variables": "Sélectionner les variables dont vous avez besoin",
                 "target-device-required": "La provenance sélectionnée ne contient pas de device, vous devez donc ajouter la colonne \"target\" ou \"device\"",
                 "example": {
                     "column-data-type": "Type de données colonne : "
@@ -1543,8 +1556,7 @@
             "fileName-placeholder": "Saisir un nom de fichier",
             "imagesView": "Visualisation",
             "filters": {
-                "rdfType-placeholder": "Sélectionner le type de fichier",
-                "provenance": "Provenance"
+                "rdfType-placeholder": "Sélectionner le type de fichier"
             },
             "list-title": "Fichiers de données",
             "list": {
@@ -1557,7 +1569,6 @@
                 "filename": "Nom du fichier",
                 "format": "Format",
                 "object": "Objet cible",
-                "provenance": "Provenance",
                 "rdfType": "Type",
                 "selected": "Fichiers de données selectionnés",
                 "selected-all": "Tous les fichiers",
@@ -1575,7 +1586,6 @@
                 "fileDX": "Fichier",
                 "fileDX-help": "Insérer un fichier au format JCAMP-DX, JDX, DX. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.",
                 "fileSpectraCSV-help": "Insérer un fichier de spectres au format CSV avec le séparateur tabulation. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.",
-                "provenance": "Provenance",
                 "targets": "Cible(s)",
                 "targets-help": "Liste d'URI des ressources concernées par le document",
                 "type": "Type",
@@ -1665,9 +1675,9 @@
                     "objectProperty": "Relation vers un objet",
                     "inheritedType": "Type hérité du parent",
                     "data-type": "Type de donnée",
-                    "dataProperty-help": "Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, object scientifique, évenement) ",
+                    "dataProperty-help": "Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, objet scientifique, évenement) ",
                     "object-type": "Classe d'objet",
-                    "objectProperty-help": "Propriété liant une ressource(ex: équipement, object scientifique, évenement) à une autre ressource",
+                    "objectProperty-help": "Propriété liant une ressource(ex: équipement, objet scientifique, évenement) à une autre ressource",
                     "range": "Portée",
                     "parent-help": "Parent",
                     "label": {
@@ -1998,7 +2008,6 @@
         "date": "Date",
         "value": "Valeur",
         "variable": "Variable",
-        "provenance": "Provenance",
         "provenance-placeholder": "Sélectionner une provenance",
         "germplasm-group": "Groupe de ressources génétiques",
         "germplasm-group-placeholder": "Sélectionner un groupe de ressources génétiques",

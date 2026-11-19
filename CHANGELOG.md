@@ -158,7 +158,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > If you are upgrading from 1.5.1 or higher, there's nothing to do.
 
 - (!1608) [scientific object] fix shapefile os geospatial export with experiment infos
-- (!1619) [ScientificObject] A Scientific Object that has a Facility location's update form will now no longer fail to show most fields. And the update operation will no longer fail.
+- (!1619) [scientific object] A Scientific Object that has a Facility location's update form will now no longer fail to show most fields. And the update operation will no longer fail.
 
 ## [1.5.9]
 

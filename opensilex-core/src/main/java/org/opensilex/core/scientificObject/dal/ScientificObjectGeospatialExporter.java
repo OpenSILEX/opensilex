@@ -3,6 +3,7 @@ package org.opensilex.core.scientificObject.dal;
 
 import org.apache.commons.collections4.BidiMap;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialExporter;
@@ -22,14 +23,29 @@ public class ScientificObjectGeospatialExporter extends GeospatialExporter<Scien
     static final URI HAS_DESTRUCTIONTION_DATE = URI.create(SPARQLDeserializers.getShortURI(Oeso.hasDestructionDate.getURI()));
     static final URI PARTICIPATES_IN = URI.create(SPARQLDeserializers.getShortURI(Oeso.participatesIn.getURI()));
 
+    // GeoJSON custom properties
     static final String EXPERIMENT_URI_PROP = "experiment_URI";
     static final String EXPERIMENT_NAME_PROP = "experiment_name";
+
+    // Shapefile custom column - names are limited to 10 characters
+    static final String SHP_EXPERIMENT_URI_COL = "exp_URI";
+    static final String SHP_EXPERIMENT_NAME_COL = "exp_name";
 
     private final ExperimentModel experimentModel;
 
     public ScientificObjectGeospatialExporter(ExperimentModel experimentModel) {
         super();
         this.experimentModel = experimentModel;
+    }
+
+    @Override
+    protected void addShpCustomAttributes(URI prop, SimpleFeatureTypeBuilder typeBuilder) {
+        if (prop.equals(PARTICIPATES_IN)) {
+            typeBuilder.add(SHP_EXPERIMENT_URI_COL, String.class);
+            typeBuilder.add(SHP_EXPERIMENT_NAME_COL, String.class);
+        } else {
+            super.addShpCustomAttributes(prop, typeBuilder);
+        }
     }
 
     @Override
@@ -44,9 +60,11 @@ public class ScientificObjectGeospatialExporter extends GeospatialExporter<Scien
         } else if (prop.equals(HAS_DESTRUCTIONTION_DATE) && el.getDestructionDate() != null) {
             int index = indexAttributes.getKey(propFormatting(prop));
             featureBuilder.set(index, el.getDestructionDate());
-        } else if (prop.equals(PARTICIPATES_IN) && experimentModel != null) {
-            featureBuilder.set(EXPERIMENT_URI_PROP, experimentModel.getUri().toString());
-            featureBuilder.set(EXPERIMENT_NAME_PROP, experimentModel.getName());
+        } else if (prop.equals(PARTICIPATES_IN)) {
+            if (experimentModel != null) {
+                featureBuilder.set(SHP_EXPERIMENT_URI_COL, experimentModel.getUri().toString());
+                featureBuilder.set(SHP_EXPERIMENT_NAME_COL, experimentModel.getName());
+            }
         } else {
             if (!el.getRelations().isEmpty()) {
                 //Get the value of the corresponding property

@@ -6,7 +6,7 @@
       :disabled="false"
       :required="property.is_required"
       :helpMessage="property.comment"
-      :placeholder="$t('XSDStringInput.placeholder')"
+      :placeholder="t('component.ontology.externalOntologies.XSD-placehorlder.XSDStringInput-placeholder')"
   />
   </n-form-item>
 </template>
@@ -15,8 +15,11 @@
 import InputForm from "@/components/common/forms/InputForm.vue";
 import {FormItemRule, NFormItem} from "naive-ui";
 import {computed, useTemplateRef, watch} from "vue";
+import {useI18n} from "vue-i18n";
 import {VueRDFTypePropertyDTO} from "@/lib";
 import {required} from "@/models/FormFieldsFormatter";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   property: VueRDFTypePropertyDTO
@@ -44,12 +47,3 @@ watch(
 <style scoped lang="scss">
 </style>
 
-<i18n>
-en:
-  XSDStringInput:
-    placeholder: "Enter text, ex : Opensilex"
-
-fr:
-  XSDStringInput:
-    placeholder: "Saisir du texte, ex : Opensilex"
-</i18n>

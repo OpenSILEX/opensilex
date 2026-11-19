@@ -97,7 +97,7 @@
             "uri-validate": "Saisir un URI",
             "uri-or-url": "URI ou URL",
             "logout": "Déconnexion",
-            "parent": "parent",
+            "parent": "Parent",
             "type": "Type",
             "type-properties": "Propriétés du type selectionné",
             "select": "Sélectionner",
@@ -1008,6 +1008,7 @@
             "modal-title": "Objets scientifiques sélectionnés",
             "scientificObjects": "Objet(s) scientifique(s)",
             "scientificObjects-placeholder": "Sélectionner des objets scientifiques",
+            "scientificObject-placeholder": "Sélectionner un objet scientifique",
             "parent-placeholder": "Sélectionner un parent",
             "objectType": "Type d'objet",
             "alertSelectAllLimitSize": "La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum=",
@@ -1262,6 +1263,7 @@
                 "facility-default-date": "Date par défaut"
             },
             "filter-placeholder": "Rechercher des installations environnementales...",
+            "facility-placeholder": "Sélectionner une installation environnementale",
             "view": {
                 "list": {
                     "previous": "Consulter l'infrastructure précédente",
@@ -1719,6 +1721,7 @@
                 "qudt": "Les modèles Quantities, Units, Dimensions and Data Types (QUDT) sont fondés sur l’analyse dimensionnelle exprimée dans le langage OWL (Web Ontology Language). L’approche dimensionnelle relie chaque unité à un système d’unités de base à l’aide de facteurs numériques et d’un vecteur d’exposants défini sur un ensemble de dimensions fondamentales.",
                 "xsd": "Découvrez les langages de schémas XML.",
                 "XSD-placehorlder": {
+                    "XSDStringInput-placeholder": "Saisir du texte, ex : Opensilex",
                     "XSDLongStringInput-placeholder": "Saisissez un texte long, ex : OpenSILEX est un système d'information guidé par des ontologies, conçu pour les données issues des sciences de la vie ",
                     "XSDIntegerInput-placeholder": "Saisir un nombre entier, ex : 8611",
                     "XSDDecimalInput-placeholder": "Saisir un nombre décimal, ex : 8611.53",

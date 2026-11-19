@@ -1,6 +1,6 @@
 <template>
   <Card
-    :label="t('GermplasmGroupView.type')"
+    :label="t('component.germplasms.title')"
     icon="fa#seedling"
     :noFooter="true"
   >
@@ -37,18 +37,17 @@ import TableAsyncView from '@/components/common/views/TableAsyncView.vue';
 import UriLink from '@/components/common/views/UriLink.vue';
 
 //#region Public
-interface TableSearchOptions {
-  orderBy?: string[];
-  currentPage: number;
-  pageSize: number;
-}
-
 const props = defineProps<{
   selectedUri: string;
 }>();
 //#endregion
 
 //#region Private
+interface TableSearchOptions {
+  orderBy?: string[];
+  currentPage: number;
+  pageSize: number;
+}
 //#region Hooks
 watch(
   () => props.selectedUri,
@@ -96,12 +95,3 @@ defineExpose({
 //#endregion
 //#endregion
 </script>
-
-<i18n>
-en:
-  GermplasmGroupView:
-    type: Germplasm
-fr:
-  GermplasmGroupView:
-    type: Ressources génétiques
-</i18n>

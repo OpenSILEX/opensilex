@@ -66,10 +66,6 @@ import GermplasmGroupStructureDetails from '@/components/germplasmGroup/Germplas
 import GermplasmGroupContentList from '@/components/germplasmGroup/GermplasmGroupContentList.vue';
 import DocumentTabList from '../documents/DocumentTabList.vue';
 
-//#region Public
-const selected = ref<GermplasmGroupGetDTO>();
-const filtersCollapsed = ref(true);
-//#endregion
 
 //#region Private
 const { t } = useI18n();
@@ -84,6 +80,8 @@ const helpModal = useTemplateRef<InstanceType<typeof Modal>>('helpModal');
 const groupForm = useTemplateRef<InstanceType<typeof GroupGermplasmForm>>('groupForm');
 const groupList = useTemplateRef<InstanceType<typeof GermplasmGroupList>>('groupList');
 const groupContentList = useTemplateRef<InstanceType<typeof GermplasmGroupContentList>>('groupContentList');
+const selected = ref<GermplasmGroupGetDTO>();
+const filtersCollapsed = ref(true);
 
 onMounted(async () => {
   const uri = route.query.selected;
@@ -92,7 +90,6 @@ onMounted(async () => {
   try {
     const response = await service.getGermplasmGroup(uri);
     selected.value = response.response.result;
-    filtersCollapsed.value = true;
   } catch (error) {
     opensilex.errorHandler(error);
   }
@@ -146,7 +143,10 @@ async function onGroupDelete(group: GermplasmGroupGetDTO) {
   try {
     await service.deleteGermplasmGroup(group.uri);
     opensilex.showSuccessToast(group.name + ' ' + t('component.common.success.delete-success-message').trim());
-    selected.value = undefined;
+    if (selected.value && opensilex.compareUris(selected.value.uri, group.uri)) {
+      selected.value = undefined;
+      router.replace({ query: { ...route.query, selected: undefined } });
+    }
     refreshGroupList();
   } catch (error) {
     opensilex.errorHandler(error);

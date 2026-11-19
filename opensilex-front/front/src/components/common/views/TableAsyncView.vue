@@ -84,11 +84,10 @@
             :remote="true"
             :striped="true"
             :row-key="(row) => row.uri"
-            @row-click="onRowClickedSafe"
             :row-props="
             (row) => ({
               style: row.__isDetailsRow ? '' : 'cursor: pointer',
-              onClick: () => onRowClickedSafe(row),
+              onClick: props.selectMode === 'single' ? () => onRowClickedSafe(row) : undefined
             })
           "
             :checked-row-keys="checkedRowKeys"

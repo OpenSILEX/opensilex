@@ -36,13 +36,13 @@
             <span :style="{ fontWeight: props.selectedUri && opensilex.compareUris(props.selectedUri, data.item.uri) ? 'bold' : 'normal' }">
               {{ data.item.name }}
               <template v-if="data.item.germplasm_count">
-                {{ t('GermplasmGroupList.germplasm', data.item.germplasm_count) }}
+                {{ t('component.germplasms.group.germplasmCount', data.item.germplasm_count) }}
               </template>
             </span>
           </template>
 
           <template #cell(actions)="{ data }">
-            <n-button-group size="small">
+            <n-button-group @click.stop size="small">
               <EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
                 label="component.common.edit"
@@ -167,12 +167,3 @@ defineExpose({
   refresh,
 });
 </script>
-
-<i18n>
-en:
-  GermplasmGroupList:
-    germplasm: "(0 germplasm) | (1 germplasm) | ({count} germplasm)"
-fr:
-  GermplasmGroupList:
-    germplasm: "(0 ressources génétiques) | (1 ressource génétique) | ({count} ressources génétiques)"
-</i18n>

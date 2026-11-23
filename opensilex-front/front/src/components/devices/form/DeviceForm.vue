@@ -1,7 +1,7 @@
 <template>
   <Modal ref="modalRef">
     <template #header>
-      <FormHeader :title="modalFormLogic.formTitle.value" icon="ik#ik-thermometer" />
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="bi#bi-thermometer-half" />
     </template>
 
     <n-form

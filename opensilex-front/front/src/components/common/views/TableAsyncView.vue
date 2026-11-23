@@ -197,10 +197,6 @@ const nThemeOverrides: GlobalThemeOverrides = {
 const routeArr = computed(() => route.path.split('/'));
 
 onMounted(() => {
-  if (props.isSelectable && props.selectMode !== 'single') {
-    props.fields.unshift({ key: 'select', isSelect: true });
-  }
-
   // attendre que la table soit générée pour appeler et remplir de données
   nextTick(() => {
     if (tableRef.value) {

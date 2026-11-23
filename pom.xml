@@ -177,13 +177,13 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-report</artifactId>
-            <version>1.0.1-opensilex-${revision}</version>
+            <version>1.1.0-opensilex-${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-sixtine-citrus</artifactId>
-            <version>1.0.1-opensilex-${revision}</version>
+            <version>1.1.0-opensilex-${revision}</version>
         </dependency>
 
         

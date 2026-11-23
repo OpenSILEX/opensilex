@@ -165,25 +165,25 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-incubator</artifactId>
-            <version>${revision}</version>
+            <version>0.1.0-opensilex-BUILD-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-deref</artifactId>
-            <version>${revision}</version>
+            <version>1.0.0-opensilex-${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-report</artifactId>
-            <version>${revision}</version>
+            <version>1.0.1-opensilex-${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-sixtine-citrus</artifactId>
-            <version>${revision}</version>
+            <version>1.0.1-opensilex-${revision}</version>
         </dependency>
 
         

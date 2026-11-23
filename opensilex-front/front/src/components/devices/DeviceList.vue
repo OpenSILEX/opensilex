@@ -199,7 +199,7 @@
         :isSelectable="true"
         :showHeaderCount="false"
         labelNumberOfSelectedRow="DeviceList.selected"
-        iconNumberOfSelectedRow="ik#ik-thermometer"
+        iconNumberOfSelectedRow="bi#bi-thermometer-half"
         @refreshed="onRefreshed"
       >
         <template #cell(name)="{ data }">
@@ -971,7 +971,7 @@ en:
       rdfTypes-placeholder: Select a device type
       variable: Variable
       variable-placeholder: Select a variable
-      start_up: Start up
+      start_up: Year Obtained
       start_up-placeholder: Enter year
       facility: Facility
       facility-placeholder: Select a facility
@@ -1017,7 +1017,7 @@ fr:
       rdfTypes-placeholder: Sélectionner un type d'appareil
       variable: Variable
       variable-placeholder: Sélectionner une variable
-      start_up: Date d'obtention
+      start_up: Année d'obtention
       start_up-placeholder: Entrer une année
       facility: Installation environnementale
       facility-placeholder: Sélectionner une installation

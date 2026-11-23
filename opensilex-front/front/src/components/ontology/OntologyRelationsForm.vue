@@ -224,6 +224,12 @@ export default class OntologyRelationsForm extends Vue {
               this.initHandler.apply(this, [relation]);
             });
           }
+
+          if (initialLoad) {
+            // Sync the input relations with the internal ones, so that relations that are not handled by this form
+            // (e.g. unknown properties for the type, like retro-compatibility relations) are not sent back to the parent
+            this.updateRelation(null, null);
+          }
         }catch(e){
           this.$opensilex.errorHandler(e);
         }
@@ -298,6 +304,12 @@ export default class OntologyRelationsForm extends Vue {
             let propertyDto = this.typeModel.object_properties.find(propertyModel => propertyModel.uri == relation.property)
             if (!propertyDto) {
                 propertyDto = this.typeModel.data_properties.find(propertyModel => propertyModel.uri == relation.property)
+            }
+
+            // ignore relations whose property is not defined for this type
+            // (e.g. the deprecated vocabulary:isHosted added by the API for retro-compatibility)
+            if (!propertyDto) {
+                return;
             }
 
             // multi-valued relation -> use array of values

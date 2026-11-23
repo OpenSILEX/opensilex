@@ -55,7 +55,7 @@
         $t(data.name)
       }}</template>
       <template v-slot:head(category)="{ data }">{{ $t(data.label) }}</template>
-      <!-- <template v-slot:head(uri)="{data}">{{$t(data.label)}}</template> -->
+       <template v-slot:head(uri)="{data}">{{$t(data.label)}}</template>
       <template v-slot:head(actions)="{ data }">{{ $t(data.label) }}</template>
       <template v-slot:cell(name)="{ data }">
         <UriLink
@@ -66,7 +66,7 @@
       </template>
       <template v-slot:cell(category)="{ data }"
         ><span class="capitalize-first-letter">{{
-          opensilex.getFactorCategoryName(data.value)
+          opensilex.getFactorCategoryName(data.item.category)
         }}</span></template
       >
       <template v-slot:cell(actions)="{ data }">
@@ -104,7 +104,6 @@
 <script setup lang="ts">
 
 // @ts-ignore
-import {FactorsfactorService} from "core/index";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
 import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
 import UriLink from "@/components/common/views/UriLink.vue";

@@ -152,6 +152,7 @@ import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
 import DateRangePickerForm from "@/components/common/forms/DateRangePickerForm.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import DC from "@/ontologies/DC";
 
 //#region Public
 const emit = defineEmits<ModalFormEmits>();
@@ -184,7 +185,10 @@ const excludedProperties = new Set<string>([
   $opensilex.Oeso.HAS_SERIAL_NUMBER,
   $opensilex.Oeso.PERSON_IN_CHARGE,
   $opensilex.Oeso.START_UP,
-  $opensilex.Oeso.REMOVAL
+  $opensilex.Oeso.REMOVAL,
+  DC.MODIFIED,
+  DC.ISSUED,
+  DC.PUBLISHER
 ])
 
 const attributesArray = ref<any[]>([])

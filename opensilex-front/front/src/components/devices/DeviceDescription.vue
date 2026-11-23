@@ -131,24 +131,14 @@
                     </opensilex-StringView> -->
 
                     <!-- Relations -->
-                    <div
-                        v-for="(relation, index) in device.relations || []"
-                        :key="index"
-                    >
-                        <opensilex-StringView
-                        v-if="!relation.inverse && !isIsPartOfRelation(relation) && !isVariableRelation(relation)"
-                        :label="getPropertyName(relation.property)"
-                        :value="relation.value"
-                        />
-
-                        <opensilex-UriView
-                        v-else-if="!relation.inverse && isIsPartOfRelation(relation)"
-                        :title="getPropertyName(relation.property)"
-                        :uri="relation.value"
-                        :value="relation.value"
-                        :to="{ path: '/device/details/' + encodeURIComponent(relation.value) }"
-                        />
-                    </div>
+                    <OntologyObjectProperties
+                        v-if="device.rdf_type"
+                        :selected="device"
+                        :parentType="baseType"
+                        :relations="device.relations || []"
+                        :ignoredProperties="[$opensilex.Oeso.MEASURES_PROP_URI]"
+                        :showIncoming="false"
+                    />
 
                     <opensilex-MetadataView
                         v-if="device.publisher && device.publisher.uri"
@@ -233,7 +223,6 @@ import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type { VueJsOntologyExtensionService, VueRDFTypeDTO } from '@/lib'
 import type HttpResponse from '@/lib/HttpResponse'
 import type { OpenSilexResponse } from '@/lib/HttpResponse'
 import Oeev from "../../ontologies/Oeev";
@@ -252,6 +241,7 @@ import type { VariablesService } from 'opensilex-core/api/variables.service'
 import type { SecurityService, PersonDTO } from 'opensilex-security/index'
 import DeviceForm from "@/components/devices/form/DeviceForm.vue";
 import Card from "@/components/common/views/Card.vue";
+import OntologyObjectProperties from "@/components/ontology/OntologyObjectProperties.vue";
 
 const store = useStore()
 const route = useRoute()
@@ -262,7 +252,6 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
 const service = $opensilex.getService<DevicesService>('opensilex.DevicesService')
 const variablesService = $opensilex.getService<VariablesService>('opensilex.VariablesService')
-const vueJsOntologyService = $opensilex.getService<VueJsOntologyExtensionService>('opensilex.VueJsOntologyExtensionService')
 const eventsService = $opensilex.getService<EventsService>('opensilex.EventsService')
 const positionService = $opensilex.getService<PositionsService>('opensilex.PositionsService')
 const securityService = $opensilex.getService<SecurityService>('opensilex.SecurityService')
@@ -275,7 +264,6 @@ const credentials = computed(() => store.state.credentials)
 const uri = ref<string>('')
 const addInfo = ref<Array<{ attribute: string; value: string }>>([])
 const baseType = ref<string>($opensilex.Oeso.DEVICE_TYPE_URI)
-const propertyByUri = ref<Map<string, VueRDFTypeDTO>>(new Map())
 
 const linkedVariablesURIs = ref<string[]>([])
 const linkedVariables = ref<VariableDetailsDTO[]>([])
@@ -349,7 +337,6 @@ async function loadDevice() {
 
     device.value = http.response.result
     getAddInfo()
-    loadProperties()
     loadLastCalibrationEvent()
     loadLastPosition()
     loadPersonInCharge()
@@ -385,27 +372,6 @@ async function getLinkedVariables() {
       await variablesService.getVariablesByURIs(linkedVariablesURIs.value)
 
     linkedVariables.value = http.response.result
-  } catch (error) {
-    $opensilex.errorHandler(error)
-  }
-}
-
-async function loadProperties() {
-  try {
-    const http: HttpResponse<OpenSilexResponse<VueRDFTypeDTO>> =
-      await vueJsOntologyService.getRDFTypeProperties(device.value.rdf_type, baseType.value)
-
-    const typeModel = http.response.result
-    const map = new Map<string, VueRDFTypeDTO>()
-
-    typeModel.data_properties.forEach((property: any) => {
-      map.set(property.uri, property)
-    })
-    typeModel.object_properties.forEach((property: any) => {
-      map.set(property.uri, property)
-    })
-
-    propertyByUri.value = map
   } catch (error) {
     $opensilex.errorHandler(error)
   }
@@ -515,25 +481,6 @@ function isVariableRelation(relation: RDFObjectRelationDTO): boolean {
     relation.property === measuresProp ||
     relation.property === $opensilex.Oeso.getShortURI(measuresProp)
   )
-}
-
-function isIsPartOfRelation(relation: RDFObjectRelationDTO): boolean {
-  const isPartOfProp = $opensilex.Oeso.IS_PART_OF
-  return (
-    relation.property === isPartOfProp ||
-    relation.property === $opensilex.Oeso.getShortURI(isPartOfProp)
-  )
-}
-
-function getPropertyName(propertyUri: string) {
-  if (!propertyUri) return undefined
-
-  const property = propertyByUri.value.get(propertyUri)
-  if (property) {
-    return property.name
-  }
-
-  return propertyUri
 }
 
 function customCoordinatesText(position: LocationObservationDTO): string | undefined {

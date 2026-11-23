@@ -9,7 +9,7 @@
           <template #rightHeader>
             <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayLocalActions"
-              label="VariableDetails.edit"
+              label="component.variable.edit"
               variant="outline-primary"
               @click="showEditForm"
               :small="true"
@@ -25,7 +25,7 @@
 
             <opensilex-InteroperabilityButton
               v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayLocalActions"
-              label="VariableDetails.edit-references"
+              label="component.variable.edit-references"
               @click="skosReferences?.show?.()"
               :small="true"
             />
@@ -84,7 +84,7 @@
 
       <!-- Structure -->
       <div>
-        <opensilex-Card :no-footer="true" :label="t('VariableDetails.structure')" icon="bi-clipboard">
+        <opensilex-Card :no-footer="true" :label="t('component.variable.structure')" icon="bi-clipboard">
           <template #body>
             <opensilex-UriView
               title="component.variable.entity.entity"
@@ -143,7 +143,7 @@
 
       <!-- Avancé -->
       <div>
-        <opensilex-Card :no-footer="true" :label="t('VariableDetails.advanced')" icon="bi-clipboard">
+        <opensilex-Card :no-footer="true" :label="t('component.variable.advanced')" icon="bi-clipboard">
           <template #body>
             <opensilex-UriListView
               v-if="!isGermplasmMenuExcluded"
@@ -169,13 +169,13 @@
             />
             <opensilex-UriView
               v-if="mutableVariable?.trait"
-              title="VariableForm.trait-uri"
+              title="component.variable.trait-uri"
               :uri="mutableVariable.trait"
               :url="mutableVariable.trait"
             />
             <opensilex-StringView
               v-if="mutableVariable?.trait"
-              label="VariableForm.trait-name"
+              label="component.variable.trait-name"
               :value="mutableVariable.trait_name"
             />
           </template>
@@ -354,30 +354,3 @@ function getUnitPath() {
   }
 }
 </style>
-
-<i18n>
-en:
-  VariableDetails:
-    title: Detailled variable view
-    entity-name: Entity name
-    characteristic-name: Characteristic name
-    method-name: Method name
-    unit-name: Unit name
-    structure: Structure
-    advanced: Advanced information
-    edit: Edit variable
-    edit-references: Edit references
-    visualization: Device associated Data Visualization
-fr:
-  VariableDetails:
-    title: Vue détaillée de la variable
-    entity-name: Nom d'entité
-    characteristic-name: Nom de la caractéristique
-    method-name: Nom de méthode
-    unit-name: Nom d'unité
-    structure: Structure
-    advanced: Informations avancées
-    edit: Editer la variable
-    edit-references: Editer les références
-    visualization: Visualisation des données associées à un appareil
-</i18n>

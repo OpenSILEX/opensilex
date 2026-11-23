@@ -110,18 +110,17 @@
 
             <!-- Provenance -->
             <n-form-item class="compact-form-item">
-              <DatafileProvenanceSelector
-                ref="provSelector"
+              <UsedProvenanceSelector
+                source="datafiles"
                 v-model:provenances="filter.provenance"
                 :label="t('component.datafile.filters.provenance')"
-                @select="loadProvenance"
+                @selectionChange="loadProvenance"
                 :devices="passedDeviceUri ? [passedDeviceUri] : undefined"
                 :targets="filter.scientificObjects"
                 :experiments="realFilterToApply.experiments"
                 :multiple="false"
                 :viewHandler="showProvenanceDetails"
                 :viewHandlerDetailsVisible="provenanceDetailsAreVisible"
-                :showURI="false"
                 :key="refreshKey"
                 class="searchFilter"
                 @handlingEnterKey="refresh"
@@ -178,7 +177,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef} from 'vue'
+import {computed, inject, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import {
@@ -188,6 +187,7 @@ import {
   NInput,
   NSpace,
   NSwitch,
+  type SelectOption,
 } from 'naive-ui'
 
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
@@ -198,7 +198,7 @@ import DataFileForm from "@/components/data/dataFile/DataFileForm.vue";
 import DataFilesList, {DatafileFilter} from "@/components/data/dataFile/DataFilesList.vue";
 import DataFilesImagesList from "@/components/data/dataFile/DataFilesImagesList.vue";
 import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
-import DatafileProvenanceSelector from "@/components/data/dataFile/DatafileProvenanceSelector.vue";
+import UsedProvenanceSelector from "@/components/data/UsedProvenanceSelector.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import ModalFormSelector from "@/components/variables/form/ModalFormSelector.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
@@ -298,7 +298,6 @@ const soFilter = ref<SoFilterModel>({
 //#region Template refs
 const datafilesList = useTemplateRef<InstanceType<typeof DataFilesList>>("datafilesList");
 const datafilesImagesList = useTemplateRef<InstanceType<typeof DataFilesImagesList>>("datafilesImagesList");
-const provSelector = useTemplateRef<InstanceType<typeof DatafileProvenanceSelector>>("provSelector");
 const soSelector = useTemplateRef<InstanceType<typeof ModalFormSelector>>("soSelector");
 const datafileForm = useTemplateRef<InstanceType<typeof DataFileForm>>("datafileForm");
 
@@ -364,6 +363,17 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   langUnwatcher?.()
+});
+
+/**
+ * Closes the provenance details once no provenance is selected anymore: cleared, reset, or unselected by
+ * the selector because it is not available for the new experiments or scientific objects.
+ */
+watch(() => filter.value.provenance, (provenance) => {
+  if (!provenance) {
+    provenanceDetailsAreVisible.value = false;
+    selectedProvenance.value = null;
+  }
 });
 //#endregion
 
@@ -452,9 +462,10 @@ function getProvenance(uri: string) {
   return Promise.resolve(undefined);
 }
 
-function loadProvenance(selectedValue: any) {
-  if (selectedValue !== undefined && selectedValue !== null) {
-    getProvenance(selectedValue.id).then((prov) => {
+function loadProvenance(option: SelectOption | SelectOption[] | undefined) {
+  // Single selection only: the selector is used with `multiple` false
+  if (option !== undefined && !Array.isArray(option)) {
+    getProvenance(String(option.value)).then((prov) => {
       selectedProvenance.value = prov;
     })
   }

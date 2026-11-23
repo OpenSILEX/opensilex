@@ -101,12 +101,12 @@
 
           <!-- Provenance -->
             <div class="w-100">
-              <DataProvenanceSelector
-                  ref="provSelector"
+              <UsedProvenanceSelector
+                  source="data"
                   v-model:provenances="filter.provenance"
                   :label="t('experimentData.provenance')"
                   :placeholder="t('experimentData.provenance-placeholder')"
-                  @select="loadProvenance"
+                  @selectionChange="onProvenanceSelectorSelectionChange"
                   :experiments="[uri]"
                   :targets="filter.scientificObjects"
                   :multiple="false"
@@ -115,7 +115,7 @@
                   :key="refreshKey"
                   class="searchFilter"
                   @handlingEnterKey="refresh()"
-              ></DataProvenanceSelector>
+              ></UsedProvenanceSelector>
 
               <n-collapse-transition v-if="selectedProvenance" :show="visibleDetails" class="mt-2">
                 <ProvenanceDetails
@@ -212,7 +212,7 @@ import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
-import {computed, inject, nextTick, onMounted, ref, useTemplateRef} from "vue";
+import {computed, inject, nextTick, onMounted, ref, useTemplateRef, watch} from "vue";
 import {useRoute} from "vue-router";
 import DataImportForm from "@/components/data/form/DataImportForm.vue";
 import ResultModalView from "@/components/data/ResultModalView.vue";
@@ -220,9 +220,9 @@ import DataExportModal from "@/components/data/DataExportModal.vue";
 import GermplasmGroupSelector from "@/components/germplasm/GermplasmGroupSelector.vue";
 import DataList from "@/components/data/DataList.vue";
 import {useStore} from "vuex";
-import {NCollapse, NCollapseItem, NCollapseTransition, NFormItem, NLayout, NLayoutContent, NForm} from "naive-ui";
+import {NCollapse, NCollapseItem, NCollapseTransition, NFormItem, NLayout, NLayoutContent, NForm, type SelectOption} from "naive-ui";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
-import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
+import UsedProvenanceSelector from "@/components/data/UsedProvenanceSelector.vue";
 import {DataService} from "../../../../../../opensilex-core/front/src/lib";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
@@ -273,7 +273,6 @@ const soFilter = ref<any>(defaultSoFilter())
 
 const dataList = useTemplateRef<InstanceType<typeof DataList>>('dataList')
 const modalDataForm = useTemplateRef<InstanceType<typeof DataImportForm>>('modalDataForm')
-const provSelector = useTemplateRef<InstanceType<typeof DataProvenanceSelector>>('provSelector')
 const resultModal = useTemplateRef<InstanceType<typeof ResultModalView>>('resultModal')
 const soSelector = useTemplateRef<InstanceType<typeof ModalFormSelector>>('soSelector')
 const exportModal = useTemplateRef<InstanceType<typeof DataExportModal>>('exportModal')
@@ -441,6 +440,24 @@ function loadProvenance(selectedValue)
     });
   }
 }
+
+/** The selector emits a naive-ui option: single selection only, the selector is used with `multiple` false */
+function onProvenanceSelectorSelectionChange(option: SelectOption | SelectOption[] | undefined) {
+  if (option !== undefined && !Array.isArray(option)) {
+    loadProvenance({ id: String(option.value) });
+  }
+}
+
+/**
+ * Closes the provenance details once no provenance is selected anymore: cleared, reset, or unselected by
+ * the selector because it is not available for the new experiments or scientific objects.
+ */
+watch(() => filter.value.provenance, (provenance) => {
+  if (!provenance) {
+    visibleDetails.value = false;
+    selectedProvenance.value = null;
+  }
+});
 
 function refresh()
 {

@@ -298,7 +298,9 @@ function onMenuShowChange(show: boolean) {
  * treeselect's `select` event used to provide.
  */
 function onSelectionChange(value: string | string[] | null) {
-  selectedValue.value = value;
+  // `undefined` rather than `null` when cleared: callers treat `undefined` as "no filter", and count any
+  // other value as an active one
+  selectedValue.value = value ?? undefined;
   const optionFor = (uri: string | number) =>
     displayedOptions.value.find(option => uriKey(option.value) === uriKey(uri));
 

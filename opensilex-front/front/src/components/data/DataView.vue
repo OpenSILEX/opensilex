@@ -167,11 +167,11 @@
           </n-form-item>
 
           <!-- Provenance -->
-            <DataProvenanceSelector
-                ref="provSelector"
+            <UsedProvenanceSelector
+                source="data"
                 v-model:provenances="filter.provenance"
                 label="component.data.view.filter.provenance"
-                @select="loadProvenance"
+                @selectionChange="onProvenanceSelectorSelectionChange"
                 :targets="filter.scientificObjects"
                 :experiments="filter.experiments"
                 :multiple="false"
@@ -180,7 +180,7 @@
                 :key="refreshKey"
                 class="searchFilter"
                 @handlingEnterKey="refresh()"
-            ></DataProvenanceSelector>
+            ></UsedProvenanceSelector>
 
           <n-collapse-transition
               v-if="selectedProvenance"
@@ -243,7 +243,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, nextTick, ref} from "vue";
+import {computed, inject, nextTick, ref, watch} from "vue";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {
@@ -253,7 +253,8 @@ import {
   NCollapseTransition,
   NFormItem,
   NLayout,
-  NLayoutContent
+  NLayoutContent,
+  type SelectOption
 } from "naive-ui";
 import type HttpResponse from "@/lib/HttpResponse";
 import type {OpenSilexResponse} from "@/lib/HttpResponse";
@@ -278,7 +279,7 @@ import StringFilter from "@/components/common/filters/StringFilter.vue";
 import DeviceSelector from "@/components/devices/DeviceSelector.vue";
 import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
 import DataExportModal from "@/components/data/DataExportModal.vue";
-import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
+import UsedProvenanceSelector from "@/components/data/UsedProvenanceSelector.vue";
 import ResultModalView from "@/components/data/ResultModalView.vue";
 import DeleteByBatchModal from "@/components/data/DeleteByBatchModal.vue";
 import DataImportForm from "@/components/data/form/DataImportForm.vue";
@@ -412,6 +413,24 @@ function loadProvenance(selectedValue) {
     getProvenance(selectedValue.id);
   }
 }
+
+/** The selector emits a naive-ui option: single selection only, the selector is used with `multiple` false */
+function onProvenanceSelectorSelectionChange(option: SelectOption | SelectOption[] | undefined) {
+  if (option !== undefined && !Array.isArray(option)) {
+    loadProvenance({ id: String(option.value) });
+  }
+}
+
+/**
+ * Closes the provenance details once no provenance is selected anymore: cleared, reset, or unselected by
+ * the selector because it is not available for the new experiments or scientific objects.
+ */
+watch(() => filter.value.provenance, (provenance) => {
+  if (!provenance) {
+    visibleDetails.value = false;
+    selectedProvenance.value = null;
+  }
+});
 
 function afterCreateData(results) {
   if (results instanceof Promise) {

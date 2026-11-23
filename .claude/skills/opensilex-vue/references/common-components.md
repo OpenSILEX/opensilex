@@ -50,14 +50,15 @@ The `rules` and `vid` props passed to some fields are Vue 2 leftovers: `FormFiel
 effect. Rules are declared on the `n-form` (`:rules`) and attached through `path`.
 
 **Selectors built on `FormSelector`** (do not wrap): `AgentTypeSelector`, `CriteriaOperatorSelector`,
-`DataProvenanceSelector`, `DatafileProvenanceSelector`, `FacilityPropertySelector`, `FactorLevelSelector`,
+`FacilityPropertySelector`, `FactorLevelSelector`,
 `FundingSelector`, `GermplasmGroupSelector`, `OrganizationSelector`, `ScientificObjectTypeSelector`,
 `SharedResourceInstanceSelector`, `SpeciesSelector`, `VariableDataTypeSelector`, `VariableTimeIntervalSelector`.
 
 **Selectors built on `InfiniteScrollDropdown`** (do not wrap): `CharacteristicSelector`, `DeviceSelector`,
 `EntitySelector`, `ExperimentSelector`, `FacilitySelector`, `GermplasmSelector`, `GroupSelector`,
 `GroupVariablesSelector`, `InterestEntitySelector`, `MethodSelector`, `PersonSelector`, `ProjectSelector`,
-`ProvenanceSelector`, `ScientificObjectParentPropertySelector`, `SiteSelector`, `UnitSelector`, `VariableSelector`.
+`ProvenanceSelector`, `ScientificObjectParentPropertySelector`, `SiteSelector`, `UnitSelector`, `UsedProvenanceSelector`,
+`VariableSelector`.
 
 A selector that composes another one (`DevicePropertySelector` on `DeviceSelector`, `GermplasmPropertySelector` on
 `GermplasmSelector`, `FactorLevelPropertySelector` on `FactorLevelSelector`, `VariablePropertySelector` on

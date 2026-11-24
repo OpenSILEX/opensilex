@@ -20,6 +20,11 @@
           active-class="active"
         >
           {{ tab.label }}
+
+          <!-- Count for the tabs that have that information -->
+          <span v-if="tabCounts[tab.key] > 0" class="tabWithElements">
+            {{ $opensilex.$numberFormatter.formateResponse(tabCounts[tab.key]) }}
+          </span>
         </router-link>
       </nav>
     </PageActions>
@@ -70,6 +75,8 @@
   import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
   import {useRoute} from "vue-router";
   import {LocationsService} from "opensilex-core/api/locations.service";
+  import type {AnnotationsService} from "opensilex-core/api/annotations.service";
+  import type {DocumentsService} from "opensilex-core/api/documents.service";
   import { useI18n } from 'vue-i18n'
   import {useStore} from "vuex";
   import AnnotationList from "@/components/annotations/list/AnnotationList.vue";
@@ -88,6 +95,8 @@
   const { t } = useI18n();
   const service: OrganizationsService = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService');
   const locationsService: LocationsService = $opensilex.getService<LocationsService>('opensilex.LocationsService');
+  const annotationsService: AnnotationsService = $opensilex.getService<AnnotationsService>('opensilex.AnnotationsService');
+  const documentsService: DocumentsService = $opensilex.getService<DocumentsService>('opensilex.DocumentsService');
 
   const tabLabels = [
     {label: t('FacilityView.details')},
@@ -101,8 +110,8 @@
   //#region: Value refs
 
   const name = ref("");
-  const positionsCountIsLoading = ref(true);
-  const positions = ref<number | null>(null);
+  /** Number of elements shown next to a tab label, by tab key. Undefined while loading or for tabs without one */
+  const tabCounts = ref<Record<string, number | undefined>>({});
   //#endregion
 
   //#region: Component Refs
@@ -122,21 +131,20 @@
         });
     }
 
-   searchCountPositions();
+    loadTabCount('annotations', annotationsService.countAnnotations(uri.value));
+    loadTabCount('document', documentsService.countDocuments(uri.value));
+    loadTabCount('positions', locationsService.countLocations(uri.value));
   });
   //#endregion
 
   //#region: Functions
-  function searchCountPositions(){
-    return locationsService
-      .countLocations(uri.value)
-      .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-        if (http && http.response){
-          positions.value = http.response.result as number;
-          positionsCountIsLoading.value = false;
-          return positions.value;
-        }
-      }).catch($opensilex.errorHandler);
+  async function loadTabCount(tabKey: string, countRequest: Promise<HttpResponse<OpenSilexResponse<number>>>) {
+    try {
+      const http = await countRequest;
+      tabCounts.value[tabKey] = http.response.result;
+    } catch (error) {
+      $opensilex.errorHandler(error);
+    }
   }
   //#endregion
 

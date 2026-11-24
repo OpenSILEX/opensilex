@@ -38,7 +38,7 @@
 
           <!-- Type -->
           <n-form-item  class="compact-form-item">
-            <opensilex-TypeForm
+            <TypeForm
               v-model:type="filter.rdf_type"
               :baseType="$opensilex.Oeso.DOCUMENT_TYPE_URI"
               @keydown.enter.prevent.stop="applyFilters"
@@ -98,15 +98,6 @@
     </SearchFiltersSidebar>
 
     <n-layout-content class="document-content">
-      <div class="pageActionsBtns">
-        <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-          @click="showCreateForm"
-          :label="t('component.common.addDocument')"
-          class="createButton"
-        />
-      </div>
-
       <div class="docCountRight">
         <div v-if="paginationInfo.hasResults">
           <strong>
@@ -122,7 +113,7 @@
         </div>
       </div>
 
-      <opensilex-TableAsyncView
+      <TableAsyncView
         ref="tableRef"
         :searchMethod="loadData"
         :fields="fields"
@@ -130,7 +121,7 @@
         :defaultPageSize="pageSize"
       >
         <template #cell(uri)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             :uri="data.item.uri"
             :value="data.item.title"
             :to="{ path: '/document/details/' + encodeURIComponent(data.item.uri) }"
@@ -147,30 +138,30 @@
 
         <template #cell(actions)="{ data }">
           <n-button-group size="small" class="btn-group btn-group-sm">
-            <opensilex-EditButton
+            <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="() => editDocument(data.item.uri)"
               label="component.document.update"
               :small="true"
             />
 
-            <opensilex-DeprecatedButton
+            <DeprecatedButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               :deprecated="data.item.deprecated"
               @click="() => deprecatedDocument(data.item.uri)"
               :small="true"
             />
 
-            <opensilex-Button
+            <Button
               v-if="!data.item.source"
-              component="opensilex-DocumentDetails"
+              component="DocumentDetails"
               @click="() => loadFile(data.item.uri, data.item.title, data.item.format)"
               label="component.document.download"
               :small="true"
               icon="bi-download"
               variant="outline-info"
             />
-            <opensilex-Button
+            <Button
               v-if="data.item.source"
               @click="() => browseSource(data.item.source)"
               label="component.document.browseSource"
@@ -181,7 +172,7 @@
 
           </n-button-group>
         </template>
-      </opensilex-TableAsyncView>
+      </TableAsyncView>
 
       <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
@@ -219,6 +210,13 @@ import {
   NSwitch
 } from "naive-ui";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeprecatedButton from "@/components/common/buttons/DeprecatedButton.vue";
+import Button from "@/components/common/buttons/Button.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', document: any): void
@@ -323,13 +321,7 @@ async function loadData(options: any) {
   )
 }
 
-function showCreateForm() {
-  const form = {
-    description: { targets: getSelected().map(s => s.uri) },
-    file: undefined
-  }
-  documentForm.value?.showCreateForm(form)
-}
+
 
 function getSelected() {
   return tableRef.value?.getSelected?.() ?? []
@@ -400,6 +392,18 @@ function loadFile(u: string, title?: string | null, format?: string | null) {
 function browseSource(source: string) {
     window.open(source);
   }
+
+function showCreateForm() {
+  const form = {
+    description: { targets: getSelected().map(s => s.uri) },
+    file: undefined
+  }
+  documentForm.value?.showCreateForm(form)
+}
+
+defineExpose({
+  showCreateForm
+})
 
 </script>
 

@@ -150,7 +150,7 @@ async function callOrganizationFacilityCreation(form: FacilityCreationDTO) {
   try {
     await organizationsService.createFacility(payload as any)
     $opensilex.showSuccessToast(
-      `${t('OrganizationFacilityForm.name')} ${form.name} ${t('component.common.success.creation-success-message')}`
+      `${t('component.facility.the-facility')} ${form.name} ${t('component.common.success.creation-success-message')}`
     )
   } catch (error: any) {
     console.error('CREATE FACILITY ERROR PAYLOAD', payload)
@@ -163,7 +163,7 @@ async function callOrganizationFacilityUpdate(form: FacilityUpdateDTO) {
   try {
     await organizationsService.updateFacility(form as any)
     $opensilex.showSuccessToast(
-      `${t('OrganizationFacilityForm.name')} ${form.name} ${t('component.common.success.update-success-message')}`
+      `${t('component.facility.the-facility')} ${form.name} ${t('component.common.success.update-success-message')}`
     )
   } catch (e) {
     $opensilex.errorHandler(e)

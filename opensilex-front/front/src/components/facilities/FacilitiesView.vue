@@ -238,7 +238,7 @@ async function deleteFacility(uri: string) {
   try {
     await service.deleteFacility(uri)
 
-    const title = t('OrganizationFacilityForm.name', {}, { default: t('FacilitiesView.facilities') })
+    const title = t('component.facility.the-facility', {}, { default: t('FacilitiesView.facilities') })
     const msg = `${title} ${uri} ${t('component.common.success.delete-success-message')}`
 
     $opensilex.showSuccessToast(msg);

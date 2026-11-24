@@ -159,8 +159,9 @@ const currentTabProps = computed(() => {
   switch (Object.values(ExperimentTab).find(isExperimentTab)) {
     case ExperimentTab.FACTORS:
       return {uri: uri.value, onFactorsUpdated: loadFactorsCount};
-    case ExperimentTab.DETAILS:
     case ExperimentTab.SCIENTIFIC_OBJECTS:
+      return {uri: uri.value, onScientificObjectsUpdated: loadScientificObjectsCount};
+    case ExperimentTab.DETAILS:
     case ExperimentTab.DATA:
     case ExperimentTab.MAP:
       return {uri: uri.value};
@@ -205,20 +206,23 @@ onMounted(() => {
           opensilex.errorHandler(error);
         });
 
-    scientificObjectsService
-        .countScientificObjects(uri.value)
-        .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-          scientificObjects.value = http.response.result;
-          scientificObjectsCountIsLoading.value = false;
-        })
-        .catch((error) => {
-          opensilex.errorHandler(error);
-        });
-
+    loadScientificObjectsCount();
     loadFactorsCount();
     loadDataCount();
   }
 });
+
+function loadScientificObjectsCount() {
+  scientificObjectsService
+      .countScientificObjects(uri.value)
+      .then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        scientificObjects.value = http.response.result;
+        scientificObjectsCountIsLoading.value = false;
+      })
+      .catch((error) => {
+        opensilex.errorHandler(error);
+      });
+}
 
 function loadFactorsCount() {
   factorsService

@@ -56,8 +56,8 @@ const emit = defineEmits<{
 }>()
 
 // Model
-const stringValue = ref(props.value)
-watch(() => props.value, v => stringValue.value = v)
+const stringValue = ref(props.value ?? '')
+watch(() => props.value, v => stringValue.value = v ?? '')
 
 function onInput(value: string) {
   emit('update:value', value)

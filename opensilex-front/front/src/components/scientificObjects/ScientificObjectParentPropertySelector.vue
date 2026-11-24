@@ -7,7 +7,7 @@
     :label="property?.name ?? property?.uri"
     :multiple="property?.is_list"
     :required="property?.is_required"
-    :placeholder="t('ScientificObjectParentPropertySelector.parent-placeholder')"
+    :placeholder="t('component.scientificObjects.scientificObject-placeholder')"
   />
 </template>
 
@@ -142,17 +142,3 @@ async function getParentsByURI(soURIs: string[] | string) {
   return http.response.result
 }
 </script>
-
-<i18n>
-en:
-  ScientificObjectParentPropertySelector:
-    label: Facilities
-    placeholder: Select a facility
-    parent-placeholder: Select a scientific object
-
-fr:
-  ScientificObjectParentPropertySelector:
-    label: Installation environnementale
-    placeholder: Sélectionner une installation environnementale
-    parent-placeholder: Sélectionner un objet scientifique
-</i18n>

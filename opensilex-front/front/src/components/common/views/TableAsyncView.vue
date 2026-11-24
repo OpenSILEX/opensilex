@@ -431,7 +431,16 @@ function loadData() {
         pageSize: pagination.value.pageSize,
       })
       .then((http: HttpResponse<OpenSilexResponse<any[]>>) => {
-        totalRow.value = http.response.metadata.pagination.totalCount;
+        const paginationMetadata = http.response.metadata.pagination;
+        if (paginationMetadata.totalCount > 0) {
+          totalRow.value = paginationMetadata.totalCount;
+        } else {
+          // Search without total count (hasNextPage strategy): expose one more page when a next page exists
+          totalRow.value =
+            pagination.value.pageSize * (currentPage.value - 1) +
+            http.response.result.length +
+            (paginationMetadata.hasNextPage ? 1 : 0);
+        }
         pageSize.value = pagination.value.pageSize;
         pagination.value.itemCount = totalRow.value;
         isSearching.value = false;

@@ -569,6 +569,17 @@
             "associated-data-error": "Data are associated with this variable",
             "trait-button": "Trait already existing in an ontology",
             "trait-button-help": "Add a trait (entity and characteristic) already existing in an ontology",
+            "trait-uri": "Trait URI",
+            "trait-uri-help": "Variable trait unique identifier (Can be used to link to an existing trait for interoperability)",
+            "trait-uri-placeholder": "http://purl.obolibrary.org/obo/WTO_0000171",
+            "trait-name": "Trait name",
+            "trait-name-help": "Variable trait name (Describe the trait name if a trait uri has been specified)",
+            "trait-name-placeholder": "Number of grains per square meter",
+            "trait-form-create-title": "Add trait",
+            "trait-form-edit-title": "Edit trait",
+            "edit-references": "Edit references",
+            "structure": "Structure",
+            "advanced": "Advanced information",
             "visualization": "Device associated Data Visualization",
             "dimensionValues" : {
                 "unique": "Unique measurement",
@@ -1033,6 +1044,7 @@
             "modal-title": "Selected scientific objects",
             "scientificObjects": "Scientific object(s)",
             "scientificObjects-placeholder": "Select scientific objects",
+            "scientificObject-placeholder": "Select a scientific object",
             "parent-placeholder": "Select a parent",
             "objectType": "Object type",
             "alertSelectAllLimitSize": "The selection has too many lines for this feature, refine your search, maximum=",
@@ -1212,6 +1224,7 @@
                 "facility-default-date": "Default date"
             },
             "filter-placeholder": "Search facilities...",
+            "facility-placeholder": "Select a facility",
             "view": {
                 "list": {
                     "previous": "Consult the previous facility",
@@ -1671,6 +1684,7 @@
                 "xsd": "Discover XML schema languages.",
                 "placeholder": "Enter an URI, ex : http://www.opensilex.org/",
                 "XSD-placehorlder": {
+                    "XSDStringInput-placeholder": "Enter text, ex : Opensilex",
                     "XSDLongStringInput-placeholder": "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data.",
                     "XSDIntegerInput-placeholder": "Enter an integer number, ex : 8611",
                     "XSDDecimalInput-placeholder": "Enter a decimal number, ex : 8611.53",

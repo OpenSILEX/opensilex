@@ -59,6 +59,7 @@
                 "period":"Period",
                 "year":"Year",
                 "creationDate": "Creation date",
+                "destructionDate": "Destruction date",
                 "period-descriptions":{
                     "day": "Last hours",
                     "week": "Last week",
@@ -77,7 +78,6 @@
             "delete": "Delete",
             "cancel": "Cancel",
             "creator": "Creator",
-            "edit": "edit",
             "name": "Name",
             "term":"Term",
             "comment": "Comment",
@@ -366,7 +366,6 @@
             },
             "tools" : {
                 "label": "Tools",
-                "system": "System",
                 "packages": "Packages"
             },
             "web-api" : "Web API"
@@ -788,24 +787,18 @@
             "label": "Name",
             "comment": "Description",
             "comment-help": "Genomic prediction of maize yield across European environmental scenarios",
-            "startDate-help": "The beginning of an experiment (required)",
             "startDate": "Start Date",
             "start-date-required": "Start date is required",
             "endDate": "End date",
             "end-date-required": "The end date is required",
-            "endDate-help": "The end of an experiment, could be empty",
             "campaign": "Campaign",
             "campaign-placeholder": "2020",
-            "campaign-help": "The campaign year of an experiment concerning a field",
             "species": "Species",
-            "species-help": "The cultivated species",
             "keywords": "Keywords",
             "keywords-placeholder": "Opensilex Irrigation",
             "groups": "Groups",
-            "groups-help": "The list of experiment groups",
             "places": "Places",
             "projects": "Projects",
-            "projects-help": "The list of concerned projects",
             "installations": "Installations",
             "context": "Context",
             "alias": "Alias",
@@ -880,8 +873,6 @@
             "search": {
                 "description": "Manage and configure experiments",
                 "label": "Search Experiments",
-                "selectLabel": "Select Experiments",
-                "selectedLabel": "Selected Experiment(s)",
                 "buttons": {
                     "create-experiment": "Add experiment",
                     "create-experiment-help": " Add an experiment (experimental information, linked sensors/variables/factors)"
@@ -895,8 +886,7 @@
                     "species": "Species",
                     "endDate": "End date",
                     "uri": "URI",
-                    "state": "State",
-                    "sites": "Site(s)"
+                    "state": "State"
                 },
                 "filter": {
                     "alias": "Filter by Name/URI",
@@ -907,20 +897,7 @@
                     "species": "Filter by Species",
                     "startDate": "Filter by start date",
                     "uri": "Filter by URI",
-                    "state": "Filter by state",
-                    "sites": "Filter by Site(s)",
-                    "name" : "Search on experiment name"
-                },
-                "placeholder": {
-                    "alias": "All Names/URI",
-                    "campaign": "All Campaigns",
-                    "installations": "All Installations",
-                    "projects": "All Projects",
-                    "species": "All Species",
-                    "startDate": "",
-                    "uri": "All URI",
-                    "state": "All States",
-                    "sites": "All Sites"
+                    "state": "Filter by state"
                 }
             },
             "form": {
@@ -1034,6 +1011,13 @@
             }
         },
         "scientificObjects": {
+            "description": "Manage and configure scientific objects",
+            "list": {
+                "selected": "Selected scientific objects",
+                "selected-all": "All scientific objects",
+                "not-used-in-experiments": "Scientific object not used in any experiment",
+                "experiments": "Scientific object used in experiment(s)"
+            },
             "modal-title": "Selected scientific objects",
             "scientificObjects": "Scientific object(s)",
             "scientificObjects-placeholder": "Select scientific objects",
@@ -1257,7 +1241,6 @@
                     "export": "Export"
                 },
                 "description": "View and export data",
-                "data-imported": "Observations have been imported successfully",
                 "form": {
                     "create": "Add Data",
                     "update": "Update"
@@ -1675,7 +1658,6 @@
                 "om": "The Ontology of units of Measure (OM) 2.0 models concepts and relations important to scientific research. It has a strong focus on units, quantities, measurements, and dimensions.",
                 "qudt": "Quantities, Units, Dimensions and Data Types models are based on dimensional analysis expressed in the OWL Web Ontology Language (OWL). The dimensional approach relates each unit to a system of base units using numeric factors and a vector of exponents defined over a set of fundamental dimensions.",
                 "xsd": "Discover XML schema languages.",
-                "placeholder": "Enter an URI, ex : http://www.opensilex.org/",
                 "XSD-placehorlder": {
                     "XSDStringInput-placeholder": "Enter text, ex : Opensilex",
                     "XSDLongStringInput-placeholder": "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data.",

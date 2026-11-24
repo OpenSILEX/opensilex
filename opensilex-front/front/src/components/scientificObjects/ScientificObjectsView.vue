@@ -29,10 +29,10 @@
       ></ScientificObjectCSVImporter>
 
       <Button
-          @click="exportCSV(true)"
+          @click="soList?.exportCSV(true)"
           class="createButton greenThemeColor"
           icon="bi-download"
-          :disabled="soTree?.nodeList.length === 0"
+          :disabled="soList?.total === 0"
           label="component.menu.experimentalDesign.btn-exportAll"
       ></Button>
     </PageActions>

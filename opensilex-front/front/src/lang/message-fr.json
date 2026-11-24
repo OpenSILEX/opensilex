@@ -19,7 +19,6 @@
                 "tab": "Tabulation (\\t)"
             },
             "geometry": {
-                "geometry": "Coordonnées géospatiales",
                 "geometry-title": "Coordonnées géospatiales",
                 "geometry-help": "Coordonnées géospatiales au format WKT",
                 "geometry-address-warning": "Les coordonnées spatiales de cette adresse n'ont pas été trouvées. Essayer de mettre à jour avec une autre adresse",
@@ -59,6 +58,8 @@
                 "end": "Fin",
                 "period": "Période",
                 "year": "année",
+                "creationDate": "Date de création",
+                "destructionDate": "Date de destruction",
                 "period-descriptions": {
                     "day": "24 dernieres heures",
                     "week": "Derniere semaine",
@@ -94,7 +95,6 @@
             "uri": "URI",
             "uri-help-message": "Identifiant uniforme de ressource. Il est autogénéré mais vous pouvez le décocher pour entrer un URI externe",
             "uri-filter-placeholder": "veuillez saisir un URI validate",
-            "uri-validate": "Saisir un URI",
             "uri-or-url": "URI ou URL",
             "logout": "Déconnexion",
             "parent": "Parent",
@@ -105,6 +105,7 @@
             "select-date": "Choisissez une date",
             "next": "Suivant",
             "previous": "Précédent",
+            "provenance": "Provenance",
             "colon": " :",
             "uri-copy": "URI copiée dans le presse-papier",
             "url-copy": "URL copiée dans le presse-papier",
@@ -117,12 +118,10 @@
             "required": "Requis",
             "validateSelection": "Valider la selection",
             "selected-only": "Élements selectionnés seulement",
-            "selected-onlyp": "Sélection seulement",
             "resetSelected": "Réinitialiser la sélection",
             "state": "Etat",
             "species": "Espèces",
             "select-all": "Sélectionner les elements de toutes les pages",
-            "select-allp": "Sélectionner tout",
             "unselect-all": "Désélectionner tout",
             "example": "Exemple",
             "loading": "Chargement...",
@@ -516,8 +515,7 @@
             "species": {
                 "species": "Espèces",
                 "species-placeholder": "Sélectionner une espèce",
-                "select-multiple-placeholder": "Sélectionner des espèces",
-                "edit": "Modifier une espèce"
+                "select-multiple-placeholder": "Sélectionner des espèces"
             },
             "method": {
                 "method": "Méthode",
@@ -563,12 +561,10 @@
             "description": "Gérer et configurer les variables, entités, charactéristiques, méthodes et unités",
             "placeholder-multiple": "Sélectionner une ou plusieurs variables",
             "linked-object-error": "{uri} ne peut être supprimé : utilisé par les variables {variable}",
-            "time-interval": "Intervalle de temps",
             "add": "Ajouter une variable",
             "edit": "Modifier une variable",
             "no-var-provided": "Aucune variable associée",
             "associated-data-error": "Données sont associées à cette variable",
-            "datatype-placeholder": "Sélectionner un type de donnée",
             "trait-button": "Trait existant déjà dans une ontologie",
             "trait-button-help": "Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie",
             "trait-uri": "URI du trait",
@@ -583,8 +579,7 @@
             "structure": "Structure",
             "advanced": "Informations avancées",
             "visualization": "Visualisation des données associées à un appareil",
-            "data-type": "Type de donnée",
-            "dimension-values": {
+            "dimensionValues": {
                 "unique": "Enregistrement unique",
                 "millisecond": "Milliseconde",
                 "second": "Seconde",
@@ -679,6 +674,7 @@
         },
         "project": {
             "add": "Ajouter un projet",
+            "selectedLabel": "Projet(s) sélectionné(s)",
             "uri": "URI du projet",
             "details": "Description",
             "delete": "Supprimer le projet",
@@ -690,7 +686,6 @@
             "update": "Modifier le projet",
             "form-name-placeholder": "Saisir le nom",
             "form-description-placeholder": "Saisir la description",
-            "form-homePage-placeholder": "Saisir l'adresse du website",
             "form-contact-placeholder": "Saisir les contacts",
             "form-objective-placeholder": "Saisir l'objectif",
             "form-website-placeholder": "http://www.monprojet.org",
@@ -899,8 +894,6 @@
                     "places": "Filtrer par Lieux",
                     "species": "Filtrer par Espèce(s)",
                     "startDate": "Filtrer par Date de début",
-                    "endDate": "Filtrer par Date de fin",
-                    "date": "Filtrer par date",
                     "uri": "Filtrer par URI",
                     "state": "Filtrer par état"
                 }
@@ -1016,6 +1009,13 @@
             }
         },
         "scientificObjects": {
+            "description": "Gérer et configurer les objets scientifiques",
+            "list": {
+                "selected": "Objets scientifiques sélectionnés",
+                "selected-all": "Tous les objets scientifiques",
+                "not-used-in-experiments": "L'objet scientifique n'est utilisé dans aucune expérimentation",
+                "experiments": "L'objet scientifique est utilisé dans le/les expérimentation(s)"
+            },
             "modal-title": "Objets scientifiques sélectionnés",
             "scientificObjects": "Objet(s) scientifique(s)",
             "scientificObjects-placeholder": "Sélectionner des objets scientifiques",
@@ -1072,7 +1072,6 @@
             "uri": "URI de référence",
             "uri-help": "Identifiant du concept référencé",
             "uri-placeholder": "http://aims.fao.org/aos/agrovoc/c_8332",
-            "uri-field": " Le champs uri est obligatoire",
             "relation": "Relations",
             "relation-help": "Relation entre l'individu décrit et le concept intéropérable lié à cet identifiant",
             "relation-placeholder": "Equivalent",
@@ -1097,79 +1096,6 @@
             "link-external-button": "Ajouter des références (optionnel)",
             "no-external-links-provided": "Aucune référence disponible",
             "external-already-existing": "Référence déja associée"
-        },
-        "germplasm": {
-            "germplasmTitle": "Ressources Génétiques",
-            "description": "Gérer les informations du matériel génétique",
-            "add": "Créer germplasm",
-            "update": "éditer germplasm",
-            "delete": "supprimer germplasm",
-            "backToList": "Revenir à la liste des germplasm",
-            "germplasmList": "Germplasm",
-            "select": "Veuillez sélectionner un type de germplasm",
-            "filter": {
-                "description": "Recherche de Ressources Génétiques",
-                "allTypes": "Tous",
-                "species": "Filtrer par espèce",
-                "year": "Filtrer par année de production",
-                "institute": "Filtrer par code institution",
-                "label": "Filtrer par nom",
-                "label-placeholder": "Entrez un nom de germplasm",
-                "rdfType": "Filtrer par type",
-                "experiment": "Filtrer par expérimentation",
-                "search": "Rechercher",
-                "reset": "Réinitialiser"
-            },
-            "list": {
-                "label": "nom",
-                "uri": "URI",
-                "rdfType": "type",
-                "fromSpecies": "URI de l'espèce",
-                "speciesLabel": "Espèce"
-            },
-            "table": {
-                "fields": {
-                    "label": "Nom",
-                    "uri": "URI",
-                    "rdfType": "Type",
-                    "fromSpecies": "URI de l'espèce",
-                    "fromVariety": "URI de variété",
-                    "fromAccession": "URI d'accession",
-                    "institute": "Code institut",
-                    "comment": "Commentaire",
-                    "year": "Année",
-                    "checkingStatus": "Statut",
-                    "insertionStatus": "Statut"
-                },
-                "button": {
-                    "uploadFile": "Importer fichier csv",
-                    "downloadTemplate": "Télécharger le template",
-                    "resetTable": "Vider tableau",
-                    "check": "Valider avant d'insérer",
-                    "insert": "Insérer"
-                }
-            },
-            "details": {
-                "title": "Germplasm Details",
-                "tab": "Germplasm Information",
-                "uri": "URI",
-                "label": "Name",
-                "rdfType": "Type",
-                "species": "Species",
-                "variety": "Variety",
-                "accession": "Accession",
-                "institute": "Institute",
-                "year": "Year",
-                "comment": "Comment"
-            },
-            "form": {
-                "uri-help": "Unique germplasm identifier",
-                "label-help": "Name used to define this germplasm",
-                "rdfType-help": "Germplasm Type"
-            },
-            "errors": {
-                "germplasm-already-exists": "Germplasm already exists with this URI."
-            }
         },
         "document": {
             "nopreview": "Pas de prévisualisation possible",
@@ -1950,8 +1876,7 @@
         "dateDiff": "La date du champ {_field_} ne doit pas être antérieur à la date de début",
         "nameFiltered": "Le {_field_} ne doit pas contenir -,+,=,<,>,=,?,/,*,&",
         "existingProperty": "Cette {_field_} est déjà existante",
-        "refuseOperators": "Pas applicable",
-        "champs-input-dec": "Le champs décimal est obligatoire"
+        "refuseOperators": "Pas applicable"
     },
     "icon": {
         "component": {
@@ -2029,7 +1954,6 @@
         "date": "Date",
         "value": "Valeur",
         "variable": "Variable",
-        "provenance": "Provenance",
         "provenance-placeholder": "Sélectionner une provenance",
         "germplasm-group": "Groupe de ressources génétiques",
         "germplasm-group-placeholder": "Sélectionner un groupe de ressources génétiques",

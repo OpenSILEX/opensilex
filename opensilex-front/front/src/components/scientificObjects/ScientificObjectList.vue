@@ -6,7 +6,7 @@
       @select="handleSelectionAction"
     >
       <n-button size="small" class="greenThemeColor">
-        {{ t('ScientificObjectList.display') }}
+        {{ t('component.common.display') }}
       </n-button>
     </n-dropdown>
 
@@ -45,7 +45,7 @@
       </div>
       <span> | </span>
       <span>
-        {{ t('ScientificObjectList.selected') }} :
+        {{ t('component.scientificObjects.list.selected') }} :
         <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
       </span>
     </div>
@@ -778,11 +778,11 @@ const columns = computed(() => {
       renderExpand: (row: ScientificObjectRow) => {
         const experiments = objectDetails.value[row.item.uri] || []
         if (experiments.length === 0) {
-          return h('div', {}, t('ScientificObjectList.not-used-in-experiments'))
+          return h('div', {}, t('component.scientificObjects.list.not-used-in-experiments'))
         }
 
         return h('div', {}, [
-          h('div', {}, t('ScientificObjectList.experiments') + ':'),
+          h('div', {}, t('component.scientificObjects.list.experiments') + ':'),
           h(
             'ul',
             {},
@@ -827,7 +827,7 @@ const columns = computed(() => {
       render: (row: ScientificObjectRow) => row.item.rdf_type_name
     },
     {
-      title: t('ScientificObjectList.creationDate'),
+      title: t('component.common.date-time.creationDate'),
       key: 'creation_date',
       sortable: true,
       sorter: (a: ScientificObjectRow, b: ScientificObjectRow) =>
@@ -835,7 +835,7 @@ const columns = computed(() => {
       render: (row: ScientificObjectRow) => row.item.creation_date
     },
     {
-      title: t('ScientificObjectList.destructionDate'),
+      title: t('component.common.date-time.destructionDate'),
       key: 'destruction_date',
       sortable: true,
       sorter: (a: ScientificObjectRow, b: ScientificObjectRow) =>
@@ -881,7 +881,7 @@ const columns = computed(() => {
 const selectionOptions = computed(() => [
   {
     label: onlySelected.value
-      ? t('ScientificObjectList.selected-all')
+      ? t('component.scientificObjects.list.selected-all')
       : t('component.common.selected-only'),
     key: 'toggleOnlySelected'
   },
@@ -988,7 +988,10 @@ defineExpose({
   refresh,
   refreshWithKeepingSelection,
   clickOnlySelected: toggleOnlySelected,
-  resetSelected: resetSelection
+  resetSelected: resetSelection,
+  handleSelectionAction,
+  exportCSV,
+  total
 })
 </script>
 
@@ -1014,88 +1017,3 @@ defineExpose({
   margin-left: auto;
 }
 </style>
-
-<i18n>
-en:
-  ScientificObjectList:
-    selected: Selected Scientific Objects
-    selected-all: All scientific objects
-    description: Manage and configure scientific objects
-    display: Display
-    advancedSearch: Advanced search
-    propetiesConfiguration: Properties to display
-    not-used-in-experiments: Scientific object not used in any experiments
-    experiments: Scientific object used in experiment(s)
-    column:
-      alias: Nom
-      experiments: Experiment(s)
-      type: Type
-      uri: URI
-      parents: Parent(s)
-      actions: Actions
-    placeholder:
-      experiments: All Experiments
-      germplasm: All Germplasm
-      types: All Types
-      uri: All URI
-      isPartOf: All Alias / URI
-      position: All Spacial Positions
-      factors: All Factors
-      dates: All Dates
-    filter:
-      label: Search for Scientific Objects
-      experiments: Filter by Experiments
-      germplasm: Filter by Germplasm
-      types: Filter by Type(s)
-      uri: Filter by  URI
-      isPartOf: isPartOf (Alias ou URI)
-      position: Filter by Spatial Position
-      factors: Filter by Factors
-      dates: Filter by Dates
-    creationDate: Creation date
-    destructionDate: Destruction date
-    existenceDate: Object exists
-    visualize: Visualize
-    export-all: Export all
-fr:
-  ScientificObjectList:
-    selected: Objets Scientifiques Sélectionnés
-    selected-all: Tout les objets scientifiques
-    description: Gérer et configurer les objets scientifiques
-    display: Affichage
-    advancedSearch: Recherche avancée
-    propetiesConfiguration: Propriétés à afficher
-    not-used-in-experiments: L'objet scientifique n'est utilisé dans aucune expérimentation
-    experiments: L'objet scientifique est utilisé dans le/les expérimentation(s)
-    column:
-      alias: Name
-      experiments: Expérimentation(s)
-      type: Type
-      uri: URI
-      parents: Parent(s)
-      actions: Actions
-    placeholder:
-      experiments: Toutes les Expérimentations
-      germplasm: Tous les Matériels Génétiques
-      types: Tous les Types
-      uris: Toutes les URI
-      isPartOf: Tous les Alias / URI
-      position: Toutes les Positions Spaciales
-      factors: Tous les Facteurs
-      dates: Toutes les Dates
-    filter:
-      label: Rechercher des Objets Scientifiques
-      experiments: Filtrer par Expérimentation(s)
-      germplasm: Filtrer par Matériel Génétiques
-      types: Filtrer par Type(s)
-      uri: Filtrer par URI
-      isPartOf: isPartOf (Alias ou URI)
-      position: Filtrer par Position Spaciale
-      factors: Filtrer par Facteurs
-      dates: Filtrer par Dates
-    creationDate: Date de création
-    destructionDate: Date de destruction
-    existenceDate: Date d'existence
-    visualize: Visualiser
-    export-all: Tout exporter
-</i18n>

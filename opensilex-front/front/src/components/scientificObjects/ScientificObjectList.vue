@@ -26,16 +26,6 @@
       </n-button>
     </n-dropdown>
 
-    <n-button
-      v-if="!noActions"
-      size="small"
-      class="greenThemeColor"
-      :disabled="serverTotal === 0"
-      @click="exportCSV(true)"
-    >
-      {{ t('ScientificObjectList.export-all') }}
-    </n-button>
-
     <div class="displayAndListSelectionCount">
       <div v-if="hasResults">
         <strong>

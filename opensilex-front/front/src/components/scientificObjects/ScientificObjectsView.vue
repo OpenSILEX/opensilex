@@ -27,6 +27,14 @@
         ref="importForm"
         @csvImported="soList.refresh()"
       ></ScientificObjectCSVImporter>
+
+      <Button
+          @click="exportCSV(true)"
+          class="createButton greenThemeColor"
+          icon="bi-download"
+          :disabled="soTree?.nodeList.length === 0"
+          label="component.menu.experimentalDesign.btn-exportAll"
+      ></Button>
     </PageActions>
 
 
@@ -218,6 +226,7 @@ import {
 } from "naive-ui";
 import GermplasmSelector from "@/components/germplasm/GermplasmSelector.vue";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import Button from "@/components/common/buttons/Button.vue";
 
 //#region Constant values
 const $store = useStore();

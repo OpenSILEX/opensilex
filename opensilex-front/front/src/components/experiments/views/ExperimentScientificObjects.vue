@@ -15,6 +15,14 @@
           class="createButton"
       ></CreateButton>
 
+      <Button
+          @click="exportCSV(true)"
+          class="createButton greenThemeColor"
+          icon="bi-download"
+          :disabled="soTree?.nodeList.length === 0"
+          label="component.menu.experimentalDesign.btn-exportAll"
+      ></Button>
+
       <ScientificObjectCSVImporter
           ref="importForm"
           :experimentURI="uri"
@@ -140,15 +148,6 @@
                     {{ t('component.common.actions') }}
                   </n-button>
                 </n-dropdown>
-
-                <n-button
-                    size="small"
-                    :disabled="soTree && soTree.nodeList.length === 0"
-                    class="greenThemeColor mb-2 mr-2"
-                    @click="exportCSV(true)"
-                >
-                  {{ t('component.menu.experimentalDesign.btn-exportAll') }}
-                </n-button>
               </div>
 
               <div class="row align-items-center">
@@ -284,6 +283,7 @@ import PageActions from "@/components/layout/PageActions.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import TreeViewAsync from "@/components/common/views/TreeViewAsync.vue";
+import Button from "@/components/common/buttons/Button.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import AddChildButton from "@/components/common/buttons/AddChildButton.vue";

@@ -973,6 +973,13 @@
             }
         },
         "germplasms": {
+            "title": "Germplasm",
+            "description": "Manage Genetic Resources Information",
+            "group": {
+                "add": "Add group",
+                "selected": "Group list",
+                "germplasmCount": "(0 germplasm) | (1 germplasm) | ({count} germplasm)"
+            },
             "errors": {
                 "duplicateUri": "Duplicate URI: {uri}",
                 "duplicateLabel": "Duplicate label: {label}",

@@ -955,6 +955,13 @@
             }
         },
         "germplasms": {
+           "title": "Ressources génétiques",
+           "description": "Gérer les informations du matériel génétique",
+            "group": {
+                "add": "Ajouter un groupe",
+                "selected": "Liste de groupes",
+                "germplasmCount": "(0 ressources génétiques) | (1 ressource génétique) | ({count} ressources génétiques)"
+            },
             "errors": {
                 "duplicateUri": "URI en double : {uri}",
                 "duplicateLabel": "Label en double : {label}",

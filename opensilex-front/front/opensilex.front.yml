@@ -420,8 +420,8 @@ routes:
   #   component: opensilex-GermplasmDetails
   # - path: /germplasm/documents/:uri
   #   component: opensilex-GermplasmDetails
-  # - path: /germplasm/group
-  #   component: opensilex-GermplasmGlobalView
+  - path: /germplasm/group
+    component: opensilex-GermplasmGlobalView
 
   - path: /factor/create
     component: opensilex-FactorForm

@@ -168,25 +168,14 @@
         />
       </n-form-item>
 
-      <!-- Metadata key -->
-      <n-form-item :label="t('DeviceList.filter.metadataKey')"  class="compact-form-item">
-        <StringFilter
-          v-model:filter="filter.metadataKey"
-          :placeholder="t('DeviceList.filter.metadataKey-placeholder')"
-          class="searchFilter"
-          @handlingEnterKey="refresh"
-        />
-      </n-form-item>
-
-      <!-- Metadata value -->
-      <n-form-item :label="t('DeviceList.filter.metadataValue')"  class="compact-form-item">
-        <StringFilter
-          v-model:filter="filter.metadataValue"
-          :placeholder="t('DeviceList.filter.metadataValue-placeholder')"
-          class="searchFilter"
-          @handlingEnterKey="refresh"
-        />
-      </n-form-item>
+      <!-- Attributes -->
+      <AttributesFilter
+        v-model:attribute="filter.metadataKey"
+        v-model:value="filter.metadataValue"
+        :loadAttributes="() => deviceService.getDeviceAttributes()"
+        :searchValues="(attribute, query, page, pageSize) => deviceService.getDeviceAttributeValues(attribute, query, page, pageSize)"
+        @handlingEnterKey="refresh"
+      />
     </SearchFiltersSidebar>
 
     <!-- Contenu Liste -->
@@ -290,6 +279,8 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import {type DeviceGetDetailsDTO, DevicesService, type FacilityGetDTO} from 'opensilex-core/index'
 import {OrganizationsService} from 'opensilex-core/api/organizations.service'
 import StringFilter from "@/components/common/filters/StringFilter.vue";
+import AttributesFilter from "@/components/common/filters/AttributesFilter.vue";
+import {toMetadataFilter} from "@/models/MetadataFilter";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
@@ -523,20 +514,6 @@ async function editDevice(rowData: RowWithData<DeviceCreationDTO>) {
   }
 }
 
-function addMetadataFilter() {
-  if (
-    filter.value.metadataKey &&
-    filter.value.metadataKey !== '' &&
-    filter.value.metadataValue &&
-    filter.value.metadataValue !== ''
-  ) {
-    return JSON.stringify({
-      [filter.value.metadataKey]: filter.value.metadataValue
-    })
-  }
-  return undefined
-}
-
 async function searchDevices(options: any) {
   return await deviceService.searchDevices(
     filter.value.rdf_type,
@@ -549,7 +526,7 @@ async function searchDevices(options: any) {
     filter.value.brand,
     filter.value.model,
     undefined,
-    addMetadataFilter(),
+    toMetadataFilter(filter.value.metadataKey, filter.value.metadataValue),
     addDynamicRelationsFilter(),
     options.orderBy,
     options.currentPage,
@@ -979,10 +956,6 @@ en:
       brand-placeholder: Enter brand
       model: Constructor model
       model-placeholder: Enter constructor model
-      metadataValue: Value
-      metadataKey: Key
-      metadataValue-placeholder: Enter value
-      metadataKey-placeholder: Enter key
 
 fr:
   DeviceList:
@@ -1025,8 +998,4 @@ fr:
       brand-placeholder: Entrer une marque
       model: Modèle constructeur
       model-placeholder: Entrer le nom du modèle constructeur
-      metadataValue: Valeur
-      metadataKey: Attribut
-      metadataValue-placeholder: Entrer une valeur
-      metadataKey-placeholder: Entrer un attribut
 </i18n>

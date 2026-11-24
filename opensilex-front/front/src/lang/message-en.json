@@ -131,6 +131,13 @@
             "no-results": "No results",
             "show-details": "Show details",
             "hide-details": "Hide details",
+            "attributes-filter": {
+                "attribute": "Attribute name",
+                "attribute-placeholder": "Select an attribute",
+                "attribute-help": "Match all elements which have the selected attribute",
+                "value": "Attribute value",
+                "value-placeholder": "Select a value"
+            },
             "display": "Display",
             "errors": {
                 "error-title": "Error",
@@ -1002,7 +1009,6 @@
                     "experiment": "Experiment",
                     "uri": "URI",
                     "uri-placeholder": "Enter a part of an uri",
-                    "metadataKey": "Attribute name",
                     "germplasm-group": "Germplasm Group",
                     "parents": "Parents",
                     "is_public": "Visibility",

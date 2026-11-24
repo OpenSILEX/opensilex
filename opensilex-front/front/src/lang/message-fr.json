@@ -133,6 +133,13 @@
             "no-results": "Aucun résultat",
             "show-details": "Afficher les détails",
             "hide-details": "Masquer les détails",
+            "attributes-filter": {
+                "attribute": "Nom de l'attribut",
+                "attribute-placeholder": "Sélectionner un attribut",
+                "attribute-help": "Sélectionner les éléments qui possèdent l'attribut sélectionné",
+                "value": "Valeur de l'attribut",
+                "value-placeholder": "Sélectionner une valeur"
+            },
             "display": "Affichage",
             "errors": {
                 "error-title": "Erreur",
@@ -985,7 +992,6 @@
                     "experiment": "Expérimentation",
                     "uri": "URI",
                     "uri-placeholder": "Entrer une partie d'une uri",
-                    "metadataKey": "Nom de l'attribut",
                     "germplasm-group": "Groupe de ressources génétiques",
                     "parents": "Parents",
                     "is_public": "Visibilité",

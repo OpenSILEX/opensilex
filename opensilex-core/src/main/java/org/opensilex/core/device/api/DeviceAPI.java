@@ -72,6 +72,7 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -299,6 +300,48 @@ public class DeviceAPI {
         }
 
         return relationFilters;
+    }
+
+    /**
+     * Return all available device attributes
+     * @return
+     * @throws java.lang.Exception
+     */
+    @GET
+    @Path("attributes")
+    @ApiOperation("Get attributes of all devices")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return device attributes", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Device attributes not found", response = ErrorDTO.class)
+    })
+    public Response getDeviceAttributes() throws Exception {
+        Set<String> attributes = new DeviceMetadataDao(nosql, DeviceAPI.METADATA_COLLECTION_NAME)
+                .getDistinctKeys(null);
+        return new SingleObjectResponse<>(attributes).getResponse();
+    }
+
+    @GET
+    @Path("attributes/{attribute}")
+    @ApiOperation("Get attribute values of all devices for a given attribute")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return device attributes", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Device attributes not found", response = ErrorDTO.class)
+    })
+    public Response getDeviceAttributeValues(
+            @PathParam("attribute") @NotNull @NotEmpty String attributeKey,
+            @ApiParam(value = "Regex pattern for filtering attribute value", example = ".*") @QueryParam("attribute_value") String name,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        Set<String> values = new DeviceMetadataDao(nosql, DeviceAPI.METADATA_COLLECTION_NAME)
+                .getDistinctValues(attributeKey, name, page, pageSize);
+        return new SingleObjectResponse<>(values).getResponse();
     }
 
     @GET

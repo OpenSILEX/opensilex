@@ -101,27 +101,13 @@
           </n-form-item>
 
           <!-- Germplasm Attributes -->
-          <n-form-item class="compact-form-item">
-            <GermplasmAttributesSelector
-                v-model:germplasmAttribute="filter.metadataKey"
-                label="component.germplasms.list.filter.metadataKey"
-                class="searchFilter"
-                @handlingEnterKey="refresh()"
-            ></GermplasmAttributesSelector>
-          </n-form-item>
-
-          <!--          TODO -->
-          <!--              <div>-->
-          <!--                <FilterField>-->
-          <!--                  <GermplasmAttributesValueSelector-->
-          <!--                      ref="attributesValueSelector"-->
-          <!--                      v-model:attributeKey="filter.metadataKey"-->
-          <!--                      v-model:attributeValue="filter.metadataValue"-->
-          <!--                      class="searchFilter"-->
-          <!--                      @handlingEnterKey="refresh()"-->
-          <!--                  ></GermplasmAttributesValueSelector>-->
-          <!--                </FilterField>-->
-          <!--              </div>-->
+          <AttributesFilter
+              v-model:attribute="filter.metadataKey"
+              v-model:value="filter.metadataValue"
+              :loadAttributes="() => service.getGermplasmAttributes()"
+              :searchValues="(attribute, query, page, pageSize) => service.getGermplasmAttributeValues(attribute, query, page, pageSize)"
+              @handlingEnterKey="refresh()"
+          />
 
           <!-- Germplasm Visibility -->
           <FormSelector
@@ -241,7 +227,8 @@
 <script setup lang="ts">
 
 import TableAsyncView from "../common/views/TableAsyncView.vue";
-import GermplasmAttributesValueSelector from "./GermplasmAttributesValueSelector.vue";
+import AttributesFilter from "@/components/common/filters/AttributesFilter.vue";
+import {toMetadataFilter} from "@/models/MetadataFilter";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import PageContent from "@/components/layout/PageContent.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
@@ -288,7 +275,6 @@ const props = withDefaults(defineProps<{
 //#region Refs
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>("tableRef")
 const documentFormRef = useTemplateRef<InstanceType<typeof DocumentForm>>('documentFormRef')
-const attributesValueSelector = useTemplateRef<InstanceType<typeof GermplasmAttributesValueSelector>>('attributesValueSelector')
 const speciesSelector = ref<any>()
 //#endregion
 
@@ -517,7 +503,7 @@ function searchGermplasm(options) {
       filter.value.parent_germplasms,
       filter.value.parent_germplasms_m,
       filter.value.parent_germplasms_f,
-      addMetadataFilter(),
+      toMetadataFilter(filter.value.metadataKey, filter.value.metadataValue),
       filter.value.is_public,
       options.orderBy,
       options.currentPage,
@@ -540,7 +526,7 @@ function exportCSV(exportAll: boolean) {
     institute: filter.value.institute,
     experiment: filter.value.experiment,
     order_by: tableRef.value?.getOrderBy?.(),
-    metadata: addMetadataFilter()
+    metadata: toMetadataFilter(filter.value.metadataKey, filter.value.metadataValue)
   };
 
   // export only selected URIS (+matching with filter)
@@ -586,23 +572,6 @@ function loadSpecies() {
 function updateLang() {
   loadSpecies();
   refresh();
-}
-
-function addMetadataFilter() {
-
-  // undefined, null or empty : https://262.ecma-international.org/5.1/#sec-9.2
-  if (!filter.value.metadataKey) {
-    return undefined;
-  }
-
-  // set empty string for JSON.stringify method, by default undefined fields are not serialized
-  let value = filter.value.metadataValue ? filter.value.metadataValue : "";
-
-  // if metadataValue is undefined, match all germplasm which have the given metadata key
-  // else, match germplasm with the good key and value
-  return JSON.stringify({
-    [filter.value.metadataKey]: value
-  });
 }
 
 function createDocument() {

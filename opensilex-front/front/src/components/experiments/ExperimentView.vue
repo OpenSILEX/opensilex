@@ -10,7 +10,7 @@
         description="component.experiment.view.title"
         class="detail-element-header"
     ></PageHeader>
-
+    
     <PageActions
         :tabs="true"
         :returnButton="true"

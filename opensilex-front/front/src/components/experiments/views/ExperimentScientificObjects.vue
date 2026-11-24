@@ -1,5 +1,5 @@
 <template>
-  <div ref="page">
+  <div class="container-fluid">
     <PageActions class="pageActionsBtns">
       <CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
@@ -263,7 +263,7 @@
         ref="moveCsvForm"
         :targets="selectedObjects"
         :isMove="true"
-    ></EventCsvForm>
+    ></EventCsvForm>>
   </div>
 </template>
 
@@ -934,15 +934,10 @@ function onSelectAll() {
 </script>
 
 <style scoped lang="scss">
-.pageActionsBtns .createButton {
-  margin-left: 15px;
-}
 
 .createButton {
-  margin-top: 1px;
-  margin-left: 0;
+  margin-top: 10px;
 }
-
 .pagecontent {
   margin-top: 10px;
   width: 100%;

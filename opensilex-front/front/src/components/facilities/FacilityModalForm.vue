@@ -119,7 +119,9 @@ async function showEditForm(uri: string) {
     const dto: FacilityGetDTO = http.response.result
     const publisher: UserGetDTO = (dto as any).publisher
 
-    const editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto)
+    // `geometry` is a read-only compatibility field: the API rejects an update containing it, the location is
+    // edited through `locations` instead
+    const editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto, undefined, ['geometry'])
     ;(editDto as any).publisher = publisher
 
     try {

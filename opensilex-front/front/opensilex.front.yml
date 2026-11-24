@@ -41,7 +41,7 @@ menu:
             - facility-access
           icon: "bi#bi-globe"
           title: "component.menu.facilities"
-          description: FacilityListView.description
+          description: component.facility.description
       - id: devices
         label: component.menu.devices
         route:

@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- CreateButton position on top for FacilityListView -->
-    <div class="spaced-actions" v-if="withActions">
+    <div class="container-fluid">
       <CreateButton
         v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
         @click="facilityFormRef?.showCreateForm?.()"

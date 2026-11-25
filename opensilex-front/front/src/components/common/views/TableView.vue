@@ -18,7 +18,7 @@
       <!-- Info sur le nombre de résultats -->
       <div v-if="showCount" class="mb-2">
         <strong>
-          <span v-if="computedTotalRows > 0">
+          <span class="showCount" v-if="computedTotalRows > 0">
             {{ $t('component.common.list.pagination.nbEntries', {
               limit: getCurrentItemLimit(),
               offset: getCurrentItemOffset(),
@@ -280,6 +280,11 @@ watch(filter, () => {
 .pagination-wrapper {
   display: flex;
   justify-content: flex-end;
+}
+
+.showCount {
+  display: flex;
+  justify-content: end;
 }
 </style>
 

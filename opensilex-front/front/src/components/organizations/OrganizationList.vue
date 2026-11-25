@@ -323,13 +323,6 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-.organization-layout {
-  background: transparent;
-}
-
-.organization-content {
-  padding-left: 12px;
-}
 
 .filtersGlobalSearchIcon {
   font-size: 1.2em;

@@ -98,21 +98,6 @@
     </SearchFiltersSidebar>
 
     <n-layout-content class="document-content">
-      <div class="docCountRight">
-        <div v-if="paginationInfo.hasResults">
-          <strong>
-            {{ t('component.common.list.pagination.nbEntries', {
-              limit: paginationInfo.start,
-              offset: paginationInfo.end,
-              totalRow: n(paginationInfo.total)
-            }) }}
-          </strong>
-        </div>
-        <div v-else>
-          <strong>{{ t('component.common.list.pagination.noEntries') }}</strong>
-        </div>
-      </div>
-
       <TableAsyncView
         ref="tableRef"
         :searchMethod="loadData"
@@ -420,27 +405,6 @@ defineExpose({
   padding-left: 12px; 
 }
 
-.listActionButtons { 
-  position: relative; 
-  display: flex; 
-  gap: 0 !important; 
-}
-
-.displayAndListSelectionCount { 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
-  }
-
-.filtersGlobalSearchIcon {
-  font-size: 1.2em;
-}
-
-.globalFiltersSearchButton {
-  width: 40px;
-  height: 55px;
-}
-
 .globalFiltersSearchButton span {
   display: block !important;
 }
@@ -448,33 +412,6 @@ defineExpose({
 .globalFiltersSearchButton div {
   margin-top: 5px;
 }
-
-.typeFilter {
-  margin-bottom: 15px;
-}
-
-.fade-enter-active, 
-.fade-leave-active { 
-  transition: all 0.3s ease; 
-  }
-
-.fade-enter-from, 
-.fade-leave-to { 
-  opacity: 0; 
-  transform: translateX(-10px); 
-  }
-
-.fade-enter-to, 
-.fade-leave-from { 
-  opacity: 1; 
-  transform: translateX(0); }
-
-.btn-disabled { 
-  background-color: #e0e0e0 !important; 
-  color: #2e2e2e !important; 
-  border: none !important; 
-  cursor: not-allowed; 
-  }
 
 .document-layout {
   background: transparent;

@@ -1,73 +1,6 @@
 <template>
   <div class="container-fluid">
     <PageContent>
-      <!-- Barre Actions / Counts / Selection -->
-      <n-space
-        class="listActionButtons"
-        :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
-      >
-        <!-- Dropdown Affichage / sélection -->
-        <n-dropdown
-          trigger="hover"
-          placement="bottom-end"
-          :options="displayDropdownOptions"
-          @select="onDisplayDropdownSelect"
-        >
-          <n-button size="small" class="greenThemeColor">
-            {{ t('ProvenanceList.display') }}
-          </n-button>
-        </n-dropdown>
-
-        <!-- Dropdown Actions -->
-        <n-dropdown
-          v-if="!noActions"
-          trigger="hover"
-          placement="bottom-end"
-          :options="actionsDropdownOptions"
-          :disabled="selectedCount === 0"
-          @select="onActionsDropdownSelect"
-        >
-          <n-button
-            size="small"
-            :disabled="selectedCount === 0"
-            :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-          >
-            {{ t('component.common.actions') }}
-          </n-button>
-        </n-dropdown>
-
-        <!-- Affichage Counts / sélection -->
-        <div class="displayAndListSelectionCount">
-          <div v-if="showCount">
-            <div v-if="paginationInfo.hasResults">
-              <strong>
-                <span class="ml-1">
-                  {{
-                    t('component.common.list.pagination.nbEntries', {
-                      limit: paginationInfo.start,
-                      offset: paginationInfo.end,
-                      totalRow: n(paginationInfo.total)
-                    })
-                  }}
-                </span>
-              </strong>
-            </div>
-            <div v-else>
-              <strong>
-                <span class="ml-1">
-                  {{ t('component.common.list.pagination.noEntries') }}
-                </span>
-              </strong>
-            </div>
-          </div>
-          <span> | </span>
-          <n-p>
-            {{ t('ProvenanceList.selected') }} :
-            <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-          </n-p>
-        </div>
-      </n-space>
-
       <n-layout has-sider class="provenance-layout">
         <!-- Sidebar / Filters -->
         <SearchFiltersSidebar
@@ -89,7 +22,7 @@
 
           <!-- Activity type -->
           <n-form-item class="compact-form-item">
-            <opensilex-TypeForm
+            <TypeForm
               v-model:type="filter.activity_type"
               :baseType="Prov.ACTIVITY_TYPE_URI"
               :label="t('ProvenanceList.activity_type')"
@@ -101,7 +34,7 @@
 
           <!-- Agent type -->
           <n-form-item class="compact-form-item">
-            <opensilex-AgentTypeSelector
+            <AgentTypeSelector
               v-model:selected="filter.agent_type"
               :multiple="false"
               :key="lang"
@@ -142,9 +75,75 @@
 
         <!-- Contenu Liste -->
         <n-layout-content class="provenance-content">
+          <n-space
+              class="listActionButtons"
+          >
+            <!-- Dropdown Affichage / sélection -->
+            <n-dropdown
+                trigger="hover"
+                placement="bottom-end"
+                :options="displayDropdownOptions"
+                @select="onDisplayDropdownSelect"
+            >
+              <n-button size="small" class="greenThemeColor">
+                {{ t('ProvenanceList.display') }}
+              </n-button>
+            </n-dropdown>
+
+            <!-- Dropdown Actions -->
+            <n-dropdown
+                v-if="!noActions"
+                trigger="hover"
+                placement="bottom-end"
+                :options="actionsDropdownOptions"
+                :disabled="selectedCount === 0"
+                @select="onActionsDropdownSelect"
+            >
+              <n-button
+                  size="small"
+                  :disabled="selectedCount === 0"
+                  :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
+              >
+                {{ t('component.common.actions') }}
+              </n-button>
+            </n-dropdown>
+
+            <!-- Affichage Counts / sélection -->
+            <div class="displayAndListSelectionCount">
+              <div v-if="showCount">
+                <div v-if="paginationInfo.hasResults">
+                  <strong>
+                <span class="ml-1">
+                  {{
+                    t('component.common.list.pagination.nbEntries', {
+                      limit: paginationInfo.start,
+                      offset: paginationInfo.end,
+                      totalRow: n(paginationInfo.total)
+                    })
+                  }}
+                </span>
+                  </strong>
+                </div>
+                <div v-else>
+                  <strong>
+                <span class="ml-1">
+                  {{ t('component.common.list.pagination.noEntries') }}
+                </span>
+                  </strong>
+                </div>
+              </div>
+              <span> | </span>
+              <n-p>
+                {{ t('ProvenanceList.selected') }} :
+                <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
+              </n-p>
+            </div>
+          </n-space>
+
           <TableAsyncView
             ref="tableRef"
             :searchMethod="loadData"
+            :show-count="false"
             :fields="fields"
             :fieldKeyToSortableModelLabelMap="fieldKeyToModelFieldMap"
             defaultSortBy="name"
@@ -254,6 +253,8 @@ import EditButton from "@/components/common/buttons/EditButton.vue";
 import DocumentForm from "@/components/documents/DocumentForm.vue";
 import {TableField} from "@/components/common/views/TableField";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import AgentTypeSelector from "@/components/data/AgentTypeSelector.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', uri: string): void

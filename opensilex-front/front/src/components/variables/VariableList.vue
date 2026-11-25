@@ -1,68 +1,6 @@
 <template>
   <!-- Boutons manipulation liste  -->
   <!-- <n-space class="listActionButtons" :class="{ 'filtersCollapsed' : (!filtersCollapsed)}"> -->
-  <n-space class="listActionButtons" :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']">
-
-    <!-- Premier dropdown (gestion sélection) -->
-    <n-dropdown
-      :options="selectionOptions"
-      trigger="hover"
-      @select="handleSelectionAction"
-    >
-      <n-button size="small" :class="'greenThemeColor'">
-        {{ t('VariableList.display') }}
-      </n-button>
-    </n-dropdown>
-
-    <!-- Deuxième dropdown (gestion actions) -->
-    <n-dropdown
-      v-if="!noActions"
-      :options="dropdownOptions"
-      trigger="hover"
-      :disabled="selectedCount === 0"
-      @select="handleDropdownAction"
-    >
-      <n-button
-        size="small"
-        :disabled="selectedCount === 0"
-        :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-      >
-        {{ t('component.common.actions') }}
-      </n-button>
-    </n-dropdown>
-
-
-    <!-- Affichage Counts  -->
-    <div class="displayAndListSelectionCount">
-      <div v-if="showCount">
-        <div v-if="hasResults">
-          <strong>
-            <span class="ml-1">
-              {{ t('component.common.list.pagination.nbEntries', {
-                limit: start,
-                offset: end,
-                totalRow: n(total)
-              }) }}
-            </span>
-          </strong>
-        </div>
-        <div v-else>
-          <strong>
-            <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
-          </strong>
-        </div>
-      </div>
-      <span> | </span>
-      <n-p>
-        {{ t('VariableList.selected') }} :
-        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </n-p>
-    </div>
-    <!-- FIN affichage counts -->
-  </n-space>
-  <!-- FIN Boutons manipulation liste  -->
-
-
 <n-layout has-sider class="vars-layout">
   <SearchFiltersSidebar
     :activeFiltersCount="activeFilters"
@@ -196,8 +134,67 @@
 
   <!-- CONTENU : barre d’actions + table -->
   <n-layout-content class="vars-content">
+    <n-space class="listActionButtons">
+      <!-- Premier dropdown (gestion sélection) -->
+      <n-dropdown
+          :options="selectionOptions"
+          trigger="hover"
+          @select="handleSelectionAction"
+      >
+        <n-button size="small" :class="'greenThemeColor'">
+          {{ t('VariableList.display') }}
+        </n-button>
+      </n-dropdown>
 
-  <n-data-table
+      <!-- Deuxième dropdown (gestion actions) -->
+      <n-dropdown
+          v-if="!noActions"
+          :options="dropdownOptions"
+          trigger="hover"
+          :disabled="selectedCount === 0"
+          @select="handleDropdownAction"
+      >
+        <n-button
+            size="small"
+            :disabled="selectedCount === 0"
+            :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
+        >
+          {{ t('component.common.actions') }}
+        </n-button>
+      </n-dropdown>
+
+
+      <!-- Affichage Counts  -->
+      <div class="displayAndListSelectionCount">
+        <div v-if="showCount">
+          <div v-if="hasResults">
+            <strong>
+            <span class="ml-1">
+              {{ t('component.common.list.pagination.nbEntries', {
+              limit: start,
+              offset: end,
+              totalRow: n(total)
+            }) }}
+            </span>
+            </strong>
+          </div>
+          <div v-else>
+            <strong>
+              <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
+            </strong>
+          </div>
+        </div>
+        <span> | </span>
+        <n-p>
+          {{ t('VariableList.selected') }} :
+          <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
+        </n-p>
+      </div>
+      <!-- FIN affichage counts -->
+    </n-space>
+    <!-- FIN Boutons manipulation liste  -->
+
+    <n-data-table
     :remote="!onlySelected"
     :columns="columns"
     :data="tableData"

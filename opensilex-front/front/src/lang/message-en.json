@@ -104,6 +104,7 @@
             "select": "Select",
             "next": "Next",
             "previous": "Previous",
+            "provenance": "Provenance",
             "colon": ":",
             "uri-copy": "URI copied to clipboard",
             "url-copy": "URL copied to clipboard",
@@ -575,6 +576,17 @@
             "associated-data-error": "Data are associated with this variable",
             "trait-button": "Trait already existing in an ontology",
             "trait-button-help": "Add a trait (entity and characteristic) already existing in an ontology",
+            "trait-uri": "Trait URI",
+            "trait-uri-help": "Variable trait unique identifier (Can be used to link to an existing trait for interoperability)",
+            "trait-uri-placeholder": "http://purl.obolibrary.org/obo/WTO_0000171",
+            "trait-name": "Trait name",
+            "trait-name-help": "Variable trait name (Describe the trait name if a trait uri has been specified)",
+            "trait-name-placeholder": "Number of grains per square meter",
+            "trait-form-create-title": "Add trait",
+            "trait-form-edit-title": "Edit trait",
+            "edit-references": "Edit references",
+            "structure": "Structure",
+            "advanced": "Advanced information",
             "visualization": "Device associated Data Visualization",
             "dimensionValues" : {
                 "unique": "Unique measurement",
@@ -968,6 +980,13 @@
             }
         },
         "germplasms": {
+            "title": "Germplasm",
+            "description": "Manage Genetic Resources Information",
+            "group": {
+                "add": "Add group",
+                "selected": "Group list",
+                "germplasmCount": "(0 germplasm) | (1 germplasm) | ({count} germplasm)"
+            },
             "errors": {
                 "duplicateUri": "Duplicate URI: {uri}",
                 "duplicateLabel": "Duplicate label: {label}",
@@ -1031,6 +1050,7 @@
             "modal-title": "Selected scientific objects",
             "scientificObjects": "Scientific object(s)",
             "scientificObjects-placeholder": "Select scientific objects",
+            "scientificObject-placeholder": "Select a scientific object",
             "parent-placeholder": "Select a parent",
             "objectType": "Object type",
             "alertSelectAllLimitSize": "The selection has too many lines for this feature, refine your search, maximum=",
@@ -1212,6 +1232,7 @@
                 "facility-default-date": "Default date"
             },
             "filter-placeholder": "Search facilities...",
+            "facility-placeholder": "Select a facility",
             "view": {
                 "list": {
                     "previous": "Consult the previous facility",
@@ -1300,6 +1321,11 @@
                 "success-message": "data have been deleted.",
                 "error-message": "No data found."
             },
+            "batchDetails": {
+                "title": "Batch description",
+                "user-name": "Username",
+                "document-uri": "Document Uri"
+            },
             "dataTable": {
                 "target-object": "Object target",
                 "list-data": "Data",
@@ -1347,13 +1373,14 @@
                 "exceptedFormat": "Expected format",
                 "objectId": "Scientific_object",
                 "title": "Generate Data template",
+                "variables": "Variable(s)",
                 "required": "Required : yes",
                 "variables-associated": "Experiment variables associated",
                 "download-template-example": "Download template example",
                 "csv-separator": "CSV separator must be",
                 "csv-decimal-separator": "Decimal separator for numeric values must be",
                 "alias": "Scientific object name",
-                "date-help": "Acquisition date of the data (format: AAAA-MM-DDTHH:mm:ssZ or AAAA-MM-DD)",
+                "date-help": "Acquisition date of the data (format: YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DD)",
                 "first-variable": "First Variable",
                 "other-variables": "Other variables, 1 per column....",
                 "column-type-help": "Column data type: ",
@@ -1454,9 +1481,17 @@
                 "tooLargeDataset": "Too large data :'{sizeMax}' observations expected, '{nbLinesToImport}' observations submitted",
                 "invalidAnnotationErrors": "The target column must be filled to annotate."
             },
+            "resultModalView": {
+                "title": "Data insertion report",
+                "data-imported": "Observations have been imported successfully",
+                "datum-imported": "Observation imported successfully",
+                "annotations-imported": "annotations have been imported successfully",
+                "annotation-imported": "Annotation imported successfully"
+            },
             "dataTemplateForm": {
                 "help": "The button is disabled if no variables are selected",
                 "with-raw-data": "With raw data columns",
+                "with-raw-data-help": "Adds a \"raw_data\" column to the right of each variable. It contains the list of raw values (repeated measurements) used to compute the variable value, separated by commas (e.g. 20.3,20.4,20.5).",
                 "raw-data": "Raw data",
                 "type-list": "Array of ",
                 "raw-data-example": "Raw data (e.g. 20.3,20.4,20.5)",
@@ -1473,8 +1508,15 @@
                 },
                 "variable-not-found-error": "Variable not found. Please make sure you have imported it.",
                 "with-prov-used": "With entity used columns",
+                "with-prov-used-help": "Adds a \"prov_used\" (entity used) column to give, for each row, the URI of the datafile or scientific object from which the data was produced. Several URIs can be separated by commas.",
                 "prov_used": "Entity Used - Datafile URI",
-                "prov-used-exemple": "Datafile or Scientific object URI"
+                "prov-used-exemple": "Datafile or Scientific object URI",
+                "columns": {
+                    "experiment": "Experiment",
+                    "target": "Target",
+                    "device": "Device",
+                    "object_annotation": "Annotation"
+                }
             }
         },
         "datafile": {
@@ -1493,8 +1535,7 @@
             "fileName-placeholder": "Enter file name",
             "imagesView": "View",
             "filters": {
-                "rdfType-placeholder": "Select the datafile type",
-                "provenance": "Provenance"
+                "rdfType-placeholder": "Select the datafile type"
             },
             "list-title": "Datafiles",
             "list": {
@@ -1507,7 +1548,6 @@
                 "filename": "Filename",
                 "format": "Format",
                 "object": "Target",
-                "provenance": "Provenance",
                 "rdfType": "Type",
                 "selected": "Selected datafiles",
                 "selected-all": "All datafiles",
@@ -1525,7 +1565,6 @@
                 "fileDX": "File",
                 "fileDX-help": "Insert a file in JCAMP-DX, JDX, DX format. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.",
                 "fileSpectraCSV-help": "Insert a spectra file in CSV format with tabulation separator. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.",
-                "provenance": "Provenance",
                 "targets": "Target(s)",
                 "targets-help": "List of resources's URI concerned by the document",
                 "type": "Type",
@@ -1653,6 +1692,7 @@
                 "xsd": "Discover XML schema languages.",
                 "placeholder": "Enter an URI, ex : http://www.opensilex.org/",
                 "XSD-placehorlder": {
+                    "XSDStringInput-placeholder": "Enter text, ex : Opensilex",
                     "XSDLongStringInput-placeholder": "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data.",
                     "XSDIntegerInput-placeholder": "Enter an integer number, ex : 8611",
                     "XSDDecimalInput-placeholder": "Enter a decimal number, ex : 8611.53",
@@ -1948,7 +1988,6 @@
         "date": "Date",
         "value": "Value",
         "variable": "Variable",
-        "provenance": "Provenance",
         "provenance-placeholder": "Select a provenance",
         "germplasm-group": "Germplasm group",
         "germplasm-group-placeholder": "Select a germplasm group",

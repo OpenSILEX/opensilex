@@ -30,7 +30,7 @@
           ref="provenanceSelector"
           v-model:provenances="form.provenance.uri"
           label="component.data.dataImportForm.provenance"
-          @select="loadProvenanceAndCheckUploadedData"
+          @selectionChange="loadProvenanceAndCheckUploadedData"
           @clear="reset()"
           :multiple="false"
           :actionHandler="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)
@@ -43,6 +43,7 @@
         <div v-show="visibleDetails" class="mt-2">
           <ProvenanceDetails
             :provenance="form.provenance"
+            :dataImportResult="true"
           ></ProvenanceDetails>
         </div>
       </div>
@@ -139,7 +140,7 @@ import Modal from "@/components/common/views/Modal.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import FormField from "@/components/common/forms/FormField.vue";
 import {NSwitch, NUpload, NUploadDragger} from "naive-ui";
-import type {UploadFileInfo} from "naive-ui";
+import type {SelectOption, UploadFileInfo} from "naive-ui";
 import ProvenanceSelector from "@/components/data/ProvenanceSelector.vue";
 import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
 import ProvenanceForm from "@/components/data/form/ProvenanceForm.vue";
@@ -246,7 +247,7 @@ function hide() {
 }
 
 function showProvenanceDetails() {
-  if (form.value.provenance != null) {
+  if (form.value.provenance?.uri) {
     visibleDetails.value = !visibleDetails.value;
   }
 }
@@ -283,10 +284,10 @@ function getProvenance(uri) {
     });
 }
 
-function loadProvenanceAndCheckUploadedData(selectedValue) {
+function loadProvenanceAndCheckUploadedData(selectedValue: SelectOption | SelectOption[] | undefined) {
   hasDeviceAgent.value = false;
-  if (selectedValue != undefined && selectedValue != null) {
-    getProvenance(selectedValue.id).then((prov) => {
+  if (selectedValue && !Array.isArray(selectedValue)) {
+    getProvenance(selectedValue.value as string).then((prov) => {
       form.value.provenance = prov;
       hasDevice(prov);
     });

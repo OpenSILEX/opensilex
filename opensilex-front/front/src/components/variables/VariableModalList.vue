@@ -152,5 +152,7 @@ defineExpose({
 }
 .modal-body {
   padding: 8px 0;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
 }
 </style>

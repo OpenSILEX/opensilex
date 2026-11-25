@@ -26,7 +26,7 @@
             ref="templateGenerator"
             :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
             templatePrefix="scientific_object"
-            typePlaceholder="OntologyObjectForm.form-type-placeholder"
+            typePlaceholder="component.common.forms-generic-placeholders.form-type-placeholder"
             uriHelp="component.scientificObjects.help-messages.uri-help"
             :uriExample="SCIENTIFIC_OBJECT_URI_EXAMPLE"
             typeHelp="component.scientificObjects.help-messages.type-help"

@@ -104,7 +104,7 @@
               <UsedProvenanceSelector
                   source="data"
                   v-model:provenances="filter.provenance"
-                  :label="t('experimentData.provenance')"
+                  :label="t('component.common.provenance')"
                   :placeholder="t('experimentData.provenance-placeholder')"
                   @selectionChange="onProvenanceSelectorSelectionChange"
                   :experiments="[uri]"
@@ -242,9 +242,9 @@ const renderImportForm = ref<boolean>(false)
 function defaultFilter() {
   return {
     germplasm_group: undefined,
-    start_date: null,
-    end_date: null,
-    provenance: null,
+    start_date: undefined,
+    end_date: undefined,
+    provenance: undefined,
     variables: [],
     experiments: [uri.value],
     scientificObjects: [],

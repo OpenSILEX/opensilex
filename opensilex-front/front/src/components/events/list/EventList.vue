@@ -1,9 +1,5 @@
 <template>
   <!-- Barre Actions -->
-  <n-space
-    class="listActionButtons"
-    :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
-  >
     <CreateButton
       v-if="user.hasCredential(modificationCredentialId)"
       @click="showForm"
@@ -24,28 +20,6 @@
       :label="t('EventList.move-csv-import-title')"
       class="createButton"
     />
-
-    <div class="displayAndListSelectionCount">
-      <div v-if="paginationInfo.hasResults">
-          <strong>
-          <span class="ml-1">
-              {{ t('component.common.list.pagination.nbEntries', {
-              limit: paginationInfo.start,
-              offset: paginationInfo.end,
-              totalRow: n(paginationInfo.total)
-              }) }}
-          </span>
-          </strong>
-      </div>
-      <div v-else>
-          <strong>
-          <span class="ml-1">
-              {{ t('component.common.list.pagination.noEntries') }}
-          </span>
-          </strong>
-      </div>
-    </div>
-  </n-space>
 
   <!-- Layout -->
   <n-layout has-sider class="event-layout">

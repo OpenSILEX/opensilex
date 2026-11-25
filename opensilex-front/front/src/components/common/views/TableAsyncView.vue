@@ -47,7 +47,7 @@
         <slot name="export"></slot>
       </div>
 
-      <div v-if="showCount">
+      <div class="showCount" v-if="showCount">
         <div v-if="totalRow > 0">
           <strong>
             <span class="ml-1">
@@ -649,6 +649,11 @@ defineExpose({
 <style scoped>
 .table-selectable tbody tr {
   cursor: pointer;
+}
+
+.showCount {
+  display: flex;
+  justify-content: end;
 }
 
 .table-active {

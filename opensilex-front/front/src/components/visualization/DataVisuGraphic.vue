@@ -71,7 +71,7 @@ import HelpButton from "@/components/common/buttons/HelpButton.vue";
 import Modal from "@/components/common/views/Modal.vue";
 import DataVisuHelp from "@/components/visualization/DataVisuHelp.vue";
 import type {DataGetSearchDTO, EventGetDTO} from "opensilex-core/index";
-import type {DataVisuEvent, DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
+import type {DataVisuEvent, DataVisuPoint, DataVisuSerie, DataVisuYAxisNames} from "@/components/visualization/DataVisuTypes";
 import * as echarts from "echarts/core";
 import type {ECElementEvent} from "echarts/core";
 import {LineChart, ScatterChart} from "echarts/charts";
@@ -148,7 +148,7 @@ const props = withDefaults(defineProps<{
   /** The series to draw, see DataVisuSerie */
   series: DataVisuSerie[]
   /** One Y axis per entry, the first one on the left and the second one on the right */
-  yAxisNames?: string[]
+  yAxisNames?: DataVisuYAxisNames
   /** Name of the element the data belongs to (e.g. the experiment), written in the title of the downloaded image */
   elementName?: string
   /** URI of the element the data belongs to, written in the title of the downloaded image */

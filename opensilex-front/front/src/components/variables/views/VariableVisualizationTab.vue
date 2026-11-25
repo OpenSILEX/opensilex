@@ -101,7 +101,7 @@ import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
 import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
 import DataVisuEventsSwitch from "@/components/visualization/DataVisuEventsSwitch.vue";
-import type {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
+import type {DataVisuEvent, DataVisuSerie, DataVisuYAxisNames} from "@/components/visualization/DataVisuTypes";
 import useDataVisualisation, {
   colorEventsByType,
   DataSeriesRequest,
@@ -154,7 +154,7 @@ const filter: Ref<VisualisationFilter> = ref<VisualisationFilter>(defaultFilter(
 const searchFiltersToggle: Ref<boolean> = ref<boolean>(false);
 const loading: Ref<boolean> = ref<boolean>(false);
 const series: Ref<DataVisuSerie[]> = ref<DataVisuSerie[]>([]);
-const yAxisNames: Ref<string[]> = ref<string[]>([]);
+const yAxisNames: Ref<DataVisuYAxisNames> = ref<DataVisuYAxisNames>([]);
 const events: Ref<DataVisuEvent[]> = ref<DataVisuEvent[]>([]);
 
 const activeFiltersCount: ComputedRef<number> = computed<number>(() => {

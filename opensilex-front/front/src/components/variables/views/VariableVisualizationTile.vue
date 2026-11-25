@@ -127,7 +127,7 @@ import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "@/models/Store";
 import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
-import type {DataVisuPoint, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
+import type {DataVisuPoint, DataVisuSerie, DataVisuYAxisNames} from "@/components/visualization/DataVisuTypes";
 import {getGraphicColor} from "@/composables/useDataVisualisation";
 import {Period} from "@/components/common/forms/DatePeriodPicker.vue";
 import FacilityHistogramSettings from "@/components/facilities/FacilityHistogramSettings.vue";
@@ -225,7 +225,7 @@ const graphicSeries: ComputedRef<DataVisuSerie[]> = computed<DataVisuSerie[]>(()
       toDataVisuSerie(serie, calculatedDataSeries.value.length + index, hasCalculatedSeries.value))
 ]);
 
-const yAxisNames: ComputedRef<string[]> = computed<string[]>(() => {
+const yAxisNames: ComputedRef<DataVisuYAxisNames> = computed<DataVisuYAxisNames>(() => {
   if (!variableDetails.value) {
     return [];
   }

@@ -44,6 +44,12 @@ export interface DataVisuSerie {
 }
 
 /**
+ * Names of the Y axes of the graphic: none, one (on the left), or two (left and right). A third axis would be drawn
+ * over the right one, so the type stops at two.
+ */
+export type DataVisuYAxisNames = [left?: string, right?: string];
+
+/**
  * One event, drawn as a pin at the bottom of the graphic
  */
 export interface DataVisuEvent {

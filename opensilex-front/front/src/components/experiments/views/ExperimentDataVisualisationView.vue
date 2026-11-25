@@ -137,7 +137,7 @@ import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
 import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
 import DataVisuEventsSwitch from "@/components/visualization/DataVisuEventsSwitch.vue";
-import type {DataVisuEvent, DataVisuSerie} from "@/components/visualization/DataVisuTypes";
+import type {DataVisuEvent, DataVisuSerie, DataVisuYAxisNames} from "@/components/visualization/DataVisuTypes";
 import VisuImagePanel from "@/components/visualization/VisuImagePanel.vue";
 import {ScientificObjectFilter} from "@/components/scientificObjects/ScientificObjectList.vue";
 import useDataVisualisation, {
@@ -210,7 +210,7 @@ const localSoFilter: Ref<ScientificObjectFilter> = ref<ScientificObjectFilter>({
 const searchFiltersToggle: Ref<boolean> = ref<boolean>(false);
 const loading: Ref<boolean> = ref<boolean>(false);
 const series: Ref<DataVisuSerie[]> = ref<DataVisuSerie[]>([]);
-const yAxisNames: Ref<string[]> = ref<string[]>([]);
+const yAxisNames: Ref<DataVisuYAxisNames> = ref<DataVisuYAxisNames>([]);
 const events: Ref<DataVisuEvent[]> = ref<DataVisuEvent[]>([]);
 
 const activeFiltersCount: ComputedRef<number> = computed<number>(() => {
@@ -258,7 +258,9 @@ async function onSearch(): Promise<void> {
       filter.value.showEvents ? loadEvents(buildEventsRequests(scientificObjects)) : Promise.resolve([])
     ]);
 
-    yAxisNames.value = variableDetails.map((v: VariableDetailsDTO) => v.unit?.name ? `${v.name} (${v.unit.name})` : v.name);
+    // One axis per variable, at most VARIABLES_LIMIT (2)
+    const axisNames: string[] = variableDetails.map((v: VariableDetailsDTO) => v.unit?.name ? `${v.name} (${v.unit.name})` : v.name);
+    yAxisNames.value = axisNames.length > 1 ? [axisNames[0], axisNames[1]] : [axisNames[0]];
     series.value = loadedSeries;
     events.value = loadedEvents;
     clearImagePanel();

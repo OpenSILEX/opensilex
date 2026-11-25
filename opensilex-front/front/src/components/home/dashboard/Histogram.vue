@@ -50,7 +50,7 @@ import {NSpin, NTag} from "naive-ui";
 import {DeviceGetDTO, DevicesService, VariableDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import DataVisuGraphic from "@/components/visualization/DataVisuGraphic.vue";
-import type {DataVisuSerie} from "@/components/visualization/DataVisuTypes";
+import type {DataVisuSerie, DataVisuYAxisNames} from "@/components/visualization/DataVisuTypes";
 import HistogramSettings from "@/components/home/dashboard/HistogramSettings.vue";
 import {Period} from "@/components/common/forms/DatePeriodPicker.vue";
 import useDataVisualisation, {
@@ -112,7 +112,7 @@ const variable: Ref<VariableDetailsDTO | undefined> = ref<VariableDetailsDTO | u
 
 const loading: Ref<boolean> = ref<boolean>(false);
 const series: Ref<DataVisuSerie[]> = ref<DataVisuSerie[]>([]);
-const yAxisNames: Ref<string[]> = ref<string[]>([]);
+const yAxisNames: Ref<DataVisuYAxisNames> = ref<DataVisuYAxisNames>([]);
 //#endregion
 
 //#region Hooks & watchers

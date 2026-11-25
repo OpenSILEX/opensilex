@@ -84,10 +84,10 @@
             :remote="true"
             :striped="true"
             :row-key="(row) => row.uri"
-            @row-click="onRowClickedSafe"
             :row-props="
             (row) => ({
               style: row.__isDetailsRow ? '' : 'cursor: pointer',
+              onClick: props.selectMode === 'single' ? () => onRowClickedSafe(row) : undefined
             })
           "
             :checked-row-keys="checkedRowKeys"
@@ -198,10 +198,6 @@ const nThemeOverrides: GlobalThemeOverrides = {
 const routeArr = computed(() => route.path.split('/'));
 
 onMounted(() => {
-  if (props.isSelectable && props.selectMode !== 'single') {
-    props.fields.unshift({key: 'select', isSelect: true});
-  }
-
   // attendre que la table soit générée pour appeler et remplir de données
   nextTick(() => {
     if (tableRef.value) {
@@ -261,6 +257,14 @@ function onRowClickedSafe(row: any) {
 }
 
 function onRowClicked(item: NamedResourceDTO) {
+  // In single-selection mode, select the clicked row directly.
+  if (props.selectMode === 'single') {
+    selectedItems.value = [item];
+    numberOfSelectedRows.value = 1;
+    emit('select', item);
+    return;
+  }
+
   const idx = selectedItems.value.findIndex((it) => item.uri === it.uri);
 
   if (idx >= 0) {
@@ -586,14 +590,16 @@ const naiveColumns = computed(() => {
     },
     colSpan: (row: any) => {
       if (row.__isDetailsRow) {
-        return colIndex === 0 ? props.fields.length + (props.isSelectable ? 1 : 0) : 0;
+        return colIndex === 0
+          ? props.fields.length + (props.isSelectable && props.selectMode !== 'single' ? 1 : 0)
+          : 0;
       }
       return 1;
     },
   }));
 
-  if (props.isSelectable) {
-    return [{type: 'selection'}, ...dynamicCols];
+  if (props.isSelectable && props.selectMode !== 'single') {
+    return [{ type: 'selection' }, ...dynamicCols];
   }
 
   return dynamicCols;

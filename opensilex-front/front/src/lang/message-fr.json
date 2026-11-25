@@ -836,7 +836,7 @@
             "category-help-more": "Plus d'informations ",
             "category-factor-placeholder": "Selectionner une catégorie",
             "category-factor-help":"Selectionner une catégorie pour le facteur",
-            "description-factor-help": "Description associé à ce facteur (Protocole, apport de composé)",
+            "description-factor-help": "Description associée à ce facteur (Protocole, apport de composé)",
             "description-factor-placeholder":"Protocole n°1289 - Quantité d'eau 5ml/jours",
             "associated-factor-help": "Les niveaux décrivent les valeurs possibles d'un facteur",
             "factor-level-add": "Ajouter une ligne",
@@ -948,6 +948,13 @@
             }
         },
         "germplasms": {
+           "title": "Ressources génétiques",
+           "description": "Gérer les informations du matériel génétique",
+            "group": {
+                "add": "Ajouter un groupe",
+                "selected": "Liste de groupes",
+                "germplasmCount": "(0 ressources génétiques) | (1 ressource génétique) | ({count} ressources génétiques)"
+            },
             "errors": {
                 "duplicateUri": "URI en double : {uri}",
                 "duplicateLabel": "Label en double : {label}",

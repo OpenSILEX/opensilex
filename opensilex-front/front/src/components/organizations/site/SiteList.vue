@@ -1,21 +1,4 @@
 <template>
-  <div>
-    <div class="siteCountRight">
-      <div v-if="paginationInfo.hasResults">
-        <strong>
-          {{ t('component.common.list.pagination.nbEntries', {
-            limit: paginationInfo.start,
-            offset: paginationInfo.end,
-            totalRow: n(paginationInfo.total)
-          }) }}
-        </strong>
-      </div>
-      <div v-else>
-        <strong>{{ t('component.common.list.pagination.noEntries') }}</strong>
-      </div>
-    </div>
-
-
     <StringFilter
       :filter="filter"
       @update:filter="(v) => (filter = v)"
@@ -68,7 +51,6 @@
         </n-button-group>
       </template>
     </TableAsyncView>
-  </div>
 </template>
 
 <script setup lang="ts">

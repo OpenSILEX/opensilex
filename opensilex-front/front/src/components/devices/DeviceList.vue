@@ -1,66 +1,4 @@
 <template>
-  <!-- Barre Actions / Counts / Selection -->
-  <n-space
-    class="listActionButtons"
-    :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
-  >
-    <!-- Dropdown Affichage / sélection -->
-    <n-dropdown
-      trigger="hover"
-      placement="bottom-end"
-      :options="displayDropdownOptions"
-      @select="onDisplayDropdownSelect"
-    >
-      <n-button size="small" class="greenThemeColor">
-        {{ t('DeviceList.display') }}
-      </n-button>
-    </n-dropdown>
-
-    <!-- Dropdown Actions -->
-    <n-dropdown
-      trigger="hover"
-      placement="bottom-end"
-      :options="actionsDropdownOptions"
-      :disabled="selectedCount === 0"
-      @select="onActionsDropdownSelect"
-    >
-      <n-button
-        size="small"
-        :disabled="selectedCount === 0"
-        :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-      >
-        {{ t('component.common.actions') }}
-      </n-button>
-    </n-dropdown>
-
-    <!-- Affichage Counts / sélection -->
-    <div class="displayAndListSelectionCount">
-      <div v-if="paginationInfo.hasResults">
-        <strong>
-          <span class="ml-1">
-            {{ t('component.common.list.pagination.nbEntries', {
-              limit: paginationInfo.start,
-              offset: paginationInfo.end,
-              totalRow: n(paginationInfo.total)
-            }) }}
-          </span>
-        </strong>
-      </div>
-      <div v-else>
-        <strong>
-          <span class="ml-1">
-            {{ t('component.common.list.pagination.noEntries') }}
-          </span>
-        </strong>
-      </div>
-      <span> | </span>
-      <span>
-        {{ t('DeviceList.selected') }} :
-        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </span>
-    </div>
-  </n-space>
-
   <!-- Layout -->
   <n-layout has-sider class="device-layout">
     <!-- Sidebar / Filters -->
@@ -191,6 +129,65 @@
 
     <!-- Contenu Liste -->
     <n-layout-content class="device-content">
+      <n-space
+          class="listActionButtons"
+      >
+        <!-- Dropdown Affichage / sélection -->
+        <n-dropdown
+            trigger="hover"
+            placement="bottom-end"
+            :options="displayDropdownOptions"
+            @select="onDisplayDropdownSelect"
+        >
+          <n-button size="small" class="greenThemeColor">
+            {{ t('DeviceList.display') }}
+          </n-button>
+        </n-dropdown>
+
+        <!-- Dropdown Actions -->
+        <n-dropdown
+            trigger="hover"
+            placement="bottom-end"
+            :options="actionsDropdownOptions"
+            :disabled="selectedCount === 0"
+            @select="onActionsDropdownSelect"
+        >
+          <n-button
+              size="small"
+              :disabled="selectedCount === 0"
+              :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
+          >
+            {{ t('component.common.actions') }}
+          </n-button>
+        </n-dropdown>
+
+        <!-- Affichage Counts / sélection -->
+        <div class="displayAndListSelectionCount">
+          <div v-if="paginationInfo.hasResults">
+            <strong>
+          <span class="ml-1">
+            {{ t('component.common.list.pagination.nbEntries', {
+            limit: paginationInfo.start,
+            offset: paginationInfo.end,
+            totalRow: n(paginationInfo.total)
+          }) }}
+          </span>
+            </strong>
+          </div>
+          <div v-else>
+            <strong>
+          <span class="ml-1">
+            {{ t('component.common.list.pagination.noEntries') }}
+          </span>
+            </strong>
+          </div>
+          <span> | </span>
+          <span>
+        {{ t('DeviceList.selected') }} :
+        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
+      </span>
+        </div>
+      </n-space>
       <TableAsyncView
         ref="tableRef"
         :searchMethod="searchDevices"
@@ -201,6 +198,7 @@
         labelNumberOfSelectedRow="DeviceList.selected"
         iconNumberOfSelectedRow="ik#ik-thermometer"
         @refreshed="onRefreshed"
+        :show-count="false"
       >
         <template #cell(name)="{ data }">
           <UriLink

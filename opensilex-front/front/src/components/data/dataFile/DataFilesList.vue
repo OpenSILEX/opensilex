@@ -74,6 +74,7 @@
 
     <TableAsyncView
       ref="tableRef"
+      :show-count="false"
       :searchMethod="searchDatafiles"
       :countMethod="countDatafiles"
       :fields="fields"

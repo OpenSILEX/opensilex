@@ -9,31 +9,6 @@
         class="createButton greenThemeColor"
       />
     </div>
-    <n-space class="listActionButtons">
-      <div class="displayAndListSelectionCount">
-        <div v-if="showCount">
-          <div v-if="hasResults">
-            <strong>
-              <span class="ml-1">
-                {{
-                  t('component.common.list.pagination.nbEntries', {
-                    limit: start,
-                    offset: end,
-                    totalRow: n(total),
-                  })
-                }}
-              </span>
-            </strong>
-          </div>
-          <div v-else>
-            <strong>
-              <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
-            </strong>
-          </div>
-        </div>
-      </div>
-    </n-space>
-
     <!-- Table -->
     <PageContent v-if="renderComponent">
       <template #default>

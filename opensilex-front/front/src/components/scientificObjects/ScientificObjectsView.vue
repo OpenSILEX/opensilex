@@ -44,7 +44,7 @@
       <n-layout has-sider class="so-layout">
         <SearchFiltersSidebar
           :activeFiltersCount="activeFiltersCount"
-          :filtersCollapsed="searchFiltersToggle"
+          v-model:filtersCollapsed="searchFiltersToggle"
           @refresh="soList.refresh()"
           @reset="reset"
         >
@@ -246,7 +246,7 @@ const filter = ref<ScientificObjectFilter>({
   criteriaDto: {criteria_list:[]}
 });
 const resetExperimentSelectorKey = ref(0);
-const searchFiltersToggle = ref(false);
+const searchFiltersToggle = ref(true);
 const loadAdvancedSearchFilters = ref(false);
 const expandedNCollapseNames = ref<string[]>([])
 //#endregion

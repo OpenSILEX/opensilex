@@ -78,6 +78,7 @@
                   :elementUri="variable"
                   :events="events"
                   @eventCreated="onGraphicEventCreated"
+                  :initialLineMode="true"
               ></DataVisuGraphic>
             </n-spin>
           </template>

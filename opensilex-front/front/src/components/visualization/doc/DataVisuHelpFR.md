@@ -14,7 +14,7 @@
 
 **Menu contextuel**
 - Un menu contextuel (☰) de la représentation graphique permet de :
-    - choisir le mode courbe (par défaut) ou nuage de points.
+    - choisir le mode courbe ou nuage de points (le mode par défaut dépend de la page).
     - d'afficher en plein écran.
     - de télécharger une image.
 

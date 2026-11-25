@@ -159,9 +159,12 @@ const props = withDefaults(defineProps<{
   highlightedImageUri?: string
   /** Context (e.g. experiment URI) of the events created from the menu of a data point */
   eventContext?: string
+  /** true to connect the points with lines when the graphic is opened, the user can still switch it in the menu */
+  initialLineMode?: boolean
 }>(), {
   yAxisNames: () => [],
-  events: () => []
+  events: () => [],
+  initialLineMode: false
 });
 //#endregion
 
@@ -220,7 +223,7 @@ let chart: echarts.ECharts | undefined;
 let resizeObserver: ResizeObserver | undefined;
 
 /** true to connect the points of each series with a line, false to only draw the points */
-const lineMode: Ref<boolean> = ref<boolean>(false);
+const lineMode: Ref<boolean> = ref<boolean>(props.initialLineMode);
 /** true when the X axis is zoomed, to display the "Reset zoom" button */
 const isZoomed: Ref<boolean> = ref<boolean>(false);
 /** true while the component is in fullscreen */

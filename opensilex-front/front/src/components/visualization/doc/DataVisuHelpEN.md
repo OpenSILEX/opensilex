@@ -14,7 +14,7 @@
 
 **Contextual menu**
 - A graphical contextual menu (☰) allows to:
-    - choose a chart line (by default) or a scatter plot view.
+    - choose a chart line or a scatter plot view (the default view depends on the page).
     - a fullscreen mode.
     - download an image from the charts.
 

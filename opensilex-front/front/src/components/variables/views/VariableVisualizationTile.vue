@@ -92,6 +92,7 @@
                     :yAxisNames="yAxisNames"
                     :elementName="variable.name"
                     :elementUri="variable.uri"
+                    :initialLineMode="true"
                 ></DataVisuGraphic>
               </n-spin>
 

@@ -30,6 +30,7 @@
               :yAxisNames="yAxisNames"
               :elementName="variable?.name"
               :elementUri="variableChoice"
+              :initialLineMode="true"
           ></DataVisuGraphic>
         </n-spin>
       </template>

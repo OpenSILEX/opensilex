@@ -142,8 +142,7 @@ const tabDefinitions = [
   {
     key: 'visualization',
     labelKey: 'DeviceDetails.visualization',
-    // component: () => import('./DeviceVisualizationTab.vue'),
-     component: () => import('./DeviceDescription.vue'),
+    component: () => import('./DeviceVisualizationTab.vue'),
     refKey: 'deviceVisualizationTab'
   },
   {

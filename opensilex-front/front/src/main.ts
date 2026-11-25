@@ -23,7 +23,6 @@ import 'vue3-tour/dist/vue3-tour.css';
 import 'vue-tel-input/vue-tel-input.css';
 import "reflect-metadata"
 import {Router} from 'vue-router';
-import HighchartsVue from "highcharts-vue";
 // Local imports
 import store from '@/models/Store'
 import {AuthenticationService} from "opensilex-security/lib";
@@ -157,7 +156,6 @@ app.use(i18n)
 app.use($opensilex);
 app.use(store);
 app.use(naive);
-app.use(HighchartsVue);
 app.use(vue3Tour);
 app.component('font-awesome-icon', FontAwesomeIcon);
 

@@ -56,6 +56,8 @@ const emit = defineEmits<{
 }>()
 
 // Model
+// An undefined value is replaced by '': with undefined, n-input would keep displaying its previous text (e.g. the
+// description of the previously created element when a form is opened again)
 const stringValue = ref(props.value ?? '')
 watch(() => props.value, v => stringValue.value = v ?? '')
 

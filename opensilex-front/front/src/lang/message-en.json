@@ -1997,5 +1997,62 @@
         "export-long-help": "Each line represent an observation (Same as the result table)",
         "batch-uri": "Batch URI",
         "uri-placeholder": "Enter a part of an uri"
+    },
+    "ExperimentDataVisualisationView": {
+        "missingFilters": "Select at least one scientific object and one variable."
+    },
+    "DataVisuGraphic": {
+        "menu": "Graphic options",
+        "scatterPlotView": "Scatter plot view",
+        "chartLineView": "Chart line view",
+        "fullscreen": "Fullscreen",
+        "download": "Download image",
+        "resetZoom": "Reset zoom",
+        "help": "Help on the graphic",
+        "name": "Name",
+        "eventBegin": "Begin",
+        "eventEnd": "End",
+        "eventOngoing": "ongoing",
+        "addEvent": "Add an event",
+        "annotateData": "Annotate data",
+        "imageSeriesName": "Images / {serie}"
+    },
+    "DataVisualisation": {
+        "datatypeMessage": "The datatype of the variable {variable} is {datatype}. At this time only decimal or integer are accepted.",
+        "dataLimit": "There are {total} data for {serie}. Only the {limit} first data are displayed.",
+        "showEvents": "Show events",
+        "events": "Events",
+        "variablePlaceholder": "Select a variable",
+        "missingVariable": "Select a variable."
+    },
+    "VisuImageCard": {
+        "menu": "Image options",
+        "details": "Details",
+        "annotationDetails": "Annotation details",
+        "annotate": "Annotate image",
+        "hide": "Hide",
+        "annotated": "This image has annotations"
+    },
+    "VisuImagePanel": {
+        "annotationsTitle": "Annotations of the image"
+    },
+    "VariableVisualizationTab": {
+        "missingDevices": "Select at least one device."
+    },
+    "Histogram": {
+        "graphicInformations": "Add information concerning your data, location for example",
+        "period": {
+            "day": "Last 24 hours",
+            "week": "Last week",
+            "month": "Last month",
+            "year": "Last year"
+        }
+    },
+    "VariableVisualizationTile": {
+        "clickToViewGraphic": "Click to view the graphic"
+    },
+    "DataVisuDetails": {
+        "provenance": "Provenance",
+        "data": "Data"
     }
 }

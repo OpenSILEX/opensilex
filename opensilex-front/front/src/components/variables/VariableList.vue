@@ -317,7 +317,7 @@ const tableData = computed(() => {
 const props = defineProps({
   showCount: { type: Boolean, default: true },
   // Hide the search filters sidebar at first render (e.g. when used in a selection modal)
-  filtersInitiallyCollapsed: { type: Boolean, default: false },
+  filtersInitiallyCollapsed: { type: Boolean, default: true },
 
   noActions: { type: Boolean, default: false },
 
@@ -1203,10 +1203,8 @@ function resetFilters () {
 }
 
 function applyFilters () {
-  console.log("APPLY FILTER")
   pagination.value.page = 1
   fetchVariablesPage()
-  filtersCollapsed.value = true
 }
 
 // proxy pour binder un seul v-model selon "withoutGroup"

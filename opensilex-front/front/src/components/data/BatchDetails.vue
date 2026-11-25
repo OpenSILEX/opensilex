@@ -1,41 +1,51 @@
 <template>
   <div class="container-fluid">
-    <b-row>
+    <div>
       <Card
-          icon label="BatchDetails.title"
+          v-if="batchDetails"
+          :label="t('component.data.batchDetails.title')"
           class="dataImportBatchDetails"
       >
-        <template v-slot:rightHeader>
+        <template #rightHeader>
           <div class="ml-3"></div>
         </template>
-        <template v-slot:body>
+        <template #body>
 
           <!-- uri -->
           <UriView
-              label="BatchDetails.uri"
               :uri="batchDetails.uri"
               :value="batchDetails.uri"
-          ></UriView>
+          />
+
+          <!-- username -->
+          <StringView
+              :label="t('component.data.batchDetails.user-name')"
+              :value="batchDetails.username"
+          />
 
           <!-- document uri -->
           <UriView
-              title="BatchDetails.document-uri"
+              :title="t('component.data.batchDetails.document-uri')"
               :uri="batchDetails.documentUri"
               :value="batchDetails.documentUri"
-          ></UriView>
+          />
 
         </template>
       </Card>
-    </b-row>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {inject, onMounted, ref} from "vue";
+import {useI18n} from "vue-i18n";
 import {BatchHistoryGetDTO, DataService} from "../../../../../opensilex-core/front/src/lib";
+import Card from "@/components/common/views/Card.vue";
 import UriView from "@/components/common/views/UriView.vue";
+import StringView from "@/components/common/views/StringView.vue";
 
+const { t } = useI18n()
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const dataService = opensilex.getService<DataService>("opensilex.DataService");
 const batchDetails = ref<BatchHistoryGetDTO>(null)
@@ -44,8 +54,8 @@ const props = defineProps<{
   batchUri: string
 }>()
 
-onMounted( async (batchUri) => {
-  batchDetails.value = (await dataService.getBatchHistory(batchUri)).response.result;
+onMounted(async () => {
+  batchDetails.value = (await dataService.getBatchHistory(props.batchUri)).response.result;
 })
 
 </script>
@@ -67,19 +77,3 @@ onMounted( async (batchUri) => {
   }
 }
 </style>
-
-<i18n>
-en:
-  BatchDetails:
-    uri: Uri
-    user-name: Username
-    document-uri: Document Uri
-    title: Batch description
-fr:
-  BatchDetails:
-    uri: Uri
-    user-name: Nom d'utilisateur
-    document-uri: Uri du Document
-    title: Description de Batch
-
-</i18n>

@@ -18,7 +18,7 @@
       <ScientificObjectCSVImporter
           ref="importForm"
           :experimentURI="uri"
-          @csvImported="refresh()"
+          @csvImported="onCsvImported()"
       ></ScientificObjectCSVImporter>
     </PageActions>
 
@@ -36,7 +36,7 @@
             <StringFilter
                 id="name"
                 v-model:filter="filters.name"
-                placeholder="ExperimentScientificObjects.name-placeholder"
+                placeholder="component.experiment.label"
                 class="searchFilter"
                 @handlingEnterKey="unselectRefresh()"
             ></StringFilter>
@@ -44,7 +44,7 @@
 
           <!-- Object type -->
           <n-form-item
-              :label="t('ExperimentScientificObjects.objectType')"
+              :label="t('component.scientificObjects.objectType')"
               :show-feedback="false"
               class="compact-form-item"
           >
@@ -214,7 +214,7 @@
                 <slot name="name">&nbsp;{{ selected.name }}</slot>
               </h5>
 
-              <nav class="tabs mb-3">
+              <nav class="tabs detail-tabs mb-3">
                 <router-link
                     v-for="tab in detailTabs"
                     :key="tab.key"
@@ -311,6 +311,12 @@ const eventsService = opensilex.getService<EventsService>('opensilex.EventsServi
 const annotationsService = opensilex.getService<AnnotationsService>('opensilex.AnnotationsService')
 const documentsService = opensilex.getService<DocumentsService>('opensilex.DocumentsService')
 const positionsService = opensilex.getService<PositionsService>('opensilex.PositionsService')
+//#endregion
+
+//#region Emits
+const emit = defineEmits<{
+  scientificObjectsUpdated: []
+}>()
 //#endregion
 
 //#region Template refs
@@ -558,6 +564,11 @@ function unselectRefresh() {
   refresh();
 }
 
+function onCsvImported() {
+  refresh();
+  emit('scientificObjectsUpdated');
+}
+
 function resetSearch() {
   resetFilters();
   refresh();
@@ -601,6 +612,7 @@ function refreshAfterCreateOrUpdate(result) {
     refresh();
   }
   refreshTypeSelectorComponent();
+  emit('scientificObjectsUpdated');
   if (!result || !result.response.result) {
     return;
   }
@@ -711,6 +723,7 @@ function displayScientificObjectDetails(nodeUri: string) {
   opensilex.disableLoader();
   soService.getScientificObjectDetail(nodeUri, uri.value)
       .then(http => {
+        router.replace({name: DETAILS_ROUTE_NAME, params: {uri: route.params.uri}});
         selected.value = http.response.result;
         refreshDetailCounts();
       })
@@ -793,6 +806,7 @@ function deleteScientificObject(node) {
         selectedObjects.value = selectedObjects.value.filter(soUri => soUri !== deletedUri);
         soTree.value?.refresh();
         refreshTypeSelectorComponent();
+        emit('scientificObjectsUpdated');
       })
       .catch(opensilex.errorHandler);
 }
@@ -984,6 +998,16 @@ function onSelectAll() {
 .so-panels--row > .selectedCard {
   flex: 1 1 0;
   min-width: 0;
+}
+
+/* Tabs wrap onto several lines instead of overflowing the card when their badges make them too wide */
+.detail-tabs {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
+.detail-tabs > .tab {
+  white-space: nowrap;
 }
 </style>
 

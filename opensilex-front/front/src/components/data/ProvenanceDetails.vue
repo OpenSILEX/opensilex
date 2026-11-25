@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <div class="provenance-details-row">
-      <opensilex-Card
+      <Card
         icon
         :label="t(label)"
         :class="computedClass"
@@ -12,7 +12,7 @@
 
         <template #body>
           <!-- uri -->
-          <opensilex-UriView
+          <UriView
             label="component.common.uri"
             :uri="provenance.uri"
             :value="provenance.uri"
@@ -20,33 +20,33 @@
           />
 
           <!-- name -->
-          <opensilex-StringView
+          <StringView
             :label="t('component.common.name')"
             :value="provenance.name"
             class="provenanceDetails"
           />
 
           <!-- description -->
-          <opensilex-StringView
+          <StringView
             :label="t('component.common.description')"
             :value="provenance.description"
           />
 
           <!-- activity -->
-          <opensilex-StringView
+          <StringView
             v-if="provenance.prov_activity != null && provenance.prov_activity.length > 0"
             :label="t('ProvenanceDetails.activity')"
             :value="provenance.prov_activity[0].rdf_type"
           />
 
           <!-- agent -->
-          <opensilex-UriListView
+          <UriListView
             v-if="agentList.length > 0"
             :label="t('ProvenanceDetails.agent')"
             :list="agentList"
           />
         </template>
-      </opensilex-Card>
+      </Card>
     </div>
   </div>
 </template>
@@ -55,6 +55,10 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {ProvenanceGetDTO} from "../../../../../opensilex-core/front/src/lib";
+import Card from "@/components/common/views/Card.vue";
+import UriView from "@/components/common/views/UriView.vue";
+import StringView from "@/components/common/views/StringView.vue";
+import UriListView from "@/components/common/views/UriListView.vue";
 
 
 type ProvenanceAgent = {

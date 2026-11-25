@@ -3,50 +3,50 @@
     <div class="d-flex align-items-start justify-content-between mb-3">
       <i>
         <h4>
-          <Icon icon="fa#list"/>
-          {{ t("component.data.resultModal.title") }}
+          <Icon icon="fa#list" />
+          {{ t("component.data.resultModalView.title") }}
         </h4>
       </i>
       <button
-          type="button"
-          class="btn-close"
-          @click="hide()"
-          aria-label="Close"></button>
+        type="button"
+        class="btn-close"
+        @click="hide()"
+        aria-label="Close"></button>
     </div>
 
     <p v-if="nbLinesImported != null" class="validation-confirm-container">
       {{
         nbLinesImported > 1
-            ? t("component.data.resultModal.data-imported", {number: nbLinesImported})
-            : t("component.data.resultModal.datum-imported", {number: nbLinesImported})
+          ? `${nbLinesImported} ${t("component.data.resultModalView.data-imported")}`
+          : t("component.data.resultModalView.datum-imported")
       }}
     </p>
     <p v-if="nbAnnotationsImported != null && nbAnnotationsImported > 0" class="validation-confirm-container">
       {{
         nbAnnotationsImported > 1
-            ? t("component.data.resultModal.annotations-imported", {number: nbAnnotationsImported})
-            : t("component.data.resultModal.annotation-imported", {number: nbAnnotationsImported})
+          ? `${nbAnnotationsImported} ${t("component.data.resultModalView.annotations-imported")}`
+          : t("component.data.resultModalView.annotation-imported")
       }}
     </p>
     <div class="details-container">
       <ProvenanceDetails
-          label="component.data.dataImportForm.provenance"
-          v-if="provenance"
-          :provenance="provenance"
-          :dataImportResult="true"
+        label="component.common.provenance"
+        v-if="provenance"
+        :provenance="provenance"
+        :dataImportResult="true"
       />
 
       <BatchDetails
-          v-if="batch"
-          :batchUri="batch"
+        v-if="batch"
+        :batchUri="batch"
       />
     </div>
 
     <template #footer>
       <button
-          type="button"
-          class="btn greenThemeColor"
-          v-on:click="hide()"
+        type="button"
+        class="btn greenThemeColor"
+        v-on:click="hide()"
       >
         {{ t('component.common.ok') }}
       </button>
@@ -56,65 +56,65 @@
 
 <script setup lang="ts">
 
-import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
-import BatchDetails from "@/components/data/BatchDetails.vue";
-import Icon from "@/components/common/views/Icon.vue";
-import {useI18n} from "vue-i18n";
-import {ref, useTemplateRef} from "vue";
-import Modal from "@/components/common/views/Modal.vue";
+  import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
+  import BatchDetails from "@/components/data/BatchDetails.vue";
+  import Icon from "@/components/common/views/Icon.vue";
+  import {useI18n} from "vue-i18n";
+  import {ref, useTemplateRef} from "vue";
+  import Modal from "@/components/common/views/Modal.vue";
 
-const {t} = useI18n()
-const modal = useTemplateRef<InstanceType<typeof Modal>>('modal')
-const nbLinesImported = ref<number>(null)
-const nbAnnotationsImported = ref<number>(null)
-const provenance = ref<any>(null)
-const batch = ref<string>(null)
+  const { t } = useI18n()
+  const modal = useTemplateRef<InstanceType<typeof Modal>>('modal')
+  const nbLinesImported = ref<number>(null)
+  const nbAnnotationsImported = ref<number>(null)
+  const provenance = ref<any>(null)
+  const batch = ref<string>(null)
 
-const emit = defineEmits<{
-  onHide: []
-}>()
+  const emit = defineEmits<{
+    onHide: []
+  }>()
 
-function setNbLinesImported(value: number) {
-  nbLinesImported.value = value;
-}
+  function setNbLinesImported(value: number) {
+    nbLinesImported.value = value;
+  }
 
-function setNbAnnotationsImported(value: number) {
-  nbAnnotationsImported.value = value;
-}
+  function setNbAnnotationsImported(value: number) {
+      nbAnnotationsImported.value = value;
+  }
 
-function setProvenance(value) {
-  provenance.value = value;
-}
+  function setProvenance(value) {
+    provenance.value = value;
+  }
 
-function setBatch(value) {
-  batch.value = value;
-}
+  function setBatch(value) {
+    batch.value = value;
+  }
 
-function show() {
-  modal.value.show();
-}
+  function show() {
+    modal.value.show();
+  }
 
-function hide() {
-  modal.value.hide();
-  clearModal();
-}
+  function hide() {
+    modal.value.hide();
+    clearModal();
+  }
 
 
-function clearModal() {
-  nbLinesImported.value = null;
-  nbAnnotationsImported.value = null;
-  provenance.value = null;
-  emit("onHide");
-}
+ function clearModal() {
+    nbLinesImported.value = null;
+    nbAnnotationsImported.value = null;
+    provenance.value = null;
+    emit("onHide");
+  }
 
-defineExpose({
-  setBatch,
-  setNbAnnotationsImported,
-  setNbLinesImported,
-  setProvenance,
-  show,
-  hide
-})
+  defineExpose({
+    setBatch,
+    setNbAnnotationsImported,
+    setNbLinesImported,
+    setProvenance,
+    show,
+    hide
+  })
 
 </script>
 

@@ -211,6 +211,8 @@ public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexMo
         if(messedUpDataExists){
             logger.warn("Some data was found with no target or variable, not normal, you should check in the mongoDB!");
         }
-        facilityDao.updateMany(facilitiesToUpdate);
+        // only insert the new links : a full update would re-write the dynamic relations of the facilities
+        // (e.g. vocabulary:isSubFacilityOf), which are loaded without a value type and make the update fail
+        facilityDao.addVariablesAndDevices(facilitiesToUpdate);
     }
 }

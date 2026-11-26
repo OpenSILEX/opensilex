@@ -13,6 +13,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
@@ -139,6 +141,45 @@ public class FacilityDAO {
 
     public void updateMany(List<FacilityModel> facilities) throws Exception {
         sparql.update(facilities, null);
+    }
+
+    /**
+     * Inserts the oeso:hasVariable and oeso:hasDevice links of each given facility, without touching any other triple.
+     * <p>
+     * Unlike {@link #updateMany(List)}, this does not delete and re-create the facilities. A full update re-writes the
+     * dynamic relations (custom properties, reverse relations such as vocabulary:isSubFacilityOf) loaded with the model,
+     * and those are loaded without a value type, so re-writing them fails.
+     * Links that already exist are inserted again, which is a no-op in RDF.
+     *
+     * @param facilities facilities whose variables and devices must be linked. Null lists are ignored.
+     */
+    public void addVariablesAndDevices(List<FacilityModel> facilities) throws Exception {
+        if (CollectionUtils.isEmpty(facilities)) {
+            return;
+        }
+        Node graph = sparql.getDefaultGraph(FacilityModel.class);
+        UpdateBuilder insert = new UpdateBuilder();
+        boolean hasTriples = false;
+
+        for (FacilityModel facility : facilities) {
+            Node facilityNode = SPARQLDeserializers.nodeURI(facility.getUri());
+            if (facility.getVariables() != null) {
+                for (VariableModel variable : facility.getVariables()) {
+                    insert.addInsert(graph, facilityNode, Oeso.hasVariable.asNode(), SPARQLDeserializers.nodeURI(variable.getUri()));
+                    hasTriples = true;
+                }
+            }
+            if (facility.getDevices() != null) {
+                for (DeviceModel device : facility.getDevices()) {
+                    insert.addInsert(graph, facilityNode, Oeso.hasDevice.asNode(), SPARQLDeserializers.nodeURI(device.getUri()));
+                    hasTriples = true;
+                }
+            }
+        }
+
+        if (hasTriples) {
+            sparql.executeUpdateQuery(insert);
+        }
     }
 
     public boolean exists(URI facilityUri) throws SPARQLException {

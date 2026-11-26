@@ -312,6 +312,14 @@ public class FacilityLogic {
     }
 
     /**
+     * Links the variables and devices of each facility, without touching any other triple of the facilities.
+     * See {@link FacilityDAO#addVariablesAndDevices(List)}.
+     */
+    public void addVariablesAndDevices(List<FacilityModel> facilities) throws Exception {
+        facilityDAO.addVariablesAndDevices(facilities);
+    }
+
+    /**
      * Deletes a facility by URI. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, AccountModel)}
      * for further information on  access validation.
      *

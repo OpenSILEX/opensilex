@@ -764,7 +764,7 @@ public class DataLogic {
                 (session) -> {
                     //Update the facilities
                     if(!CollectionUtils.isEmpty(facilitiesToUpdate)){
-                        new FacilityLogic(sparql, nosql, user, fs).updateMany(facilitiesToUpdate);
+                        new FacilityLogic(sparql, nosql, user, fs).addVariablesAndDevices(facilitiesToUpdate);
                     }
                     return createManyNoTransaction(
                             session,

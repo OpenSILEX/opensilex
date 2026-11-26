@@ -225,6 +225,10 @@
             },
             "filter-search-no-result": "Sorry, no results match your search.",
             "help-button": "Help",
+            "favorite-button": {
+                "add": "Add to favorites",
+                "remove": "Remove from favorites"
+            },
             "list": {
                 "buttons": {
                     "interoperability": "References",
@@ -1089,7 +1093,8 @@
                 "add": "Add scientific object",
                 "update": "Update scientific object",
                 "edit": "Edit scientific object",
-                "delete": "Delete scientific object"
+                "delete": "Delete scientific object",
+                "add-child": "Add scientific object child"
             }
         },
         "skos": {

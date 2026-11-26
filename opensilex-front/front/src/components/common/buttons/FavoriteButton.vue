@@ -85,8 +85,8 @@ async function handleClick() {
 
 function toggleTitle() {
   return favoriteState.value
-    ? t('FavoriteButton.labelRemove')
-    : t('FavoriteButton.labelAdd')
+    ? t('component.common.favorite-button.remove')
+    : t('component.common.favorite-button.add')
 }
 
 onMounted(() => {
@@ -114,15 +114,3 @@ watch(
   color: #212529 !important;
 }
 </style>
-
-<i18n>
-en:
-  FavoriteButton:
-    labelAdd: Add to favorites
-    labelRemove: Remove from favorites
-
-fr:
-  FavoriteButton:
-    labelAdd: Ajouter aux favoris
-    labelRemove: Retirer des favoris
-</i18n>

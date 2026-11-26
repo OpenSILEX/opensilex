@@ -181,19 +181,19 @@
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
                         :small="true"
                         @click="editScientificObject(node.data.uri)"
-                        :label="t('component.scientificObjects.actions.edit')"
+                        label="component.scientificObjects.actions.edit"
                     ></EditButton>
                     <AddChildButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
                         :small="true"
                         @click="createChildScientificObject(node.data.uri)"
-                        label="ExperimentScientificObjects.add-scientific-object-child"
+                        label="component.scientificObjects.actions.add-child"
                     ></AddChildButton>
                     <DeleteButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
                         :small="true"
                         @click="deleteScientificObject(node)"
-                        :label="t('component.scientificObjects.actions.delete')"
+                        label="component.scientificObjects.actions.delete"
                     ></DeleteButton>
                   </n-button-group>
                 </template>
@@ -923,7 +923,7 @@ function onSelectAll() {
   ).then(http => {
     const count = http.response.metadata.pagination.totalCount;
     if (count > selectAllLimit.value) {
-      alert(t('ExperimentScientificObjects.alertSelectAllLimitSize') + selectAllLimit.value);
+      alert(t('component.scientificObjects.alertSelectAllLimitSize') + selectAllLimit.value);
       selectAll.value = false;
       return;
     }

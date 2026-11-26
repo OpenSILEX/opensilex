@@ -1108,6 +1108,25 @@ class SPARQLClassQueryBuilder {
         return uriNode;
     }
 
+    /**
+     * Adds to the INSERT part of the builder one quad per dynamic relation of the instance ({@link SPARQLResourceModel#getRelations()}),
+     * i.e. the relations whose predicate is not managed by a field of the model (custom properties).
+     * <p>
+     * Only called when creating an instance, from {@link #addCreateBuilder}. Note that {@link org.opensilex.sparql.service.SPARQLService#update}
+     * deletes then re-creates the instance, so this is also run on every update.
+     * <p>
+     * Each relation must have a type ({@link SPARQLModelRelation#getType()}), used to convert its value into a node.
+     * Relations built from an API request have one (see {@code OntologyDAO#validateThenAddObjectRelationValue}), but the
+     * relations of a model loaded from the triplestore (SPARQLProxyRelationList, SparqlSchemaNode) do not, so saving such
+     * a model back fails if it has dynamic relations.
+     * <p>
+     * Reverse relations ({@code ?other <p> <instance>}) are skipped, see the comment in the loop.
+     *
+     * @param graph graph in which the quads are inserted, unless a relation has its own graph. If null, triples are inserted in the default graph
+     * @param uriNode node of the instance URI, subject of the inserted triples
+     * @param instance instance whose relations are inserted
+     * @param builder builder to which the inserts are added
+     */
     private <T extends SPARQLResourceModel> void addRelationsQuads(Node graph, Node uriNode, T instance, UpdateBuilder builder) throws Exception {
 
         if(instance.getRelations() == null){
@@ -1115,6 +1134,12 @@ class SPARQLClassQueryBuilder {
         }
 
         for (SPARQLModelRelation relation : instance.getRelations()) {
+            // Reverse relations (?other <p> <instance>) only come from loading a model. An update never deletes them
+            // (see getDeleteBuilderForUpdateCases), so they are still in the triplestore, and writing them here would
+            // insert them with subject and object swapped.
+            if (relation.getReverse()) {
+                continue;
+            }
             Class<?> valueType = relation.getType();
             String vString = relation.getValue();
 

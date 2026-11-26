@@ -373,7 +373,9 @@
                  GeocodingService geocodingService = new OpenStreetMapGeocodingService();
                  Geometry geometry = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
 
-                 if(!geometry.equals(geospatialFacility.getGeometry())){
+                 // geocoding can fail (no result for the address, or OSM unreachable / rate-limited): in that case we cannot
+                 // tell whether the stored geometry came from the address, so treat it as entered coordinates
+                 if(geometry == null || !geometry.equals(geospatialFacility.getGeometry())){
                      locationObservationModel.setEndDate(Instant.parse("1970-01-01T00:00:00.00Z"));
                  }
              }

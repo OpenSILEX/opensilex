@@ -129,65 +129,6 @@
 
     <!-- Contenu Liste -->
     <n-layout-content class="device-content">
-      <n-space
-          class="listActionButtons"
-      >
-        <!-- Dropdown Affichage / sélection -->
-        <n-dropdown
-            trigger="hover"
-            placement="bottom-end"
-            :options="displayDropdownOptions"
-            @select="onDisplayDropdownSelect"
-        >
-          <n-button size="small" class="greenThemeColor">
-            {{ t('DeviceList.display') }}
-          </n-button>
-        </n-dropdown>
-
-        <!-- Dropdown Actions -->
-        <n-dropdown
-            trigger="hover"
-            placement="bottom-end"
-            :options="actionsDropdownOptions"
-            :disabled="selectedCount === 0"
-            @select="onActionsDropdownSelect"
-        >
-          <n-button
-              size="small"
-              :disabled="selectedCount === 0"
-              :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-          >
-            {{ t('component.common.actions') }}
-          </n-button>
-        </n-dropdown>
-
-        <!-- Affichage Counts / sélection -->
-        <div class="displayAndListSelectionCount">
-          <div v-if="paginationInfo.hasResults">
-            <strong>
-          <span class="ml-1">
-            {{ t('component.common.list.pagination.nbEntries', {
-            limit: paginationInfo.start,
-            offset: paginationInfo.end,
-            totalRow: n(paginationInfo.total)
-          }) }}
-          </span>
-            </strong>
-          </div>
-          <div v-else>
-            <strong>
-          <span class="ml-1">
-            {{ t('component.common.list.pagination.noEntries') }}
-          </span>
-            </strong>
-          </div>
-          <span> | </span>
-          <span>
-        {{ t('DeviceList.selected') }} :
-        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </span>
-        </div>
-      </n-space>
       <TableAsyncView
         ref="tableRef"
         :searchMethod="searchDevices"
@@ -198,7 +139,9 @@
         labelNumberOfSelectedRow="DeviceList.selected"
         iconNumberOfSelectedRow="ik#ik-thermometer"
         @refreshed="onRefreshed"
-        :show-count="false"
+        :showActions="true"
+        :actionsOptions="actionsDropdownOptions"
+        @action-select="onActionsDropdownSelect"
       >
         <template #cell(name)="{ data }">
           <UriLink
@@ -274,15 +217,12 @@ import {useI18n} from 'vue-i18n'
 import {useRoute} from 'vue-router'
 import {useStore} from 'vuex'
 import {
-  NButton,
   NButtonGroup,
   NCollapse,
   NCollapseItem,
-  NDropdown,
   NFormItem,
   NLayout,
-  NLayoutContent,
-  NSpace
+  NLayoutContent
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import {type DeviceGetDetailsDTO, DevicesService, type FacilityGetDTO} from 'opensilex-core/index'
@@ -309,7 +249,7 @@ const emit = defineEmits<{
   (e: 'onUpdate', form: any): void
 }>()
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const store = useStore()
 
@@ -389,17 +329,6 @@ onMounted(() => {
   $opensilex.updateFiltersFromURL(route.query, filter.value)
 })
 
-const selectedCount = computed(() => (tableRef.value?.getSelected?.() ?? []).length)
-
-const paginationInfo = computed(() => {
-  return tableRef.value?.getPaginationInfo?.() ?? {
-    start: 0,
-    end: 0,
-    total: 0,
-    hasResults: false
-  }
-})
-
 const activeFiltersCount = computed(() => {
   const staticFilters = [
     filter.value.name,
@@ -421,19 +350,6 @@ const activeFiltersCount = computed(() => {
     return v !== undefined && v !== null && String(v).trim() !== ''
   }).length
 })
-
-const onlySelected = computed(() => !!tableRef.value?.onlySelected)
-
-const displayDropdownOptions = computed(() => [
-  {
-    label: onlySelected.value
-      ? t('DeviceList.selected-all')
-      : t('component.common.selected-only'),
-    key: 'onlySelected'
-  },
-  { type: 'divider', key: 'd1' },
-  { label: t('component.common.resetSelected'), key: 'resetSelected' }
-])
 
 const actionsDropdownOptions = computed(() => {
   const options: any[] = []
@@ -818,18 +734,7 @@ async function loadFacilities() {
     .catch($opensilex.errorHandler)
 }
 
-function onDisplayDropdownSelect(key: string) {
-  switch (key) {
-    case 'onlySelected':
-      tableRef.value?.toggleOnlySelected?.()
-      break
-    case 'resetSelected':
-      tableRef.value?.resetSelection?.()
-      break
-  }
-}
-
-function onActionsDropdownSelect(key: string) {
+function onActionsDropdownSelect(key: string | number) {
   switch (key) {
     case 'addDocument':
       createDocument()
@@ -877,32 +782,12 @@ defineExpose({
   --n-label-padding: 0 !important;
 }
 
-
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
 .device-layout {
   background: transparent;
 }
 
 .device-content {
   padding-left: 12px;
-}
-
-.listActionButtons {
-  position: relative;
-  display: flex;
-  gap: 0 !important;
-}
-
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .filtersNotCollapsed {
@@ -945,7 +830,6 @@ en:
     start_up: Start up
     update: Update Device
     delete: Delete Device
-    display: Display
     selected: Selected devices
     facility: Facility
     linkVariable: Link variables
@@ -958,7 +842,6 @@ en:
     showMap: Show in a map
     alertBadDeviceType: The selected type doesn't match with add variable
     associated-device-error: Device is associated with
-    selected-all: All Devices
     add-Move: Move
     "linkVariableSuccess": "{variablesCount} variable(s) successfully associated to {devicesCount} device(s)"
 
@@ -991,7 +874,6 @@ fr:
     start_up: Date d'obtention
     update: Editer l'appareil
     delete: Supprimer l'appareil'
-    display: Affichage
     selected: Appareils selectionnés
     facility: Installation technique
     linkVariable: Lier des variables
@@ -1003,7 +885,6 @@ fr:
     showMap: Afficher sur une carte
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
     associated-device-error: L'appareil est associé à
-    selected-all: Tout les appareils
     add-multiple: Ajouter des événements
     add-Move: Déplacer
     "linkVariableSuccess": "{variablesCount} variable(s) associée(s) à {devicesCount} device(s) avec succès"

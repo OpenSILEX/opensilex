@@ -17,6 +17,7 @@
           :searchMethod="search"
           :fields="fields"
           :isSelectable="isSelectable"
+          :showCount="showCount"
         >
           <!-- colonnes -->
           <template #cell(published)="{ data }">
@@ -172,27 +173,10 @@ const emit = defineEmits<{
 
 // Services / env
 const store = useStore();
-const { t, n } = useI18n();
+const { t } = useI18n();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const annotationService = opensilex.getService<AnnotationsService>('opensilex.AnnotationsService');
 const securityService = opensilex.getService<SecurityService>('opensilex.SecurityService');
-
-/** Bandeau "Affiche X à Y des Z éléments" */
-const serverTotal = ref(0);
-const pagination = ref({ page: 1, pageSize: 10 });
-
-const paginationInfo = computed(() => {
-  const total = serverTotal.value;
-  const page = pagination.value.page;
-  const pageSize = pagination.value.pageSize;
-  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const end = Math.min(page * pageSize, total);
-  return { start, end, total, hasResults: total > 0 };
-});
-const start = computed(() => paginationInfo.value.start);
-const end = computed(() => paginationInfo.value.end);
-const total = computed(() => paginationInfo.value.total);
-const hasResults = computed(() => paginationInfo.value.hasResults);
 
 // Store bindings
 const user = computed(() => store.state.user);
@@ -236,10 +220,6 @@ const fields: ComputedRef<Array<TableField>> = computed(() => {
 
 // Recherche (pour TableAsyncView)
 function search(options: { orderBy: string[]; currentPage: number; pageSize: number }) {
-  // mémorise la pagination courante
-  pagination.value.page = (options.currentPage ?? 0) + 1;
-  pagination.value.pageSize = options.pageSize ?? 10;
-
   return new Promise((resolve, reject) => {
     annotationService
       .searchAnnotations(
@@ -252,10 +232,6 @@ function search(options: { orderBy: string[]; currentPage: number; pageSize: num
         options.pageSize
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
-        // total côté serveur
-        serverTotal.value =
-          http?.response?.metadata?.pagination?.totalCount ?? http?.response?.result?.length ?? 0;
-
         const results = http.response.result ?? [];
         if (results.length === 0) {
           resolve(http);
@@ -386,15 +362,6 @@ defineExpose({ refresh });
 .action-group {
   display: inline-flex;
   gap: 0.35rem;
-}
-
-.listActionButtons {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: wrap;
-  width: 100%;
-  margin: 8px 0 12px; /* espace sous la barre -> évite le chevauchement */
 }
 </style>
 

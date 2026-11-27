@@ -75,75 +75,10 @@
 
         <!-- Contenu Liste -->
         <n-layout-content class="provenance-content">
-          <n-space
-              class="listActionButtons"
-          >
-            <!-- Dropdown Affichage / sélection -->
-            <n-dropdown
-                trigger="hover"
-                placement="bottom-end"
-                :options="displayDropdownOptions"
-                @select="onDisplayDropdownSelect"
-            >
-              <n-button size="small" class="greenThemeColor">
-                {{ t('ProvenanceList.display') }}
-              </n-button>
-            </n-dropdown>
-
-            <!-- Dropdown Actions -->
-            <n-dropdown
-                v-if="!noActions"
-                trigger="hover"
-                placement="bottom-end"
-                :options="actionsDropdownOptions"
-                :disabled="selectedCount === 0"
-                @select="onActionsDropdownSelect"
-            >
-              <n-button
-                  size="small"
-                  :disabled="selectedCount === 0"
-                  :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-              >
-                {{ t('component.common.actions') }}
-              </n-button>
-            </n-dropdown>
-
-            <!-- Affichage Counts / sélection -->
-            <div class="displayAndListSelectionCount">
-              <div v-if="showCount">
-                <div v-if="paginationInfo.hasResults">
-                  <strong>
-                <span class="ml-1">
-                  {{
-                    t('component.common.list.pagination.nbEntries', {
-                      limit: paginationInfo.start,
-                      offset: paginationInfo.end,
-                      totalRow: n(paginationInfo.total)
-                    })
-                  }}
-                </span>
-                  </strong>
-                </div>
-                <div v-else>
-                  <strong>
-                <span class="ml-1">
-                  {{ t('component.common.list.pagination.noEntries') }}
-                </span>
-                  </strong>
-                </div>
-              </div>
-              <span> | </span>
-              <n-p>
-                {{ t('ProvenanceList.selected') }} :
-                <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-              </n-p>
-            </div>
-          </n-space>
-
           <TableAsyncView
             ref="tableRef"
             :searchMethod="loadData"
-            :show-count="false"
+            :showCount="showCount"
             :fields="fields"
             :fieldKeyToSortableModelLabelMap="fieldKeyToModelFieldMap"
             defaultSortBy="name"
@@ -156,6 +91,9 @@
             @unselect="emit('unselect', $event)"
             @selectall="emit('selectall', $event)"
             @refreshed="onRefreshed"
+            :showActions="!noActions"
+            :actionsOptions="actionsDropdownOptions"
+            @action-select="onActionsDropdownSelect"
           >
             <template #cell(name)="{ data }">
               <UriLink
@@ -235,9 +173,6 @@ import {
   NLayoutContent,
   NFormItem,
   NInput,
-  NButton,
-  NDropdown,
-  NSpace,
   NButtonGroup
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
@@ -278,7 +213,7 @@ const props = withDefaults(defineProps<{
   showCount: true
 })
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const store = useStore()
 
@@ -347,19 +282,6 @@ const fields = computed(() => {
 
   return tableFields
 })
-
-const selectedCount = computed(() => (tableRef.value?.getSelected?.() ?? []).length)
-
-const paginationInfo = computed(() => {
-  return tableRef.value?.getPaginationInfo?.() ?? {
-    start: 0,
-    end: 0,
-    total: 0,
-    hasResults: false
-  }
-})
-
-const onlySelected = computed(() => !!tableRef.value?.onlySelected)
 
 function clearAgents() {
   filter.value.agents = []
@@ -481,35 +403,12 @@ function loadActivityTypes() {
     .catch($opensilex.errorHandler)
 }
 
-/** dropdown display */
-const displayDropdownOptions = computed(() => [
-  {
-    label: onlySelected.value
-      ? t('ProvenanceList.selected-all')
-      : t('component.common.selected-only'),
-    key: 'onlySelected'
-  },
-  { type: 'divider', key: 'd1' },
-  { label: t('component.common.resetSelected'), key: 'resetSelected' }
-])
-
-function onDisplayDropdownSelect(key: string) {
-  switch (key) {
-    case 'onlySelected':
-      tableRef.value?.toggleOnlySelected?.() ?? tableRef.value?.clickOnlySelected?.()
-      break
-    case 'resetSelected':
-      tableRef.value?.resetSelection?.() ?? tableRef.value?.resetSelected?.()
-      break
-  }
-}
-
 /** dropdown actions */
 const actionsDropdownOptions = computed(() => [
   { label: t('component.common.addDocument'), key: 'addDocument' }
 ])
 
-function onActionsDropdownSelect(key: string) {
+function onActionsDropdownSelect(key: string | number) {
   if (key === 'addDocument') {
     documentForm.value?.showCreateForm(initForm())
   }
@@ -530,31 +429,12 @@ defineExpose({
   --n-label-padding: 0 !important;
 }
 
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
 .provenance-layout {
   background: transparent;
 }
 
 .provenance-content {
   padding-left: 12px;
-}
-
-.listActionButtons {
-  position: relative;
-  display: flex;
-  gap: 0 !important;
-}
-
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .filtersNotCollapsed {
@@ -589,8 +469,6 @@ en:
     selected: Selected provenances
     update: Update provenance
     delete: Delete provenance
-    selected-all: All provenances
-    display: Display
     name: Name
     name-placeholder: Enter provenance name
     activity_type-placeholder: Select a type of activity
@@ -604,8 +482,6 @@ fr:
     selected: Provenances sélectionnées
     update: Modifier la provenance
     delete: Supprimer la provenance
-    selected-all: Toutes les provenances
-    display: Affichage
     name: Nom
     name-placeholder: Entrer un nom de provenance
     activity_type-placeholder: Selectionner un type d'activité

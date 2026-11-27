@@ -58,6 +58,9 @@
         :isSelectable="isSelectable"
         :showHeaderCount="false"
         labelNumberOfSelectedRow="component.project.selectedLabel"
+        :showActions="!noActions"
+        :actionsOptions="actionsDropdownOptions"
+        @action-select="onActionsDropdownSelect"
         @select="emit('select', $event)"
         @unselect="emit('unselect', $event)"
         @selectall="emit('selectall', $event)"
@@ -129,7 +132,7 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import {
   NLayout, NLayoutContent, NFormItem, NInput,
-  NButton, NDropdown, NSpace, NButtonGroup
+  NButtonGroup
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { ProjectsService } from 'opensilex-core/index'
@@ -156,16 +159,14 @@ const props = withDefaults(defineProps<{
   noActions?: boolean
   pageSize?: number
   noUpdateURL?: boolean
-  showCount?: boolean
 }>(), {
   isSelectable: true,
   noActions: false,
   pageSize: 20,
-  noUpdateURL: false,
-  showCount: true
+  noUpdateURL: false
 })
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const store = useStore()
 
@@ -212,14 +213,6 @@ const fields = computed(() => {
   if (!props.noActions) tableFields.push({ key: 'actions', label: 'component.common.actions', resizable: false, naiveProps: {width: 100} })
   return tableFields
 })
-
-/** sélection / counts */
-const selectedCount = computed(() => (tableRef.value?.getSelected?.() ?? []).length)
-
-const paginationInfo = computed(() => {
-  return tableRef.value?.getPaginationInfo?.() ?? { start: 0, end: 0, total: 0, hasResults: false }
-})
-
 
 /** actions application filtres */
 function applyFilters() {
@@ -313,32 +306,12 @@ function initForm() {
   }
 }
 
-/** dropdown display */
-const onlySelected = computed(() => !!tableRef.value?.onlySelected)
-const displayDropdownOptions = computed(() => [
-  { label: onlySelected.value ? t('ProjectList.selected-all') : t('component.common.selected-only'), key: 'onlySelected' },
-  { type: 'divider', key: 'd1' },
-  { label: t('component.common.resetSelected'), key: 'resetSelected' }
-])
-
-
-function onDisplayDropdownSelect(key: string) {
-  switch (key) {
-    case 'onlySelected':
-      tableRef.value?.toggleOnlySelected?.()
-      break
-    case 'resetSelected':
-      tableRef.value?.resetSelection?.()
-      break
-  }
-}
-
 /** dropdown actions */
 const actionsDropdownOptions = computed(() => [
   { label: t('component.common.addDocument'), key: 'addDocument' }
 ])
 
-function onActionsDropdownSelect(key: string) {
+function onActionsDropdownSelect(key: string | number) {
   if (key === 'addDocument') {
     documentForm.value?.showCreateForm(initForm())
   }
@@ -353,30 +326,12 @@ defineExpose({
 </script>
 
 <style>
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
   .project-layout {
   background: transparent;
 }
 
 .project-content {
   padding-left: 12px;
-}
-
-.listActionButtons {
-  position: relative;
-  display: flex;
-  gap: 0 !important;
-}
-
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .filtersNotCollapsed { margin-left: 55px; }
@@ -396,13 +351,7 @@ defineExpose({
 en:
   ProjectList:
     name: The project
-    selected: Selected Project(s)
-    selected-all: All projects
-    display: Display
 fr:
   ProjectList:
     name: Le projet
-    selected: Projet(s) sélectionné(s)
-    selected-all: Tous les projets
-    display: Affichage
 </i18n>

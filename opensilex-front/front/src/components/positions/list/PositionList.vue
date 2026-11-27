@@ -1,31 +1,6 @@
 <template>
   <div>
     <div class="card">
-      <n-space class="listActionButtons">
-        <div class="displayAndListSelectionCount">
-          <div v-if="showCount">
-            <div v-if="hasResults">
-              <strong>
-                <span class="ml-1">
-                  {{ t('component.common.list.pagination.nbEntries', {
-                    limit: start,
-                    offset: end,
-                    totalRow: n(total)
-                  }) }}
-                </span>
-              </strong>
-            </div>
-            <div v-else>
-              <strong>
-                <span class="ml-1">
-                  {{ t('component.common.list.pagination.noEntries') }}
-                </span>
-              </strong>
-            </div>
-          </div>
-        </div>
-      </n-space>
-
       <opensilex-PageContent v-if="renderComponent">
         <template #default>
           <div class="card-body">
@@ -36,6 +11,7 @@
               defaultSortBy="end"
               :defaultSortDesc="true"
               :isSelectable="isSelectable"
+              :showCount="showCount"
             >
               <template #cell(end)="{ data }">
                 <opensilex-DateView :value="data.item.end" />
@@ -132,7 +108,6 @@ import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
 import type { PositionsService } from 'opensilex-core/api/positions.service';
 import type { EventsService } from 'opensilex-core/api/events.service';
 import type { LocationObservationDTO } from 'opensilex-core/model/locationObservationDTO';
-import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import EventForm from '@/components/events/form/EventForm.vue';
 
 const props = withDefaults(defineProps<{
@@ -160,7 +135,7 @@ const emit = defineEmits<{
 }>();
 
 const store = useStore();
-const { t, n } = useI18n();
+const { t } = useI18n();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const positionService = opensilex.getService<PositionsService>('opensilex.PositionsService');
 const eventService = opensilex.getService<EventsService>('opensilex.EventsService');
@@ -173,23 +148,6 @@ const csvForm = ref<any>(null);
 const renderComponent = ref(true);
 const renderCsvForm = ref(false);
 const minPageSize = 5;
-
-const serverTotal = ref(0);
-const pagination = ref({ page: 1, pageSize: 10 });
-
-const paginationInfo = computed(() => {
-  const total = serverTotal.value;
-  const page = pagination.value.page;
-  const pageSize = pagination.value.pageSize;
-  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const end = Math.min(page * pageSize, total);
-  return { start, end, total, hasResults: total > 0 };
-});
-
-const start = computed(() => paginationInfo.value.start);
-const end = computed(() => paginationInfo.value.end);
-const total = computed(() => paginationInfo.value.total);
-const hasResults = computed(() => paginationInfo.value.hasResults);
 
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
@@ -225,9 +183,6 @@ function search(options: {
   currentPage: number;
   pageSize: number;
 }) {
-  pagination.value.page = (options.currentPage ?? 0) + 1;
-  pagination.value.pageSize = options.pageSize ?? 10;
-
   return positionService.searchPositionHistory(
     props.target,
     undefined,
@@ -235,14 +190,7 @@ function search(options: {
     options.orderBy,
     options.currentPage,
     options.pageSize < minPageSize ? minPageSize : options.pageSize
-  ).then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-    serverTotal.value =
-      http?.response?.metadata?.pagination?.totalCount ??
-      http?.response?.result?.length ??
-      0;
-
-    return http;
-  });
+  );
 }
 
 function showForm() {
@@ -365,15 +313,6 @@ defineExpose({
 .action-group {
   display: inline-flex;
   gap: 0.35rem;
-}
-
-.listActionButtons {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: wrap;
-  width: 100%;
-  margin: 8px 0 12px;
 }
 </style>
 

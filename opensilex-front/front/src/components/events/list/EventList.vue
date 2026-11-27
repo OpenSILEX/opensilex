@@ -98,6 +98,9 @@
         @refreshed="onRefreshed"
         labelNumberOfSelectedRow="EventList.selected"
         iconNumberOfSelectedRow="bi#bi-layers"
+        :showActions="enableActions"
+        :actionsOptions="actionsDropdownOptions"
+        @action-select="onActionsDropdownSelect"
       >
         <template #cell(rdf_type_name)="{ data }">
           <UriLink
@@ -228,8 +231,7 @@ import { useStore } from 'vuex'
 import {
   NLayout,
   NLayoutContent,
-  NFormItem,
-  NSpace
+  NFormItem
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from '@/lib/HttpResponse'
@@ -288,7 +290,7 @@ const emit = defineEmits<{
   (e: 'onDelete', uri: string): void
 }>()
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const store = useStore()
 
@@ -332,15 +334,6 @@ const filter = ref<EventFilter>({
 
 const user = computed(() => store.state.user)
 const credentials = computed(() => store.state.credentials)
-
-const paginationInfo = computed(() => {
-  return tableRef.value?.getPaginationInfo?.() ?? {
-    start: 0,
-    end: 0,
-    total: 0,
-    hasResults: false
-  }
-})
 
 /**
 * Depuis l'onglet d'un autre element, exemple un device, la target est le device par défaut, vérouillé,
@@ -658,7 +651,7 @@ function initForm() {
   }
 }
 
-function onActionsDropdownSelect(key: string) {
+function onActionsDropdownSelect(key: string | number) {
   switch (key) {
     case 'addDocument':
       createDocument()
@@ -680,31 +673,12 @@ defineExpose({
   --n-label-padding: 0 !important;
 }
 
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
 .event-layout {
   background: transparent;
 }
 
 .event-content {
   padding-left: 12px;
-}
-
-.listActionButtons {
-  position: relative;
-  display: flex;
-  gap: 0 !important;
-}
-
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .filtersNotCollapsed {

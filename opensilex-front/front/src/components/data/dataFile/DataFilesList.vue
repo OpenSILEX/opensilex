@@ -1,77 +1,5 @@
 <template>
   <div>
-    <n-space class="listActionButtons">
-      <n-dropdown
-        trigger="hover"
-        placement="bottom-start"
-        :options="displayDropdownOptions"
-        @select="onDisplayDropdownSelect"
-      >
-        <n-button size="small" class="greenThemeColor">
-          {{ t('component.common.display') }}
-        </n-button>
-      </n-dropdown>
-
-      <n-dropdown
-        trigger="hover"
-        placement="bottom-start"
-        :options="actionsDropdownOptions"
-        :disabled="selectedCount === 0"
-        @select="onActionsDropdownSelect"
-      >
-        <n-button
-          size="small"
-          :disabled="selectedCount === 0"
-          :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-        >
-          {{ t('component.common.actions') }}
-        </n-button>
-      </n-dropdown>
-
-      <div class="displayAndListSelectionCount">
-        <div v-if="paginationInfo.hasResults">
-          <strong>
-            <span class="ml-1">
-              {{
-                t('component.common.list.pagination.nbEntries', {
-                  limit: paginationInfo.start,
-                  offset: paginationInfo.end,
-                  totalRow: totalCountLoaded ? n(paginationInfo.total) : '...'
-                })
-              }}
-            </span>
-          </strong>
-
-
-          <Button
-            :small="true"
-            @click="loadTotalCount"
-            label="component.common.list.pagination.showTotalCount"
-            class="totalCountDetailButton"
-          >
-            <template v-slot:icon>
-              <Icon icon="fa#eye" />
-            </template>
-          </Button>
-        </div>
-
-        <div v-else>
-          <strong>
-            <span class="ml-1">
-              {{ t('component.common.list.pagination.noEntries') }}
-            </span>
-          </strong>
-        </div>
-
-        <span> | </span>
-
-        <span>
-          {{ t('component.datafile.list.selected') }} :
-          <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-        </span>
-      </div>
-    </n-space>
-
     <TableAsyncView
       ref="tableRef"
       :show-count="false"
@@ -81,7 +9,47 @@
       defaultSortBy="name"
       :isSelectable="true"
       labelNumberOfSelectedRow="component.datafile.list.selected"
+      :showActions="true"
+      :actionsOptions="actionsDropdownOptions"
+      @action-select="onActionsDropdownSelect"
     >
+      <template #actionButtons>
+        <div class="totalCountDisplay">
+          <div v-if="paginationInfo.hasResults">
+            <strong>
+              <span class="ml-1">
+                {{
+                  t('component.common.list.pagination.nbEntries', {
+                    limit: paginationInfo.start,
+                    offset: paginationInfo.end,
+                    totalRow: totalCountLoaded ? n(paginationInfo.total) : '...'
+                  })
+                }}
+              </span>
+            </strong>
+
+            <Button
+              :small="true"
+              @click="loadTotalCount"
+              label="component.common.list.pagination.showTotalCount"
+              class="totalCountDetailButton"
+            >
+              <template v-slot:icon>
+                <Icon icon="fa#eye" />
+              </template>
+            </Button>
+          </div>
+
+          <div v-else>
+            <strong>
+              <span class="ml-1">
+                {{ t('component.common.list.pagination.noEntries') }}
+              </span>
+            </strong>
+          </div>
+        </div>
+      </template>
+
       <template #cell(target)="{ data }">
         <UriLink
           :uri="data.item.target"
@@ -167,7 +135,7 @@ import { computed, inject, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { NButton, NButtonGroup, NDropdown, NSpace, NP } from 'naive-ui'
+import { NButtonGroup } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { ProvenanceGetDTO, ResourceTreeDTO } from 'opensilex-core/index'
 import type HttpResponse from 'opensilex-core/HttpResponse'
@@ -299,12 +267,6 @@ const fields = computed(() => {
   return baseFields
 })
 
-const selectedCount = computed(() => {
-  return (tableRef.value?.getSelected?.() ?? []).length
-})
-
-const onlySelected = computed(() => !!tableRef.value?.onlySelected)
-
 const paginationInfo = computed(() => {
   const hasResults = currentPageItemCount.value > 0
 
@@ -327,20 +289,6 @@ const paginationInfo = computed(() => {
     hasResults: true
   }
 })
-
-const displayDropdownOptions = computed(() => [
-  {
-    label: onlySelected.value
-      ? t('component.datafile.list.selected-all')
-      : t('component.common.selected-only'),
-    key: 'onlySelected'
-  },
-  { type: 'divider', key: 'd1' },
-  {
-    label: t('component.common.resetSelected'),
-    key: 'resetSelected'
-  }
-])
 
 const actionsDropdownOptions = computed(() => {
   const options: any[] = [
@@ -619,16 +567,6 @@ function redirectToDetail(uri: string) {
   emit('redirectToDetail')
 }
 
-function resetSelected() {
-  tableRef.value?.resetSelection?.()
-  tableRef.value?.resetSelected?.()
-}
-
-function clickOnlySelected() {
-  tableRef.value?.toggleOnlySelected?.()
-  tableRef.value?.clickOnlySelected?.()
-}
-
 function updateSelectedUris() {
   selectedUris.value = []
   for (const select of tableRef.value?.getSelected?.() ?? []) {
@@ -644,18 +582,7 @@ function createEvents() {
   })
 }
 
-function onDisplayDropdownSelect(key: string) {
-  switch (key) {
-    case 'onlySelected':
-      clickOnlySelected()
-      break
-    case 'resetSelected':
-      resetSelected()
-      break
-  }
-}
-
-function onActionsDropdownSelect(key: string) {
+function onActionsDropdownSelect(key: string | number) {
   switch (key) {
     case 'export':
       exportDataFileModal.value?.show?.()
@@ -748,8 +675,6 @@ function deleteDatafile(uri: string) {
 
 defineExpose({
   refresh,
-  resetSelected,
-  clickOnlySelected,
   updateSelectedUris,
   createEvents,
   redirectToDetail,
@@ -758,30 +683,10 @@ defineExpose({
 </script>
 
 <style scoped>
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
-.listActionButtons {
-  position: relative;
-  display: flex;
-  gap: 0 !important;
-  margin-bottom: 10px;
-}
-
-.displayAndListSelectionCount {
+.totalCountDisplay {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-left: auto;
-}
-
-.countButton {
-  color: #00A28C;
-
+  padding-right: 8px;
 }
 
 .totalCountDetailButton {

@@ -4,6 +4,7 @@
   >
     <!-- Dropdown Affichage / sélection -->
     <n-dropdown
+        v-if="isSelectable"
         trigger="hover"
         placement="bottom-end"
         :options="displayDropdownOptions"
@@ -32,6 +33,9 @@
       </n-button>
     </n-dropdown>
 
+    <!-- Boutons supplémentaires propres à la liste -->
+    <slot name="actionButtons"></slot>
+
     <!-- Affichage Counts / sélection -->
     <div class="displayAndListSelectionCount">
       <div v-if="showCount">
@@ -54,11 +58,13 @@
           </strong>
         </div>
       </div>
-      <span> | </span>
-      <n-p>
-        {{ t('TableAsyncView.selected') }} :
-        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </n-p>
+      <template v-if="isSelectable">
+        <span v-if="showCount"> | </span>
+        <n-p>
+          {{ t('TableAsyncView.selected') }} :
+          <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
+        </n-p>
+      </template>
     </div>
   </n-space>
   <LoadingOverlay :show="isSearching">
@@ -177,7 +183,7 @@ const emit = defineEmits<{
 
 type DisplayAction = 'onlySelected' | 'resetSelected';
 
-const noActions = computed(() => !props.showActions || props.actionsOptions.length === 0);
+const noActions = computed(() => !props.isSelectable || !props.showActions || props.actionsOptions.length === 0);
 
 const displayDropdownOptions = computed<DropdownOption[]>(() => [
   {

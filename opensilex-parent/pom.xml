@@ -1350,6 +1350,9 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                         <include>**/*</include>
                                     </includes>
                                 </fileset>
+                                <fileset>
+                                    <directory>front/node_modules/.vite</directory>
+                                </fileset>
                             </filesets>
                         </configuration>
                     </execution>

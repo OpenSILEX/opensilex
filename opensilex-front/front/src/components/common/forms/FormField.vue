@@ -1,5 +1,5 @@
 <template>
-  <div class="form-field" :class="{ required }">
+  <div class="form-field" :class="{ 'is-required': required }">
     <div class="helperAndBlueStar">
       <FormInputLabelHelper
         v-if="label"
@@ -55,7 +55,7 @@ onBeforeMount(() => {
   color: black;
 }
 
-.form-field.required :deep(label.form-label)::after {
+.form-field.is-required :deep(label.form-label)::after {
   content: ' *';
   color: #dc3545;
   margin-left: .25rem;

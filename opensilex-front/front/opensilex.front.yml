@@ -388,8 +388,8 @@ routes:
 
   - path: /variable/annotations/:uri
     component: opensilex-VariableView
-  # - path: /variable/visualization/:uri
-  #   component: opensilex-VariableView
+  - path: /variable/visualization/:uri
+    component: opensilex-VariableView
   - path: /variable/documents/:uri
     component: opensilex-VariableView
 

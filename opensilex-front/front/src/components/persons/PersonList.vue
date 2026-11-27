@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="person-list bg-white">
     <StringFilter
         v-model:filter.sync="filter"
         @update="updateFilter()"
@@ -121,3 +121,10 @@ defineExpose({
 })
 
 </script>
+
+<style scoped lang="scss">
+.person-list :deep(.listActionButtons) {
+  min-height: 28px;
+  margin: 8px 0;
+}
+</style>

@@ -1,4 +1,5 @@
 <template>
+  <div class="site-list bg-white">
     <StringFilter
       :filter="filter"
       @update:filter="(v) => (filter = v)"
@@ -51,6 +52,7 @@
         </n-button-group>
       </template>
     </TableAsyncView>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -81,14 +83,10 @@ const props = withDefaults(
 
 const store = useStore()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const { t, n } = useI18n()
+const { t } = useI18n()
 const service = $opensilex.getService<OrganizationsService>('opensilex-core.OrganizationsService')
 
 const tableRef = ref<any>(null)
-
-const paginationInfo = computed(() => {
-  return tableRef.value?.getPaginationInfo?.() ?? { start: 0, end: 0, total: 0, hasResults: false }
-})
 
 const user = computed(() => store.state.user)
 const credentials = computed(() => store.state.credentials)
@@ -155,8 +153,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-.siteCountRight{
-  text-align: right;
-  white-space: nowrap;
+.site-list :deep(.listActionButtons) {
+  min-height: 28px;
+  margin: 8px 0;
 }
 </style>

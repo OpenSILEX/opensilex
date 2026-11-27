@@ -111,34 +111,14 @@
         ref="tableRef"
         :searchMethod="searchExperiments"
         :fields="fields"
-        @isSelectable="true"
+        :isSelectable="true"
+        :showActions="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+        :actionsOptions="actionsDropdownOptions"
+        @action-select="onActionsDropdownSelect"
         @refreshed="onRefreshed"
         labelNumberOfSelectedRow="component.experiment.selected"
         iconNumberOfSelectedRow="ik#ik-layers"
       >
-        <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-          <n-dropdown
-            trigger="click"
-            placement="bottom-start"
-            :options="displayDropdownOptions"
-            @select="onDisplayDropdownSelect"
-          >
-            <n-button size="small" class="mb-2 mr-2">{{ t('component.common.display') }}</n-button>
-          </n-dropdown>
-
-          <n-dropdown
-            v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-            trigger="click"
-            placement="bottom-start"
-            :options="actionsDropdownOptions"
-            :disabled="numberOfSelectedRows == 0"
-            @select="onActionsDropdownSelect"
-          >
-            <n-button size="small" class="mb-2 mr-2" :disabled="numberOfSelectedRows == 0">
-              {{ t('component.common.actions') }}
-            </n-button>
-          </n-dropdown>
-        </template>
         <template v-slot:cell(name)="{ data }">
           <div class="uri-alt-container">
             <div class="uri-texts">
@@ -268,7 +248,7 @@ import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
-import {NButton, NButtonGroup, NCollapse, NCollapseItem, NDropdown, NFormItem, NLayout, NLayoutContent, type DropdownOption} from "naive-ui";
+import {NButtonGroup, NCollapse, NCollapseItem, NFormItem, NLayout, NLayoutContent, type DropdownOption} from "naive-ui";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 //#region Public
@@ -353,32 +333,13 @@ const experimentStates = computed(() => [
   },
 ]);
 
-type DisplayAction = 'onlySelected' | 'resetSelected';
 type ExperimentAction = 'addDocument';
-
-const displayDropdownOptions = computed<DropdownOption[]>(() => [
-  {
-    key: 'onlySelected' satisfies DisplayAction,
-    label: tableRef.value?.onlySelected
-      ? t('component.experiment.all')
-      : t('component.common.selected-only'),
-  },
-  { key: 'resetSelected' satisfies DisplayAction, label: t('component.common.resetSelected') },
-]);
 
 const actionsDropdownOptions = computed<DropdownOption[]>(() => [
   { key: 'addDocument' satisfies ExperimentAction, label: t('component.common.addDocument') },
 ]);
 
 //#region Event handlers
-function onDisplayDropdownSelect(key: DisplayAction) {
-  if (key === 'onlySelected') {
-    clickOnlySelected();
-  } else {
-    resetSelected();
-  }
-}
-
 function onActionsDropdownSelect(key: ExperimentAction) {
   if (key === 'addDocument') {
     createDocument();
@@ -398,14 +359,6 @@ function reset() {
   };
 
   refresh();
-}
-
-function clickOnlySelected() {
-  tableRef.value.toggleOnlySelected();
-}
-
-function resetSelected() {
-  tableRef?.value.resetSelection();
 }
 
 function refreshProjectSelector() {

@@ -49,68 +49,6 @@
 
     <!-- Contenu Liste -->
     <n-layout-content class="project-content">
-      <n-space
-          class="listActionButtons"
-      >
-        <!-- Dropdown Affichage / sélection -->
-        <n-dropdown
-            trigger="hover"
-            placement="bottom-end"
-            :options="displayDropdownOptions"
-            @select="onDisplayDropdownSelect"
-        >
-          <n-button size="small" class="greenThemeColor">
-            {{ t('ProjectList.display') }}
-          </n-button>
-        </n-dropdown>
-
-        <!-- Dropdown Actions -->
-        <n-dropdown
-            v-if="!noActions"
-            trigger="hover"
-            placement="bottom-end"
-            :options="actionsDropdownOptions"
-            :disabled="selectedCount === 0"
-            @select="onActionsDropdownSelect"
-        >
-          <n-button
-              size="small"
-              :disabled="selectedCount === 0"
-              :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-          >
-            {{ t('component.common.actions') }}
-          </n-button>
-        </n-dropdown>
-
-        <!-- Affichage Counts / sélection -->
-        <div class="displayAndListSelectionCount">
-          <div v-if="showCount">
-            <div v-if="paginationInfo.hasResults">
-              <strong>
-            <span class="ml-1">
-                {{ t('component.common.list.pagination.nbEntries', {
-              limit: paginationInfo.start,
-              offset: paginationInfo.end,
-              totalRow: n(paginationInfo.total)
-            }) }}
-            </span>
-              </strong>
-            </div>
-            <div v-else>
-              <strong>
-            <span class="ml-1">
-              {{ t('component.common.list.pagination.noEntries') }}
-            </span>
-              </strong>
-            </div>
-          </div>
-          <span> | </span>
-          <n-p>
-            {{ t('ProjectList.selected') }} :
-            <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-          </n-p>
-        </div>
-      </n-space>
       <TableAsyncView
         ref="tableRef"
         :searchMethod="loadData"

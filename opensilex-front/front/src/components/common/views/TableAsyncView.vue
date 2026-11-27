@@ -1,77 +1,68 @@
 <template>
-  <LoadingOverlay :show="isSearching">
-    <div class="card">
-      <!-- Header si table sélectionnable -->
-      <div
-          v-if="isSelectable && showHeaderCount && tableRef"
-          class="card-header d-flex justify-content-between align-items-center"
+  <n-space
+      class="listActionButtons"
+  >
+    <!-- Dropdown Affichage / sélection -->
+    <n-dropdown
+        trigger="hover"
+        placement="bottom-end"
+        :options="displayDropdownOptions"
+        @select="onDisplayDropdownSelect"
+    >
+      <n-button size="small" class="greenThemeColor">
+        {{ t('TableAsyncView.display') }}
+      </n-button>
+    </n-dropdown>
+
+    <!-- Dropdown Actions -->
+    <n-dropdown
+        v-if="!noActions"
+        trigger="hover"
+        placement="bottom-end"
+        :options="actionsDropdownOptions"
+        :disabled="selectedCount === 0"
+        @select="onActionsDropdownSelect"
+    >
+      <n-button
+          size="small"
+          :disabled="selectedCount === 0"
+          :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
       >
-        <div>
-          <h3 class="d-inline me-2">
-            <Icon
-                :icon="iconNumberOfSelectedRow"
-                class="title-icon"
-            />
-            {{ t(labelNumberOfSelectedRow) }}
-          </h3>
-          <span
-              v-if="!maximumSelectedRows && selectMode !== 'single'"
-              class="badge rounded-pill greenThemeColor"
-          >
-            {{ numberOfSelectedRows }}
-          </span>
-          <span
-              v-else-if="selectMode !== 'single'"
-              class="badge rounded-pill greenThemeColor"
-              :title="t(badgeHelpMessage)"
-          >
-            {{ numberOfSelectedRows }}/{{ maximumSelectedRows }}
-          </span>
-          <slot
-              name="selectableTableButtons"
-              :numberOfSelectedRows="numberOfSelectedRows"
-          ></slot>
-        </div>
-      </div>
+        {{ t('component.common.actions') }}
+      </n-button>
+    </n-dropdown>
 
-      <!-- Header si non sélectionnable -->
-      <div
-          v-if="!isSelectable && tableRef"
-          class="d-flex justify-content-end"
-      >
-        <!-- <opensilex-NbElementPerPageSelector @change="onNbElementPerPageChange" /> -->
-      </div>
-
-      <!-- Export slot -->
-      <div v-if="totalRow > 0">
-        <slot name="export"></slot>
-      </div>
-
-      <div class="showCount" v-if="showCount">
-        <div v-if="totalRow > 0">
+    <!-- Affichage Counts / sélection -->
+    <div class="displayAndListSelectionCount">
+      <div v-if="showCount">
+        <div v-if="paginationInfo.hasResults">
           <strong>
             <span class="ml-1">
-              {{
-                t('component.common.list.pagination.nbEntries', {
-                  limit: start,
-                  offset: end,
-                  totalRow: n(total),
-                })
-              }}
+              {{ t('component.common.list.pagination.nbEntries', {
+                limit: paginationInfo.start,
+                offset: paginationInfo.end,
+                totalRow: n(paginationInfo.total)
+              }) }}
             </span>
           </strong>
         </div>
         <div v-else>
           <strong>
-            <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
+            <span class="ml-1">
+              {{ t('component.common.list.pagination.noEntries') }}
+            </span>
           </strong>
         </div>
       </div>
-
-      <!-- <n-p>
-        {{ t('TableAsyncView.selected')}} : <span class="badge badge-pill greenThemeColor">{{ checkedRowKeys.length }} </span>
-      </n-p> -->
-
+      <span> | </span>
+      <n-p>
+        {{ t('TableAsyncView.selected') }} :
+        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
+      </n-p>
+    </div>
+  </n-space>
+  <LoadingOverlay :show="isSearching">
+    <div class="card">
       <!-- Table with Naive UI -->
       <n-config-provider :theme-overrides="nThemeOverrides">
         <n-data-table
@@ -110,7 +101,7 @@ import type {NamedResourceDTO} from 'opensilex-core/model/namedResourceDTO';
 import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin';
 import type HttpResponse from '../../../lib/HttpResponse';
 import {OpenSilexResponse} from 'opensilex-core/HttpResponse';
-import {DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider} from 'naive-ui';
+import {DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider, NSpace, NDropdown, NButton, type DropdownOption} from 'naive-ui';
 import LoadingOverlay from '@/components/layout/LoadingOverlay.vue';
 import Icon from '@/components/common/views/Icon.vue';
 import {TableField} from '@/components/common/views/TableField';
@@ -140,13 +131,15 @@ const props = withDefaults(defineProps<{
   showHeaderCount?: boolean;
   allowOnlySelected?: boolean; // optionnel, par défaut false
   showActions?: boolean; // pour bouton dropdown actions groupées
+  actionsOptions?: DropdownOption[];
 }>(), {
   defaultPageSize: 20,
   showCount: true,
   isSelectable: false,
   showHeaderCount: true,
   allowOnlySelected: false,
-  showActions: false
+  showActions: false,
+  actionsOptions: () => []
 });
 
 //  Injections
@@ -171,6 +164,7 @@ const selectedRowIndex = ref<number | null>(null);
 const checkedRowKeys = ref<DataTableRowKey[]>([]);
 const selectedUriSet = ref<Set<string>>(new Set());
 const selectedCache = ref<Map<string, any>>(new Map()); // uri -> objet complet
+const selectedCount = computed(() => numberOfSelectedRows.value);
 
 const emit = defineEmits<{
   (e: 'select', item: NamedResourceDTO): void;
@@ -178,7 +172,24 @@ const emit = defineEmits<{
   (e: 'row-selected', count: number): void;
   (e: 'refreshed'): void;
   (e: 'selectall', selected: NamedResourceDTO[]): void;
+  (e: 'action-select', key: string | number): void;
 }>();
+
+type DisplayAction = 'onlySelected' | 'resetSelected';
+
+const noActions = computed(() => !props.showActions || props.actionsOptions.length === 0);
+
+const displayDropdownOptions = computed<DropdownOption[]>(() => [
+  {
+    key: 'onlySelected' satisfies DisplayAction,
+    label: onlySelected.value
+      ? t('TableAsyncView.all')
+      : t('component.common.selected-only'),
+  },
+  { key: 'resetSelected' satisfies DisplayAction, label: t('component.common.resetSelected') },
+]);
+
+const actionsDropdownOptions = computed<DropdownOption[]>(() => props.actionsOptions);
 
 const defaultSorter = ref({
   columnKey: props.defaultSortBy || 'name',
@@ -205,6 +216,20 @@ onMounted(() => {
     }
   });
 });
+
+//#region Event handlers
+function onDisplayDropdownSelect(key: DisplayAction) {
+  if (key === 'onlySelected') {
+    toggleOnlySelected();
+  } else {
+    resetSelection();
+  }
+}
+
+function onActionsDropdownSelect(key: string | number) {
+  emit('action-select', key);
+}
+//#endregion
 
 function onCheckedRowKeysChange(newKeys: DataTableRowKey[]) {
   checkedRowKeys.value = newKeys;
@@ -309,9 +334,6 @@ const paginationInfo = computed(() => {
   };
 });
 
-const start = computed(() => paginationInfo.value.start);
-const end = computed(() => paginationInfo.value.end);
-const total = computed(() => paginationInfo.value.total);
 
 // const hasResults = computed(() => paginationInfo.value.hasResults);
 
@@ -657,9 +679,23 @@ defineExpose({
   cursor: pointer;
 }
 
-.showCount {
+.btn-disabled {
+  background-color: #e0e0e0 !important;
+  color: #2e2e2e !important;
+  border: none !important;
+  cursor: not-allowed;
+}
+
+.listActionButtons {
+  position: relative;
   display: flex;
-  justify-content: end;
+  gap: 0 !important;
+}
+
+.displayAndListSelectionCount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .table-active {
@@ -680,8 +716,12 @@ defineExpose({
 en:
     TableAsyncView:
         selected: Selected Elements
+        display: Display
+        all: All elements
 fr:
     TableAsyncView:
         selected: Élements Sélectionnés
+        display: Affichage
+        all: Tous les éléments
 
 </i18n>

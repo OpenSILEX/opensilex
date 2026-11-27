@@ -38,28 +38,31 @@
 
     <!-- Affichage Counts / sélection -->
     <div class="displayAndListSelectionCount">
-      <div v-if="showCount">
-        <div v-if="paginationInfo.hasResults">
-          <strong>
-            <span class="ml-1">
-              {{ t('component.common.list.pagination.nbEntries', {
-                limit: paginationInfo.start,
-                offset: paginationInfo.end,
-                totalRow: n(paginationInfo.total)
-              }) }}
-            </span>
-          </strong>
-        </div>
-        <div v-else>
-          <strong>
-            <span class="ml-1">
-              {{ t('component.common.list.pagination.noEntries') }}
-            </span>
-          </strong>
-        </div>
+      <div v-if="showCount || slots.count">
+        <!-- Compteur remplaçable par la liste (ex. total chargé à la demande) -->
+        <slot name="count">
+          <div v-if="paginationInfo.hasResults">
+            <strong>
+              <span class="ml-1">
+                {{ t('component.common.list.pagination.nbEntries', {
+                  limit: paginationInfo.start,
+                  offset: paginationInfo.end,
+                  totalRow: n(paginationInfo.total)
+                }) }}
+              </span>
+            </strong>
+          </div>
+          <div v-else>
+            <strong>
+              <span class="ml-1">
+                {{ t('component.common.list.pagination.noEntries') }}
+              </span>
+            </strong>
+          </div>
+        </slot>
       </div>
       <template v-if="isSelectable">
-        <span v-if="showCount"> | </span>
+        <span v-if="showCount || slots.count"> | </span>
         <n-p>
           {{ t('TableAsyncView.selected') }} :
           <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="datafile-list bg-white">
     <TableAsyncView
       ref="tableRef"
       :show-count="false"
@@ -13,40 +13,38 @@
       :actionsOptions="actionsDropdownOptions"
       @action-select="onActionsDropdownSelect"
     >
-      <template #actionButtons>
-        <div class="totalCountDisplay">
-          <div v-if="paginationInfo.hasResults">
-            <strong>
-              <span class="ml-1">
-                {{
-                  t('component.common.list.pagination.nbEntries', {
-                    limit: paginationInfo.start,
-                    offset: paginationInfo.end,
-                    totalRow: totalCountLoaded ? n(paginationInfo.total) : '...'
-                  })
-                }}
-              </span>
-            </strong>
+      <template #count>
+        <div v-if="paginationInfo.hasResults" class="totalCountDisplay">
+          <strong>
+            <span class="ml-1">
+              {{
+                t('component.common.list.pagination.nbEntries', {
+                  limit: paginationInfo.start,
+                  offset: paginationInfo.end,
+                  totalRow: totalCountLoaded ? n(paginationInfo.total) : '...'
+                })
+              }}
+            </span>
+          </strong>
 
-            <Button
-              :small="true"
-              @click="loadTotalCount"
-              label="component.common.list.pagination.showTotalCount"
-              class="totalCountDetailButton"
-            >
-              <template v-slot:icon>
-                <Icon icon="fa#eye" />
-              </template>
-            </Button>
-          </div>
+          <Button
+            :small="true"
+            @click="loadTotalCount"
+            label="component.common.list.pagination.showTotalCount"
+            class="totalCountDetailButton"
+          >
+            <template v-slot:icon>
+              <Icon icon="fa#eye" />
+            </template>
+          </Button>
+        </div>
 
-          <div v-else>
-            <strong>
-              <span class="ml-1">
-                {{ t('component.common.list.pagination.noEntries') }}
-              </span>
-            </strong>
-          </div>
+        <div v-else>
+          <strong>
+            <span class="ml-1">
+              {{ t('component.common.list.pagination.noEntries') }}
+            </span>
+          </strong>
         </div>
       </template>
 
@@ -683,10 +681,14 @@ defineExpose({
 </script>
 
 <style scoped>
+.datafile-list :deep(.listActionButtons) {
+  min-height: 28px;
+  margin: 8px 0;
+}
+
 .totalCountDisplay {
   display: flex;
   align-items: center;
-  padding-right: 8px;
 }
 
 .totalCountDetailButton {

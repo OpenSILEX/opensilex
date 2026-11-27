@@ -868,14 +868,14 @@ const columns = computed(() => {
           }),
           hasCredential(credentials.value?.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)
             ? h(EditButton, {
-                label: 'ExperimentScientificObjects.edit-scientific-object',
+                label: 'component.scientificObjects.actions.edit',
                 small: true,
                 onClick: () => emit('update', row.item.uri)
               })
             : null,
           hasCredential(credentials.value?.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)
             ? h(DeleteButton, {
-                label: 'ExperimentScientificObjects.delete-scientific-object',
+                label: 'component.scientificObjects.actions.delete',
                 small: true,
                 onClick: () => deleteScientificObject(row.item.uri)
               })

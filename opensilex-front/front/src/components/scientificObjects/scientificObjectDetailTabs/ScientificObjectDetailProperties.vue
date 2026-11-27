@@ -19,7 +19,7 @@
                 )
               "
               @click="scientificObjectForm.editScientificObject(selected.uri)"
-              label="ExperimentScientificObjects.edit-scientific-object"
+              label="component.scientificObjects.actions.edit"
               :small="true"
             ></EditButton>
 
@@ -29,7 +29,7 @@
                   credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID
                 )
               "
-              label="ExperimentScientificObjects.delete-scientific-object"
+              label="component.scientificObjects.actions.delete"
               @click="deleteScientificObject(selected.uri)"
               :small="true"
             ></DeleteButton>
@@ -105,7 +105,7 @@
 
     <card v-for="(value, index) in objectByContext" :key="index" :noFooter="true">
       <template #title>
-        {{ $t("component.experiment.view.title") }}:
+        {{ t("component.experiment.view.title") }}:
         <UriLink
           :uri="value.uri"
           :allowCopy="false"
@@ -178,11 +178,13 @@ import MetadataView from "@/components/common/views/MetadataView.vue";
 import Card from "@/components/common/views/Card.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import OntologyObjectProperties from "@/components/ontology/OntologyObjectProperties.vue";
+import {useI18n} from "vue-i18n";
 
 //#region Constant values & Services & Injects
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex');
 const $store = useStore();
 const $router = useRouter();
+const { t } = useI18n()
 const scientificObjectsService = $opensilex.getService<ScientificObjectsService>("opensilex.ScientificObjectsService");
 const positionsService = $opensilex.getService<PositionsService>("opensilex.PositionsService");
 

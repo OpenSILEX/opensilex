@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Button
+  <Button
     @click="emit('click')"
     variant="outline-success"
     icon="fa#plus"
@@ -10,6 +10,8 @@
 </template>
 
 <script setup lang="ts">
+import Button from "@/components/common/buttons/Button.vue";
+
 const props = withDefaults(
   defineProps<{
     label?: string

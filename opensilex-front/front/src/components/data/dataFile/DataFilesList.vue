@@ -1,5 +1,5 @@
 <template>
-  <div class="datafile-list bg-white">
+  <n-layout-content class="provenance-content">
     <TableAsyncView
       ref="tableRef"
       :show-count="false"
@@ -125,7 +125,7 @@
       ref="eventCsvForm"
       :targets="selectedUris"
     />
-  </div>
+  </n-layout-content>
 </template>
 
 <script setup lang="ts">
@@ -133,7 +133,7 @@ import { computed, inject, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { NButtonGroup } from 'naive-ui'
+import {NButtonGroup, NLayoutContent} from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { ProvenanceGetDTO, ResourceTreeDTO } from 'opensilex-core/index'
 import type HttpResponse from 'opensilex-core/HttpResponse'
